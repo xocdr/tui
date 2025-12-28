@@ -1,12 +1,12 @@
 {
-    "name": "exocoder/tui",
+    "name": "xocdr/tui",
     "description": "Terminal UI framework for PHP - React Ink inspired",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Exocoder",
-            "email": "hello@exocoder.dev"
+            "name": "Jeroen Keppens",
+            "email": "jeroen.keppens@exocoder.io"
         }
     ],
     "require": {
