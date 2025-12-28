@@ -176,6 +176,35 @@ while (!$tween->isComplete()) {
 
 ---
 
+## useAnimation Hook
+
+For animations in components:
+
+```php
+use function Tui\Hooks\useAnimation;
+
+$app = function() {
+    $animation = useAnimation(0, 100, 1000, 'out-cubic');
+
+    // $animation = [
+    //     'value' => float,        // Current animated value
+    //     'isAnimating' => bool,   // Animation in progress
+    //     'start' => callable,     // Start animation
+    //     'reset' => callable,     // Reset to start
+    // ]
+
+    $x = (int)$animation['value'];
+    $bar = str_repeat('█', $x) . str_repeat('░', 100 - $x);
+
+    return Box::column([
+        Text::create($bar)->green(),
+        Text::create("Value: {$x}")->dim(),
+    ]);
+};
+```
+
+---
+
 ## Complete Animation Example
 
 ```php
@@ -241,3 +270,9 @@ $tween->update(16);
 // Less smooth: Infrequent large updates
 $tween->update(100);
 ```
+
+## See Also
+
+- [Drawing](drawing.md) - Canvas and sprites
+- [Hooks](hooks.md) - useAnimation, useInterval hooks
+- [Reference: Classes](../reference/classes.md) - Easing, Tween, Gradient reference

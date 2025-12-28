@@ -1,4 +1,4 @@
-# Components Reference
+# Components
 
 This document covers all available components in the TUI library.
 
@@ -304,3 +304,9 @@ class MyComponent implements Component
     }
 }
 ```
+
+## See Also
+
+- [Hooks](hooks.md) - State management
+- [Styling](styling.md) - Colors and text attributes
+- [Reference: Classes](../reference/classes.md) - Full class reference

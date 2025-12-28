@@ -1,6 +1,35 @@
-# Getting Started
+# Getting Started with xocdr/tui
 
-This guide will help you build your first TUI application.
+This guide will help you build your first terminal UI application with xocdr/tui.
+
+## Prerequisites
+
+- **PHP**: 8.4 or higher
+- **xocdr/ext-tui**: The C extension providing terminal rendering (see [ext-tui specs](../specs/ext-tui-specs.md))
+
+## Installation
+
+```bash
+# Install via Composer
+composer require xocdr/tui
+```
+
+Ensure the ext-tui extension is installed and enabled. See the [ext-tui documentation](https://github.com/xocdr/ext-tui) for installation instructions.
+
+### Verify Installation
+
+```php
+<?php
+if (!extension_loaded('tui')) {
+    die("ext-tui extension is required\n");
+}
+
+require 'vendor/autoload.php';
+use Tui\Tui;
+
+echo "Terminal size: " . json_encode(Tui::getTerminalSize()) . "\n";
+echo "Interactive: " . (Tui::isInteractive() ? 'yes' : 'no') . "\n";
+```
 
 ## Your First App
 
@@ -25,9 +54,11 @@ $instance->waitUntilExit();
 
 ## Understanding Components
 
-TUI uses a component-based architecture similar to React:
+TUI uses a component-based architecture where your UI is built from composable components.
 
 ### Box - Layout Container
+
+`Box` is a flexbox container that handles layout:
 
 ```php
 use Tui\Components\Box;
@@ -54,6 +85,8 @@ Box::create()
 ```
 
 ### Text - Styled Text
+
+`Text` displays styled text content:
 
 ```php
 use Tui\Components\Text;
@@ -114,7 +147,7 @@ Tui::render($app)->waitUntilExit();
 
 ## Layout with Flexbox
 
-TUI uses Flexbox for layout:
+TUI uses Flexbox for layout (powered by Yoga via ext-tui):
 
 ```php
 Box::create()
@@ -239,7 +272,8 @@ Tui::render($app)->waitUntilExit();
 
 ## Next Steps
 
-- [Components Reference](./components.md) - All available components
-- [Hooks Reference](./hooks.md) - State management and effects
-- [Drawing & Graphics](./drawing.md) - Canvas and shape drawing
-- [Animation](./animation.md) - Easing, tweens, and gradients
+- [Components](components.md) - All available components
+- [Hooks](hooks.md) - State management and effects
+- [Styling](styling.md) - Colors and text attributes
+- [Drawing](drawing.md) - Canvas and shape drawing
+- [Animation](animation.md) - Easing, tweens, and gradients

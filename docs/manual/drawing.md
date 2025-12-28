@@ -224,6 +224,30 @@ $lines = $sprite->render();
 
 ---
 
+## Using useCanvas Hook
+
+For animated canvases in components:
+
+```php
+use function Tui\Hooks\useCanvas;
+use function Tui\Hooks\useInterval;
+
+$app = function() {
+    ['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = useCanvas(40, 12);
+
+    useInterval(function() use ($canvas, $clear) {
+        $clear();
+        $canvas->circle(40, 24, rand(10, 20));
+    }, 100);
+
+    return Box::column(
+        array_map(fn($l) => Text::create($l), $render())
+    );
+};
+```
+
+---
+
 ## Example: Animated Scene
 
 ```php
@@ -273,3 +297,9 @@ $app = function() {
 
 Tui::render($app)->waitUntilExit();
 ```
+
+## See Also
+
+- [Animation](animation.md) - Easing and tweening
+- [Hooks](hooks.md) - useCanvas hook
+- [Reference: Classes](../reference/classes.md) - Canvas, Buffer, Sprite reference

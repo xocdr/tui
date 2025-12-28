@@ -1,6 +1,12 @@
-# Hooks Reference
+# Hooks
 
-Hooks provide state management and side effects in TUI components, similar to React hooks.
+Hooks provide state management and side effects in TUI components. All hooks are available as global functions in the `Tui\Hooks` namespace.
+
+```php
+use function Tui\Hooks\useState;
+use function Tui\Hooks\useEffect;
+use function Tui\Hooks\useInput;
+```
 
 ## Basic Hooks
 
@@ -340,3 +346,9 @@ $app = function() {
 ```
 
 The `Hooks` class implements `HooksInterface` for mocking in tests.
+
+## See Also
+
+- [Components](components.md) - UI components
+- [Animation](animation.md) - Animation utilities
+- [Reference: Functions](../reference/functions.md) - Full function reference

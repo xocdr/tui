@@ -1,11 +1,15 @@
-# exocoder/tui
+<p align="center">
+  <img src="docs/tui-logo.svg" alt="xocdr/tui" width="200">
+</p>
 
-A React-inspired Terminal UI framework for PHP. Build beautiful, interactive terminal applications with a component-based architecture and React-like hooks.
+# xocdr/tui
+
+A Terminal UI framework for PHP. Build beautiful, interactive terminal applications with a component-based architecture and hooks for state management.
 
 ## Features
 
 - 🎨 **Component-based** - Build UIs with composable components (Box, Text, etc.)
-- ⚡ **React-like hooks** - useState, useEffect, useMemo, useInput, and more
+- ⚡ **Hooks** - useState, useEffect, useMemo, useInput, and more
 - 📦 **Flexbox layout** - Powered by Yoga layout engine via ext-tui
 - 🎯 **Focus management** - Tab navigation and focus tracking
 - 🔌 **Event system** - Priority-based event dispatching with propagation control
@@ -19,7 +23,7 @@ A React-inspired Terminal UI framework for PHP. Build beautiful, interactive ter
 ## Installation
 
 ```bash
-composer require exocoder/tui
+composer require xocdr/tui
 ```
 
 ## Quick Start
@@ -414,7 +418,7 @@ src/
 │   ├── Event.php
 │   ├── EventDispatcher.php
 │   └── InputEvent.php, FocusEvent.php, ResizeEvent.php
-├── Hooks/               # React-like hooks
+├── Hooks/               # State management hooks
 │   ├── HookContext.php
 │   ├── HookRegistry.php
 │   └── functions.php
@@ -455,5 +459,4 @@ MIT
 
 ## Related
 
-- [ext-tui](https://github.com/exocoder/ext-tui) - Required C extension
-- [React Ink](https://github.com/vadimdemedes/ink) - Inspiration for this project
+- [xocdr/ext-tui](https://github.com/xocdr/ext-tui) - Required C extension
