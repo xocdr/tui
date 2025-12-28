@@ -1,0 +1,14 @@
+parameters:
+    level: 6
+    paths:
+        - src
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # C extension classes and functions - patterns may not match if extension is loaded
+        - message: '#TuiBox#'
+        - message: '#TuiText#'
+        - message: '#TuiKey#'
+        - message: '#TuiInstance#'
+        - message: '#TuiFocusEvent#'
+        - message: '#tui_#'

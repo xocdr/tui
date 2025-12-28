@@ -1,0 +1,44 @@
+{
+    "name": "exocoder/tui",
+    "description": "Terminal UI framework for PHP - React Ink inspired",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Exocoder",
+            "email": "hello@exocoder.dev"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "ext-tui": "*"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.26",
+        "phpstan/phpstan": "^1.10",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tui\\": "src/"
+        },
+        "files": [
+            "src/Hooks/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tui\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse",
+        "format": "pint",
+        "format:check": "pint --test"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}
