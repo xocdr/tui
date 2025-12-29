@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Testing;
 
 use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Box as ExtBox;
 use Xocdr\Tui\Ext\Text as ExtText;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookRegistry;
 
 /**
  * Test renderer using ext-tui's native testing functions.
@@ -14,6 +17,9 @@ use Xocdr\Tui\Ext\Text as ExtText;
  * This renderer provides accurate rendering using the same C engine
  * as production, making tests more reliable. Requires ext-tui with
  * testing support (tui_test_* functions).
+ *
+ * Supports both simple components and HooksAware components by
+ * providing a mock hook context during rendering.
  *
  * @example
  * $renderer = new ExtTestRenderer(80, 24);
@@ -31,6 +37,8 @@ class ExtTestRenderer
 
     private bool $extensionAvailable;
 
+    private HookContext $hookContext;
+
     /**
      * @param int $width Terminal width in columns
      * @param int $height Terminal height in rows
@@ -40,6 +48,7 @@ class ExtTestRenderer
         $this->width = $width;
         $this->height = $height;
         $this->extensionAvailable = function_exists('tui_test_create');
+        $this->hookContext = new HookContext();
 
         if ($this->extensionAvailable) {
             $this->resource = \tui_test_create($width, $height);
@@ -81,6 +90,9 @@ class ExtTestRenderer
      *
      * Recursively resolves callables and nested components until
      * reaching a native ExtBox or ExtText.
+     *
+     * HooksAware components are rendered within a hook context to
+     * allow hooks like useState, useEffect, etc. to function properly.
      */
     private function toNative(mixed $component): ExtBox|ExtText
     {
@@ -89,12 +101,23 @@ class ExtTestRenderer
             return $component;
         }
 
-        // Callable - execute and convert result
+        // Callable - execute within hook context and convert result
         if (is_callable($component)) {
-            return $this->toNative($component());
+            return HookRegistry::withContext(
+                $this->hookContext,
+                fn () => $this->toNative($component())
+            );
         }
 
-        // Component - render and recursively convert
+        // HooksAware component - render within hook context
+        if ($component instanceof HooksAwareInterface) {
+            return HookRegistry::withContext(
+                $this->hookContext,
+                fn () => $this->toNative($component->render())
+            );
+        }
+
+        // Regular component - render and recursively convert
         if ($component instanceof Component) {
             return $this->toNative($component->render());
         }

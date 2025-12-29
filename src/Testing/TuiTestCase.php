@@ -6,12 +6,18 @@ namespace Xocdr\Tui\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Widget;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Telemetry\Metrics;
 
 /**
  * Base test case for TUI component testing.
  *
  * Provides a convenient API for rendering components and making assertions
  * in PHPUnit tests. Uses MockInstance for testing without the C extension.
+ *
+ * For widgets (stateful components with hooks), use createWidget() to get
+ * a widget with mock hooks injected.
  *
  * @example
  * class MyComponentTest extends TuiTestCase
@@ -24,6 +30,17 @@ use Xocdr\Tui\Components\Component;
  *
  *         $this->assertTextPresent('Hello World');
  *     }
+ *
+ *     public function testWidgetWithState(): void
+ *     {
+ *         $widget = $this->createWidget(new Counter());
+ *         $output = $widget->render();
+ *
+ *         // Simulate input
+ *         $this->mockHooks->simulateInput("\x1b[A"); // up arrow
+ *         $this->mockHooks->resetIndices();
+ *         $output = $widget->render();
+ *     }
  * }
  */
 abstract class TuiTestCase extends TestCase
@@ -34,6 +51,10 @@ abstract class TuiTestCase extends TestCase
 
     protected ?TestRenderer $renderer = null;
 
+    protected ?Metrics $metrics = null;
+
+    protected ?MockHooks $mockHooks = null;
+
     protected int $defaultWidth = 80;
 
     protected int $defaultHeight = 24;
@@ -42,6 +63,9 @@ abstract class TuiTestCase extends TestCase
     {
         parent::setUp();
         $this->renderer = new TestRenderer($this->defaultWidth, $this->defaultHeight);
+        $this->metrics = new Metrics();
+        $this->mockHooks = new MockHooks();
+        $this->mockHooks->setDimensions($this->defaultWidth, $this->defaultHeight);
     }
 
     protected function tearDown(): void
@@ -51,8 +75,51 @@ abstract class TuiTestCase extends TestCase
             $this->instance = null;
         }
 
+        $this->metrics?->disable();
+        $this->metrics = null;
         $this->renderer = null;
+        $this->mockHooks = null;
         parent::tearDown();
+    }
+
+    /**
+     * Create a widget with mock hooks for testing.
+     *
+     * This injects MockHooks into the widget, allowing you to test
+     * stateful widgets without a full application context.
+     *
+     * @template T of HooksAwareInterface
+     * @param T $widget The widget to prepare for testing
+     * @return T The same widget with mock hooks injected
+     */
+    protected function createWidget(HooksAwareInterface $widget): HooksAwareInterface
+    {
+        $widget->setHooks($this->mockHooks);
+
+        return $widget;
+    }
+
+    /**
+     * Get the mock hooks instance for direct manipulation.
+     */
+    protected function getMockHooks(): MockHooks
+    {
+        return $this->mockHooks;
+    }
+
+    /**
+     * Render a widget and return its output.
+     *
+     * Handles hook index reset between renders automatically.
+     *
+     * @param HooksAwareInterface $widget The widget to render
+     * @return mixed The render output
+     */
+    protected function renderWidget(HooksAwareInterface $widget): mixed
+    {
+        $this->mockHooks->resetIndices();
+
+        return $widget->render();
     }
 
     /**
@@ -275,5 +342,166 @@ abstract class TuiTestCase extends TestCase
         }
 
         $this->assertInstanceNotRunning($this->instance, $message);
+    }
+
+    // ========================================
+    // Performance Assertions
+    // ========================================
+
+    /**
+     * Enable metrics collection for performance testing.
+     */
+    protected function enableMetrics(): self
+    {
+        $this->metrics?->enable()->reset();
+
+        return $this;
+    }
+
+    /**
+     * Get the metrics instance.
+     */
+    protected function getMetrics(): ?Metrics
+    {
+        return $this->metrics;
+    }
+
+    /**
+     * Assert that average render time is under a threshold.
+     *
+     * @param float $maxMs Maximum average render time in milliseconds
+     */
+    protected function assertRenderTimeUnder(float $maxMs, string $message = ''): void
+    {
+        if ($this->metrics === null || !$this->metrics->isAvailable()) {
+            $this->markTestSkipped('Metrics not available');
+        }
+
+        $avgMs = $this->metrics->avgRenderMs();
+        $this->assertLessThanOrEqual(
+            $maxMs,
+            $avgMs,
+            $message ?: "Average render time {$avgMs}ms exceeds {$maxMs}ms"
+        );
+    }
+
+    /**
+     * Assert that renders are achieving target FPS.
+     *
+     * @param int $fps Target frames per second (default 60)
+     */
+    protected function assertAchievesFps(int $fps = 60, string $message = ''): void
+    {
+        if ($this->metrics === null || !$this->metrics->isAvailable()) {
+            $this->markTestSkipped('Metrics not available');
+        }
+
+        $targetMs = 1000.0 / $fps;
+        $avgMs = $this->metrics->avgRenderMs();
+        $this->assertLessThanOrEqual(
+            $targetMs,
+            $avgMs,
+            $message ?: "Not achieving {$fps}fps (avg {$avgMs}ms, target {$targetMs}ms)"
+        );
+    }
+
+    /**
+     * Assert that node count is under a threshold.
+     *
+     * @param int $maxNodes Maximum node count
+     */
+    protected function assertNodeCountUnder(int $maxNodes, string $message = ''): void
+    {
+        if ($this->metrics === null || !$this->metrics->isAvailable()) {
+            $this->markTestSkipped('Metrics not available');
+        }
+
+        $count = $this->metrics->nodeCount();
+        $this->assertLessThanOrEqual(
+            $maxNodes,
+            $count,
+            $message ?: "Node count {$count} exceeds {$maxNodes}"
+        );
+    }
+
+    /**
+     * Assert that reconciler operations per diff are under a threshold.
+     *
+     * Low values indicate efficient updates.
+     *
+     * @param float $maxOps Maximum operations per diff
+     */
+    protected function assertOpsPerDiffUnder(float $maxOps, string $message = ''): void
+    {
+        if ($this->metrics === null || !$this->metrics->isAvailable()) {
+            $this->markTestSkipped('Metrics not available');
+        }
+
+        $ops = $this->metrics->avgOpsPerDiff();
+        $this->assertLessThanOrEqual(
+            $maxOps,
+            $ops,
+            $message ?: "Ops per diff {$ops} exceeds {$maxOps}"
+        );
+    }
+
+    /**
+     * Assert no memory leak by checking node count stability.
+     *
+     * Runs a callback multiple times and checks that node count
+     * doesn't grow beyond a threshold.
+     *
+     * @param callable $action Action to repeat
+     * @param int $iterations Number of iterations
+     * @param int $maxGrowth Maximum allowed node growth
+     */
+    protected function assertNoMemoryLeak(
+        callable $action,
+        int $iterations = 10,
+        int $maxGrowth = 5,
+        string $message = ''
+    ): void {
+        if ($this->metrics === null || !$this->metrics->isAvailable()) {
+            $this->markTestSkipped('Metrics not available');
+        }
+
+        $this->metrics->enable();
+        $initialCount = $this->metrics->nodeCount();
+
+        for ($i = 0; $i < $iterations; $i++) {
+            $action();
+        }
+
+        $finalCount = $this->metrics->nodeCount();
+        $growth = $finalCount - $initialCount;
+
+        $this->assertLessThanOrEqual(
+            $maxGrowth,
+            $growth,
+            $message ?: "Node count grew by {$growth} (from {$initialCount} to {$finalCount})"
+        );
+    }
+
+    /**
+     * Assert render phase breakdown is reasonable.
+     *
+     * Checks that no single phase dominates excessively.
+     *
+     * @param float $maxPercentage Maximum percentage for any single phase
+     */
+    protected function assertBalancedRenderPhases(float $maxPercentage = 80, string $message = ''): void
+    {
+        if ($this->metrics === null || !$this->metrics->isAvailable()) {
+            $this->markTestSkipped('Metrics not available');
+        }
+
+        $breakdown = $this->metrics->renderBreakdown();
+        $maxPhase = max($breakdown['layout'], $breakdown['buffer'], $breakdown['output']);
+
+        $this->assertLessThanOrEqual(
+            $maxPercentage,
+            $maxPhase,
+            $message ?: "Render phase imbalance: layout={$breakdown['layout']}%, buffer={$breakdown['buffer']}%, output={$breakdown['output']}%"
+        );
     }
 }

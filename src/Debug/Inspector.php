@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Debug;
 
 use Xocdr\Tui\Application;
+use Xocdr\Tui\Telemetry\Metrics;
 
 /**
  * Debug inspector for TUI applications.
@@ -23,12 +24,15 @@ use Xocdr\Tui\Application;
  * // Get hook states
  * $states = $inspector->getHookStates();
  *
- * // Get performance metrics
- * $metrics = $inspector->getMetrics();
+ * // Get native performance metrics
+ * $metrics = $inspector->metrics();
+ * echo $metrics->summary();
  */
 class Inspector
 {
     private Application $app;
+
+    private Metrics $metrics;
 
     private bool $enabled = false;
 
@@ -43,25 +47,36 @@ class Inspector
 
     private int $maxStateChanges = 100;
 
-    public function __construct(Application $app)
+    public function __construct(Application $app, ?Metrics $metrics = null)
     {
         $this->app = $app;
+        $this->metrics = $metrics ?? new Metrics();
     }
 
     /**
-     * Enable the inspector.
+     * Get the Metrics instance for native telemetry.
+     */
+    public function metrics(): Metrics
+    {
+        return $this->metrics;
+    }
+
+    /**
+     * Enable the inspector and metrics collection.
      */
     public function enable(): void
     {
         $this->enabled = true;
+        $this->metrics->enable();
     }
 
     /**
-     * Disable the inspector.
+     * Disable the inspector and metrics collection.
      */
     public function disable(): void
     {
         $this->enabled = false;
+        $this->metrics->disable();
     }
 
     /**
@@ -291,9 +306,15 @@ class Inspector
 
     /**
      * Get a summary string for display.
+     *
+     * Uses native metrics when available, falls back to PHP tracking.
      */
     public function getSummary(): string
     {
+        if ($this->metrics->isAvailable() && $this->metrics->isEnabled()) {
+            return $this->metrics->summary();
+        }
+
         $metrics = $this->getMetrics();
 
         return sprintf(
