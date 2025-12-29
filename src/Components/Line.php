@@ -197,7 +197,7 @@ class Line implements Component
 
         // Calculate label placement
         if ($this->label !== null && $length > 4) {
-            $labelText = ' '.$this->label.' ';
+            $labelText = ' ' . $this->label . ' ';
             $labelLen = mb_strlen($labelText);
 
             if ($labelLen < $length) {
@@ -232,7 +232,7 @@ class Line implements Component
 
         // Add end cap (replace last char)
         if ($this->endCap !== null && strlen($result) > 0) {
-            $result = mb_substr($result, 0, -1).$this->endCap;
+            $result = mb_substr($result, 0, -1) . $this->endCap;
         }
 
         return $result;

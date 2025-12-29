@@ -14,6 +14,7 @@ Step-by-step guides for building TUI applications:
 - [Styling](manual/styling.md) - Colors, text attributes, borders
 - [Drawing](manual/drawing.md) - Canvas, Buffer, Sprite for graphics
 - [Animation](manual/animation.md) - Easing, Tween, Gradient utilities
+- [Testing](manual/testing.md) - Testing components and widgets
 
 ### Reference (API Documentation)
 
@@ -21,6 +22,7 @@ Complete API reference:
 
 - [Classes](reference/classes.md) - All classes and methods
 - [Hooks](reference/hooks.md) - Hooks class reference
+- [Testing](reference/testing.md) - Testing framework classes
 
 ### Specifications
 

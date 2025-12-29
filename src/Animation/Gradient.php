@@ -54,7 +54,7 @@ class Gradient
     public function __construct(array $stops, int $steps)
     {
         // Resolve color names to hex
-        $this->stops = array_map(fn($c) => Color::resolve($c), $stops);
+        $this->stops = array_map(fn ($c) => Color::resolve($c), $stops);
         $this->steps = max(2, $steps);
     }
 

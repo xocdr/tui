@@ -217,7 +217,7 @@ class Color
     public static function cssNames(): array
     {
         return array_map(
-            fn($case) => strtolower($case->name),
+            fn ($case) => strtolower($case->name),
             \Xocdr\Tui\Ext\Color::cases()
         );
     }
