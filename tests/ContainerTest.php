@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests;
+namespace Xocdr\Tui\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Container;
+use Xocdr\Tui\Container;
 
 class ContainerTest extends TestCase
 {

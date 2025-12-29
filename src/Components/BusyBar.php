@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
+
+use Xocdr\Tui\Animation\Gradient;
 
 /**
  * Indeterminate/busy progress bar component.
@@ -16,6 +18,12 @@ namespace Tui\Components;
  *
  * // In render loop:
  * $busy->advance();
+ *
+ * // Gradient style with custom colors
+ * $busy = BusyBar::create()
+ *     ->width(30)
+ *     ->style('gradient')
+ *     ->gradient(Gradient::between('dodgerblue', 'deeppink', 30));
  */
 class BusyBar implements Component
 {
@@ -37,6 +45,8 @@ class BusyBar implements Component
     private string $inactiveChar = '░';
 
     private ?string $color = null;
+
+    private ?Gradient $gradient = null;
 
     /**
      * Create a new busy bar.
@@ -92,6 +102,15 @@ class BusyBar implements Component
     }
 
     /**
+     * Set a custom gradient for gradient/rainbow styles.
+     */
+    public function gradient(Gradient $gradient): self
+    {
+        $this->gradient = $gradient;
+        return $this;
+    }
+
+    /**
      * Advance to the next frame.
      */
     public function advance(): self
@@ -119,7 +138,7 @@ class BusyBar implements Component
     }
 
     /**
-     * Render the busy bar as a string.
+     * Render the busy bar as a string (for non-gradient styles).
      */
     public function toString(): string
     {
@@ -127,20 +146,78 @@ class BusyBar implements Component
             self::STYLE_SNAKE => $this->renderSnake(),
             self::STYLE_WAVE => $this->renderWave(),
             self::STYLE_SHIMMER => $this->renderShimmer(),
+            self::STYLE_GRADIENT, self::STYLE_RAINBOW => $this->activeChar,
             default => $this->renderPulse(),
         };
     }
 
     /**
      * Render the busy bar.
+     *
+     * For gradient/rainbow styles, returns a Fragment with colored segments.
+     * For other styles, returns a Text component.
      */
-    public function render(): Text
+    public function render(): Component
+    {
+        return match ($this->style) {
+            self::STYLE_GRADIENT => $this->renderGradient(),
+            self::STYLE_RAINBOW => $this->renderRainbow(),
+            default => $this->renderText(),
+        };
+    }
+
+    /**
+     * Render as a simple Text component.
+     */
+    private function renderText(): Text
     {
         $text = Text::create($this->toString());
         if ($this->color !== null) {
             $text->color($this->color);
         }
         return $text;
+    }
+
+    /**
+     * Render gradient style with per-character coloring.
+     */
+    private function renderGradient(): Component
+    {
+        $gradient = $this->gradient ?? Gradient::between(
+            $this->color ?? 'dodgerblue',
+            'deeppink',
+            $this->width
+        )->circular();
+
+        return $this->renderWithGradient($gradient);
+    }
+
+    /**
+     * Render rainbow style with hue rotation.
+     */
+    private function renderRainbow(): Component
+    {
+        $gradient = $this->gradient ?? Gradient::rainbow($this->width)
+            ->hsl()
+            ->circular();
+
+        return $this->renderWithGradient($gradient);
+    }
+
+    /**
+     * Render bar with gradient colors.
+     */
+    private function renderWithGradient(Gradient $gradient): Component
+    {
+        $colors = $gradient->offset($this->frame)->getColors();
+        $children = [];
+
+        for ($i = 0; $i < $this->width; $i++) {
+            $colorIndex = $i % count($colors);
+            $children[] = Text::create($this->activeChar)->color($colors[$colorIndex]);
+        }
+
+        return Fragment::create()->children($children);
     }
 
     private function renderPulse(): string

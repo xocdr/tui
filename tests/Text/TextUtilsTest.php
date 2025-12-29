@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Text;
+namespace Xocdr\Tui\Tests\Text;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Text\TextUtils;
+use Xocdr\Tui\Text\TextUtils;
 
 class TextUtilsTest extends TestCase
 {

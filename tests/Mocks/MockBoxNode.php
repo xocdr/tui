@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Mocks;
+namespace Xocdr\Tui\Tests\Mocks;
 
-use Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
  * Mock box node for testing.

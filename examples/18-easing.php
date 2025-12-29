@@ -17,13 +17,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Animation\Easing;
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Animation\Easing;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -64,26 +64,36 @@ foreach ($easings as $name => $easing) {
     $rows[] = sprintf('%-12s │%s│', $name, $bar);
 }
 
-$app = function () use ($rows) {
-    ['exit' => $exit] = useApp();
+class EasingDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+    public function __construct(private array $rows)
+    {
+    }
 
-    return Box::column([
-        Text::create('Easing Functions Demo')->bold()->cyan(),
-        Text::create(''),
-        Text::create('Visualizing progression from t=0 to t=1:'),
-        Text::create(''),
-        ...array_map(fn ($row) => Text::create($row), $rows),
-        Text::create(''),
-        Text::create(sprintf('%d easing functions available', count(Easing::getAvailable())))->dim(),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-$instance = Tui::render($app);
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
+
+        return Box::column([
+            Text::create('Easing Functions Demo')->bold()->cyan(),
+            Text::create(''),
+            Text::create('Visualizing progression from t=0 to t=1:'),
+            Text::create(''),
+            ...array_map(fn ($row) => Text::create($row), $this->rows),
+            Text::create(''),
+            Text::create(sprintf('%d easing functions available', count(Easing::getAvailable())))->dim(),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new EasingDemo($rows));
 $instance->waitUntilExit();

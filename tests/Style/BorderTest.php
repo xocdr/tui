@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Style;
+namespace Xocdr\Tui\Tests\Style;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Style\Border;
+use Xocdr\Tui\Style\Border;
 
 class BorderTest extends TestCase
 {

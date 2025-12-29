@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
 /**
  * Styled text component.
@@ -16,6 +16,10 @@ class Text implements Component
 
     /** @var array<string, mixed> */
     private array $style = [];
+
+    private ?string $hyperlinkUrl = null;
+
+    private bool $hyperlinkFallbackEnabled = false;
 
     public function __construct(string $content = '')
     {
@@ -93,7 +97,7 @@ class Text implements Component
      */
     public function palette(string $name, int $shade = 500): self
     {
-        return $this->color(\Tui\Style\Color::palette($name, $shade));
+        return $this->color(\Xocdr\Tui\Style\Color::palette($name, $shade));
     }
 
     /**
@@ -101,7 +105,7 @@ class Text implements Component
      */
     public function bgPalette(string $name, int $shade = 500): self
     {
-        return $this->bgColor(\Tui\Style\Color::palette($name, $shade));
+        return $this->bgColor(\Xocdr\Tui\Style\Color::palette($name, $shade));
     }
 
     // Custom RGB/HSL colors
@@ -130,7 +134,7 @@ class Text implements Component
      */
     public function hsl(float $h, float $s, float $l): self
     {
-        return $this->color(\Tui\Style\Color::hslToHex($h, $s, $l));
+        return $this->color(\Xocdr\Tui\Style\Color::hslToHex($h, $s, $l));
     }
 
     /**
@@ -138,7 +142,7 @@ class Text implements Component
      */
     public function bgHsl(float $h, float $s, float $l): self
     {
-        return $this->bgColor(\Tui\Style\Color::hslToHex($h, $s, $l));
+        return $this->bgColor(\Xocdr\Tui\Style\Color::hslToHex($h, $s, $l));
     }
 
     // Standard ANSI colors (vibrant)
@@ -411,6 +415,52 @@ class Text implements Component
         return $this;
     }
 
+    // Hyperlinks
+
+    /**
+     * Make the text a clickable hyperlink.
+     *
+     * Uses OSC 8 escape sequence for terminal hyperlinks.
+     * Requires a terminal that supports OSC 8 (iTerm2, WezTerm, GNOME Terminal, etc.)
+     *
+     * @param string $url The URL to link to
+     */
+    public function hyperlink(string $url): self
+    {
+        $this->hyperlinkUrl = $url;
+
+        return $this;
+    }
+
+    /**
+     * Enable fallback mode for unsupported terminals.
+     *
+     * When enabled and the terminal doesn't support hyperlinks,
+     * the URL will be appended in parentheses after the text.
+     */
+    public function hyperlinkFallback(bool $fallback = true): self
+    {
+        $this->hyperlinkFallbackEnabled = $fallback;
+
+        return $this;
+    }
+
+    /**
+     * Get the hyperlink URL.
+     */
+    public function getHyperlinkUrl(): ?string
+    {
+        return $this->hyperlinkUrl;
+    }
+
+    /**
+     * Check if hyperlink fallback is enabled.
+     */
+    public function isHyperlinkFallbackEnabled(): bool
+    {
+        return $this->hyperlinkFallbackEnabled;
+    }
+
     /**
      * Get the text content.
      */
@@ -432,7 +482,7 @@ class Text implements Component
     /**
      * Render the component to a TuiText.
      */
-    public function render(): \TuiText
+    public function render(): \Xocdr\Tui\Ext\Text
     {
         // Map bgColor to backgroundColor for the C extension
         $style = $this->style;
@@ -441,6 +491,17 @@ class Text implements Component
             unset($style['bgColor']);
         }
 
-        return new \TuiText($this->content, $style);
+        // Handle hyperlinks
+        $content = $this->content;
+        if ($this->hyperlinkUrl !== null) {
+            $style['hyperlink'] = $this->hyperlinkUrl;
+
+            // Add fallback URL if enabled
+            if ($this->hyperlinkFallbackEnabled) {
+                $style['hyperlinkFallback'] = true;
+            }
+        }
+
+        return new \Xocdr\Tui\Ext\Text($content, $style);
     }
 }

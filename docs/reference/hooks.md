@@ -1,17 +1,30 @@
-# Functions Reference
+# Hooks Reference
 
-Complete reference for hook functions in xocdr/tui.
+Complete reference for the `Hooks` class in xocdr/tui.
+
+## Hooks Class
+
+The `Hooks` class is the primary API for state management and side effects in TUI applications.
+
+```php
+use Xocdr\Tui\Hooks\Hooks;
+
+$hooks = new Hooks($instance);
+```
+
+**Constructor Parameters:**
+- `$instance` (InstanceInterface|null) - Application instance (optional)
+
+---
 
 ## State Hooks
 
-### useState
+### state
 
 Manage component state that persists across renders.
 
 ```php
-use function Tui\Hooks\useState;
-
-[$value, $setValue] = useState($initial);
+[$value, $setValue] = $hooks->state($initial);
 ```
 
 **Parameters:**
@@ -22,14 +35,12 @@ use function Tui\Hooks\useState;
 - `$setValue(mixed $newValue)` - Update state with value
 - `$setValue(callable $fn)` - Update state with function receiving current value
 
-### useReducer
+### reducer
 
 Manage complex state with a reducer function.
 
 ```php
-use function Tui\Hooks\useReducer;
-
-[$state, $dispatch] = useReducer($reducer, $initialState);
+[$state, $dispatch] = $hooks->reducer($reducer, $initialState);
 ```
 
 **Parameters:**
@@ -40,14 +51,12 @@ use function Tui\Hooks\useReducer;
 - `$state` - Current state
 - `$dispatch(array $action)` - Dispatch an action
 
-### useRef
+### ref
 
 Create a mutable reference that persists across renders.
 
 ```php
-use function Tui\Hooks\useRef;
-
-$ref = useRef($initial);
+$ref = $hooks->ref($initial);
 $ref->current = 'new value';
 ```
 
@@ -56,14 +65,12 @@ $ref->current = 'new value';
 
 **Returns:** `object{current: mixed}`
 
-### useMemo
+### memo
 
 Memoize expensive computations.
 
 ```php
-use function Tui\Hooks\useMemo;
-
-$value = useMemo($factory, $deps);
+$value = $hooks->memo($factory, $deps);
 ```
 
 **Parameters:**
@@ -72,14 +79,12 @@ $value = useMemo($factory, $deps);
 
 **Returns:** `mixed` - Memoized value
 
-### useCallback
+### callback
 
 Memoize callbacks.
 
 ```php
-use function Tui\Hooks\useCallback;
-
-$callback = useCallback($fn, $deps);
+$callback = $hooks->callback($fn, $deps);
 ```
 
 **Parameters:**
@@ -88,14 +93,12 @@ $callback = useCallback($fn, $deps);
 
 **Returns:** `callable` - Memoized callback
 
-### usePrevious
+### previous
 
 Get the previous value of a variable.
 
 ```php
-use function Tui\Hooks\usePrevious;
-
-$previous = usePrevious($value);
+$previous = $hooks->previous($value);
 ```
 
 **Parameters:**
@@ -107,14 +110,12 @@ $previous = usePrevious($value);
 
 ## Effect Hooks
 
-### useEffect
+### onRender
 
 Run side effects after render.
 
 ```php
-use function Tui\Hooks\useEffect;
-
-useEffect($effect, $deps);
+$hooks->onRender($effect, $deps);
 ```
 
 **Parameters:**
@@ -123,14 +124,12 @@ useEffect($effect, $deps);
 
 **Returns:** `void`
 
-### useInterval
+### interval
 
 Run a callback at a fixed interval.
 
 ```php
-use function Tui\Hooks\useInterval;
-
-useInterval($callback, $ms, $isActive);
+$hooks->interval($callback, $ms, $isActive);
 ```
 
 **Parameters:**
@@ -144,44 +143,38 @@ useInterval($callback, $ms, $isActive);
 
 ## Input/Output Hooks
 
-### useInput
+### onInput
 
 Handle keyboard input.
 
 ```php
-use function Tui\Hooks\useInput;
-
-useInput($handler, $options);
+$hooks->onInput($handler, $options);
 ```
 
 **Parameters:**
-- `$handler` (callable) - `function(string $key, TuiKey $keyInfo): void`
+- `$handler` (callable) - `function(string $key, \Xocdr\Tui\Ext\Key $keyInfo): void`
 - `$options` (array) - Options array
   - `isActive` (bool) - Whether handler is active (default: true)
 
 **Returns:** `void`
 
-### useApp
+### app
 
 Access application control functions.
 
 ```php
-use function Tui\Hooks\useApp;
-
-['exit' => $exit] = useApp();
+['exit' => $exit] = $hooks->app();
 ```
 
 **Returns:** `array{exit: callable}`
 - `exit(int $code = 0)` - Exit the application
 
-### useStdout
+### stdout
 
 Get terminal dimensions and write access.
 
 ```php
-use function Tui\Hooks\useStdout;
-
-$stdout = useStdout();
+$stdout = $hooks->stdout();
 ```
 
 **Returns:** `array{columns: int, rows: int, write: callable}`
@@ -193,14 +186,12 @@ $stdout = useStdout();
 
 ## Focus Hooks
 
-### useFocus
+### focus
 
 Track focus state of a component.
 
 ```php
-use function Tui\Hooks\useFocus;
-
-['isFocused' => $isFocused, 'focus' => $focus] = useFocus($options);
+['isFocused' => $isFocused, 'focus' => $focus] = $hooks->focus($options);
 ```
 
 **Parameters:**
@@ -212,14 +203,12 @@ use function Tui\Hooks\useFocus;
 - `isFocused` - Whether component is focused
 - `focus()` - Programmatically focus this component
 
-### useFocusManager
+### focusManager
 
 Navigate focus between components.
 
 ```php
-use function Tui\Hooks\useFocusManager;
-
-$focusManager = useFocusManager();
+$focusManager = $hooks->focusManager();
 ```
 
 **Returns:** `array{focusNext: callable, focusPrevious: callable}`
@@ -230,14 +219,12 @@ $focusManager = useFocusManager();
 
 ## Utility Hooks
 
-### useContext
+### context
 
 Access shared context values.
 
 ```php
-use function Tui\Hooks\useContext;
-
-$service = useContext($class);
+$service = $hooks->context($class);
 ```
 
 **Parameters:**
@@ -245,14 +232,12 @@ $service = useContext($class);
 
 **Returns:** `object|null` - Context value
 
-### useToggle
+### toggle
 
 Boolean state with toggle function.
 
 ```php
-use function Tui\Hooks\useToggle;
-
-[$value, $toggle, $setValue] = useToggle($initial);
+[$value, $toggle, $setValue] = $hooks->toggle($initial);
 ```
 
 **Parameters:**
@@ -263,14 +248,12 @@ use function Tui\Hooks\useToggle;
 - `$toggle()` - Toggle the value
 - `$setValue(bool $value)` - Set directly
 
-### useCounter
+### counter
 
 Numeric counter.
 
 ```php
-use function Tui\Hooks\useCounter;
-
-$counter = useCounter($initial);
+$counter = $hooks->counter($initial);
 ```
 
 **Parameters:**
@@ -278,14 +261,12 @@ $counter = useCounter($initial);
 
 **Returns:** `array{count: int, increment: callable, decrement: callable, reset: callable, set: callable}`
 
-### useList
+### list
 
 Manage a list of items.
 
 ```php
-use function Tui\Hooks\useList;
-
-$list = useList($initial);
+$list = $hooks->list($initial);
 ```
 
 **Parameters:**
@@ -299,14 +280,12 @@ $list = useList($initial);
 - `clear()` - Remove all items
 - `set(array $items)` - Replace all items
 
-### useAnimation
+### animation
 
 Manage animation state with tweening.
 
 ```php
-use function Tui\Hooks\useAnimation;
-
-$animation = useAnimation($from, $to, $duration, $easing);
+$animation = $hooks->animation($from, $to, $duration, $easing);
 ```
 
 **Parameters:**
@@ -321,14 +300,12 @@ $animation = useAnimation($from, $to, $duration, $easing);
 - `start()` - Start the animation
 - `reset()` - Reset to start value
 
-### useCanvas
+### canvas
 
 Create and manage a drawing canvas.
 
 ```php
-use function Tui\Hooks\useCanvas;
-
-['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = useCanvas($width, $height, $mode);
+['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $hooks->canvas($width, $height, $mode);
 ```
 
 **Parameters:**
@@ -343,11 +320,40 @@ use function Tui\Hooks\useCanvas;
 
 ---
 
-## Hook Constants
+## HooksAware Interface
+
+For components that need hooks access, implement `HooksAwareInterface` and use `HooksAwareTrait`:
+
+```php
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+
+class MyComponent implements HooksAwareInterface
+{
+    use HooksAwareTrait;
+
+    public function render(): mixed
+    {
+        [$count, $setCount] = $this->hooks()->state(0);
+        // ...
+    }
+}
+```
+
+**HooksAwareInterface Methods:**
+- `setHooks(HooksInterface $hooks): void` - Set the hooks instance
+- `getHooks(): HooksInterface` - Get the hooks instance
+
+**HooksAwareTrait Protected Methods:**
+- `hooks(): HooksInterface` - Convenience alias for `getHooks()`
+
+---
+
+## Constants
 
 ### Easing Names
 
-For use with `useAnimation`:
+For use with `animation`:
 
 ```php
 'linear'
@@ -364,7 +370,7 @@ For use with `useAnimation`:
 
 ### Canvas Modes
 
-For use with `useCanvas`:
+For use with `canvas`:
 
 ```php
 'braille'  // 2x4 pixels per cell (highest resolution)

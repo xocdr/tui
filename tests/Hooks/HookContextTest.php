@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Hooks;
+namespace Xocdr\Tui\Tests\Hooks;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookContext;
 
 class HookContextTest extends TestCase
 {
@@ -18,7 +18,7 @@ class HookContextTest extends TestCase
 
     public function testUseStateReturnsInitialValue(): void
     {
-        [$value, $setValue] = $this->context->useState(42);
+        [$value, $setValue] = $this->context->state(42);
 
         $this->assertEquals(42, $value);
     }
@@ -26,43 +26,43 @@ class HookContextTest extends TestCase
     public function testUseStatePersistsBetweenCalls(): void
     {
         // First render
-        [$value1] = $this->context->useState('initial');
+        [$value1] = $this->context->state('initial');
         $this->assertEquals('initial', $value1);
 
         // Reset for next render
         $this->context->resetForRender();
 
         // Second render - should get same value
-        [$value2] = $this->context->useState('initial');
+        [$value2] = $this->context->state('initial');
         $this->assertEquals('initial', $value2);
     }
 
     public function testSetStateUpdatesValue(): void
     {
-        [$value, $setValue] = $this->context->useState(0);
+        [$value, $setValue] = $this->context->state(0);
 
         $setValue(10);
         $this->context->resetForRender();
 
-        [$newValue] = $this->context->useState(0);
+        [$newValue] = $this->context->state(0);
         $this->assertEquals(10, $newValue);
     }
 
     public function testSetStateWithCallback(): void
     {
-        [$value, $setValue] = $this->context->useState(5);
+        [$value, $setValue] = $this->context->state(5);
 
         $setValue(fn ($v) => $v * 2);
         $this->context->resetForRender();
 
-        [$newValue] = $this->context->useState(5);
+        [$newValue] = $this->context->state(5);
         $this->assertEquals(10, $newValue);
     }
 
     public function testUseEffectRunsOnFirstRender(): void
     {
         $ran = false;
-        $this->context->useEffect(function () use (&$ran) {
+        $this->context->onRender(function () use (&$ran) {
             $ran = true;
         }, []);
 
@@ -75,14 +75,14 @@ class HookContextTest extends TestCase
         $deps = ['a', 'b'];
 
         // First render
-        $this->context->useEffect(function () use (&$runCount) {
+        $this->context->onRender(function () use (&$runCount) {
             $runCount++;
         }, $deps);
 
         $this->context->resetForRender();
 
         // Second render with same deps
-        $this->context->useEffect(function () use (&$runCount) {
+        $this->context->onRender(function () use (&$runCount) {
             $runCount++;
         }, $deps);
 
@@ -94,14 +94,14 @@ class HookContextTest extends TestCase
         $runCount = 0;
 
         // First render
-        $this->context->useEffect(function () use (&$runCount) {
+        $this->context->onRender(function () use (&$runCount) {
             $runCount++;
         }, ['a']);
 
         $this->context->resetForRender();
 
         // Second render with different deps
-        $this->context->useEffect(function () use (&$runCount) {
+        $this->context->onRender(function () use (&$runCount) {
             $runCount++;
         }, ['b']);
 
@@ -113,7 +113,7 @@ class HookContextTest extends TestCase
         $cleanupCalled = false;
 
         // First render
-        $this->context->useEffect(function () use (&$cleanupCalled) {
+        $this->context->onRender(function () use (&$cleanupCalled) {
             return function () use (&$cleanupCalled) {
                 $cleanupCalled = true;
             };
@@ -122,7 +122,7 @@ class HookContextTest extends TestCase
         $this->context->resetForRender();
 
         // Second render with different deps (triggers cleanup)
-        $this->context->useEffect(function () {
+        $this->context->onRender(function () {
             return null;
         }, ['b']);
 
@@ -131,7 +131,7 @@ class HookContextTest extends TestCase
 
     public function testUseMemoReturnsValue(): void
     {
-        $value = $this->context->useMemo(fn () => 'computed', []);
+        $value = $this->context->memo(fn () => 'computed', []);
 
         $this->assertEquals('computed', $value);
     }
@@ -142,7 +142,7 @@ class HookContextTest extends TestCase
         $deps = ['x'];
 
         // First render
-        $value1 = $this->context->useMemo(function () use (&$computeCount) {
+        $value1 = $this->context->memo(function () use (&$computeCount) {
             $computeCount++;
 
             return 'result';
@@ -151,7 +151,7 @@ class HookContextTest extends TestCase
         $this->context->resetForRender();
 
         // Second render with same deps
-        $value2 = $this->context->useMemo(function () use (&$computeCount) {
+        $value2 = $this->context->memo(function () use (&$computeCount) {
             $computeCount++;
 
             return 'result';
@@ -166,16 +166,16 @@ class HookContextTest extends TestCase
         $callback = fn () => 'test';
         $deps = ['x'];
 
-        $result1 = $this->context->useCallback($callback, $deps);
+        $result1 = $this->context->callback($callback, $deps);
         $this->context->resetForRender();
-        $result2 = $this->context->useCallback($callback, $deps);
+        $result2 = $this->context->callback($callback, $deps);
 
         $this->assertSame($result1, $result2);
     }
 
     public function testUseRefReturnsMutableObject(): void
     {
-        $ref = $this->context->useRef('initial');
+        $ref = $this->context->ref('initial');
 
         $this->assertEquals('initial', $ref->current);
 
@@ -187,13 +187,13 @@ class HookContextTest extends TestCase
     {
         $cleanups = [];
 
-        $this->context->useEffect(function () use (&$cleanups) {
+        $this->context->onRender(function () use (&$cleanups) {
             return function () use (&$cleanups) {
                 $cleanups[] = 'effect1';
             };
         }, []);
 
-        $this->context->useEffect(function () use (&$cleanups) {
+        $this->context->onRender(function () use (&$cleanups) {
             return function () use (&$cleanups) {
                 $cleanups[] = 'effect2';
             };
@@ -206,14 +206,14 @@ class HookContextTest extends TestCase
 
     public function testClearResetsEverything(): void
     {
-        [$value, $setValue] = $this->context->useState('test');
-        $this->context->useEffect(function () {}, []);
+        [$value, $setValue] = $this->context->state('test');
+        $this->context->onRender(function () {}, []);
 
         $this->context->clear();
         $this->context->resetForRender();
 
         // Should get initial value again after clear
-        [$newValue] = $this->context->useState('new');
+        [$newValue] = $this->context->state('new');
         $this->assertEquals('new', $newValue);
     }
 
@@ -224,7 +224,7 @@ class HookContextTest extends TestCase
             $rerenderCalled = true;
         });
 
-        [$value, $setValue] = $this->context->useState(0);
+        [$value, $setValue] = $this->context->state(0);
         $setValue(1);
 
         $this->assertTrue($rerenderCalled);

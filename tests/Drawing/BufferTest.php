@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Drawing;
+namespace Xocdr\Tui\Tests\Drawing;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Drawing\Buffer;
+use Xocdr\Tui\Drawing\Buffer;
 
 class BufferTest extends TestCase
 {

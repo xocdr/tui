@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components\Examples;
+namespace Xocdr\Tui\Components\Examples;
 
-use Tui\Components\StatefulComponent;
-use Tui\Components\Box;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\StatefulComponent;
+use Xocdr\Tui\Components\Text;
 
 /**
  * Example component for viewing streaming data.
  *
  * Demonstrates how to integrate with external data sources
- * like ReactPHP streams or any polling-based data.
+ * like async streams or any polling-based data.
  *
  * @example
  * $viewer = StreamViewer::create(['maxLines' => 20]);
@@ -163,7 +163,7 @@ class StreamViewer extends StatefulComponent
         return false;
     }
 
-    public function render(): \TuiBox
+    public function render(): \Xocdr\Tui\Ext\Box
     {
         $title = $this->prop('title', 'Stream');
         $height = $this->prop('height', 10);
@@ -193,7 +193,7 @@ class StreamViewer extends StatefulComponent
         }
 
         // Add scroll indicator
-        $scrollIndicator = $autoScroll ? '[AUTO]' : "[{$offset}/" . count($lines) . "]";
+        $scrollIndicator = $autoScroll ? '[AUTO]' : "[{$offset}/" . count($lines) . ']';
 
         return Box::create()
             ->flexDirection('column')

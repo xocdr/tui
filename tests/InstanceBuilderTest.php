@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests;
+namespace Xocdr\Tui\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Box;
-use Tui\Events\EventDispatcher;
-use Tui\Hooks\HookContext;
-use Tui\InstanceBuilder;
-use Tui\Render\ComponentRenderer;
-use Tui\Tests\Mocks\MockRenderTarget;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\InstanceBuilder;
+use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
 
 class InstanceBuilderTest extends TestCase
 {
@@ -132,7 +132,7 @@ class InstanceBuilderTest extends TestCase
             ->component(fn () => Box::create())
             ->build();
 
-        $this->assertInstanceOf(\Tui\Instance::class, $instance);
+        $this->assertInstanceOf(\Xocdr\Tui\Application::class, $instance);
     }
 
     public function testCreateDefaultsReturnsAllDependencies(): void

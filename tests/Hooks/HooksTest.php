@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Hooks;
+namespace Xocdr\Tui\Tests\Hooks;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Hooks\HookContext;
-use Tui\Hooks\HookRegistry;
-use Tui\Hooks\Hooks;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookRegistry;
+use Xocdr\Tui\Hooks\Hooks;
 
 class HooksTest extends TestCase
 {
@@ -23,13 +23,13 @@ class HooksTest extends TestCase
         HookRegistry::clearAll();
     }
 
-    public function testUseStateWithExplicitContext(): void
+    public function testStateWithExplicitContext(): void
     {
         $context = new HookContext();
         $hooks = new Hooks(context: $context);
 
         HookRegistry::withContext($context, function () use ($hooks) {
-            [$value, $setValue] = $hooks->useState(42);
+            [$value, $setValue] = $hooks->state(42);
             $this->assertEquals(42, $value);
 
             $setValue(100);
@@ -37,12 +37,12 @@ class HooksTest extends TestCase
 
         // Re-render to get updated value
         HookRegistry::withContext($context, function () use ($hooks) {
-            [$value] = $hooks->useState(42);
+            [$value] = $hooks->state(42);
             $this->assertEquals(100, $value);
         });
     }
 
-    public function testUseMemoWithExplicitContext(): void
+    public function testMemoWithExplicitContext(): void
     {
         $context = new HookContext();
         $hooks = new Hooks(context: $context);
@@ -50,7 +50,7 @@ class HooksTest extends TestCase
         $callCount = 0;
 
         HookRegistry::withContext($context, function () use ($hooks, &$callCount) {
-            $result = $hooks->useMemo(function () use (&$callCount) {
+            $result = $hooks->memo(function () use (&$callCount) {
                 $callCount++;
                 return 'computed';
             }, []);
@@ -61,7 +61,7 @@ class HooksTest extends TestCase
 
         // Same deps - should not recompute
         HookRegistry::withContext($context, function () use ($hooks, &$callCount) {
-            $result = $hooks->useMemo(function () use (&$callCount) {
+            $result = $hooks->memo(function () use (&$callCount) {
                 $callCount++;
                 return 'computed';
             }, []);
@@ -71,7 +71,7 @@ class HooksTest extends TestCase
         });
     }
 
-    public function testUseCallbackWithExplicitContext(): void
+    public function testCallbackWithExplicitContext(): void
     {
         $context = new HookContext();
         $hooks = new Hooks(context: $context);
@@ -79,14 +79,14 @@ class HooksTest extends TestCase
         $callback = null;
 
         HookRegistry::withContext($context, function () use ($hooks, &$callback) {
-            $callback = $hooks->useCallback(fn () => 'test', []);
+            $callback = $hooks->callback(fn () => 'test', []);
         });
 
         $this->assertIsCallable($callback);
         $this->assertEquals('test', $callback());
     }
 
-    public function testUseRefWithExplicitContext(): void
+    public function testRefWithExplicitContext(): void
     {
         $context = new HookContext();
         $hooks = new Hooks(context: $context);
@@ -94,7 +94,7 @@ class HooksTest extends TestCase
         $ref = null;
 
         HookRegistry::withContext($context, function () use ($hooks, &$ref) {
-            $ref = $hooks->useRef('initial');
+            $ref = $hooks->ref('initial');
         });
 
         $this->assertEquals('initial', $ref->current);
@@ -104,7 +104,7 @@ class HooksTest extends TestCase
         $this->assertEquals('mutated', $ref->current);
     }
 
-    public function testUseEffectWithExplicitContext(): void
+    public function testOnRenderWithExplicitContext(): void
     {
         $context = new HookContext();
         $hooks = new Hooks(context: $context);
@@ -113,7 +113,7 @@ class HooksTest extends TestCase
         $cleanupRan = false;
 
         HookRegistry::withContext($context, function () use ($hooks, &$effectRan, &$cleanupRan) {
-            $hooks->useEffect(function () use (&$effectRan, &$cleanupRan) {
+            $hooks->onRender(function () use (&$effectRan, &$cleanupRan) {
                 $effectRan = true;
                 return function () use (&$cleanupRan) {
                     $cleanupRan = true;
@@ -128,7 +128,7 @@ class HooksTest extends TestCase
         $this->assertTrue($cleanupRan);
     }
 
-    public function testUseReducer(): void
+    public function testReducer(): void
     {
         $context = new HookContext();
         $hooks = new Hooks(context: $context);
@@ -142,7 +142,7 @@ class HooksTest extends TestCase
                 default => $state,
             };
 
-            [$state, $dispatch] = $hooks->useReducer($reducer, 0);
+            [$state, $dispatch] = $hooks->reducer($reducer, 0);
             $this->assertEquals(0, $state);
             $dispatcher = $dispatch;
         });
@@ -153,24 +153,24 @@ class HooksTest extends TestCase
         // Re-render to see the new state
         HookRegistry::withContext($context, function () use ($hooks) {
             $reducer = fn ($state, $action) => $state;
-            [$state] = $hooks->useReducer($reducer, 0);
+            [$state] = $hooks->reducer($reducer, 0);
             $this->assertEquals(1, $state);
         });
     }
 
-    public function testUseAppReturnsExitFunction(): void
+    public function testAppReturnsExitFunction(): void
     {
         $hooks = new Hooks();
-        $app = $hooks->useApp();
+        $app = $hooks->app();
 
         $this->assertArrayHasKey('exit', $app);
         $this->assertIsCallable($app['exit']);
     }
 
-    public function testUseStdoutReturnsDimensions(): void
+    public function testStdoutReturnsDimensions(): void
     {
         $hooks = new Hooks();
-        $stdout = $hooks->useStdout();
+        $stdout = $hooks->stdout();
 
         $this->assertArrayHasKey('columns', $stdout);
         $this->assertArrayHasKey('rows', $stdout);
@@ -180,10 +180,10 @@ class HooksTest extends TestCase
         $this->assertIsCallable($stdout['write']);
     }
 
-    public function testUseFocusReturnsState(): void
+    public function testFocusReturnsState(): void
     {
         $hooks = new Hooks();
-        $focus = $hooks->useFocus();
+        $focus = $hooks->focus();
 
         $this->assertArrayHasKey('isFocused', $focus);
         $this->assertArrayHasKey('focus', $focus);
@@ -191,18 +191,18 @@ class HooksTest extends TestCase
         $this->assertIsCallable($focus['focus']);
     }
 
-    public function testUseFocusWithAutoFocus(): void
+    public function testFocusWithAutoFocus(): void
     {
         $hooks = new Hooks();
-        $focus = $hooks->useFocus(['autoFocus' => true]);
+        $focus = $hooks->focus(['autoFocus' => true]);
 
         $this->assertTrue($focus['isFocused']);
     }
 
-    public function testUseFocusManagerReturnsControls(): void
+    public function testFocusManagerReturnsControls(): void
     {
         $hooks = new Hooks();
-        $focusManager = $hooks->useFocusManager();
+        $focusManager = $hooks->focusManager();
 
         $this->assertArrayHasKey('focusNext', $focusManager);
         $this->assertArrayHasKey('focusPrevious', $focusManager);
@@ -211,16 +211,16 @@ class HooksTest extends TestCase
         $this->assertArrayHasKey('disableFocus', $focusManager);
     }
 
-    public function testUseContextReturnsRegisteredValue(): void
+    public function testContextReturnsRegisteredValue(): void
     {
         // Register a test value in the container
-        $container = \Tui\Tui::getContainer();
+        $container = \Xocdr\Tui\Tui::getContainer();
         $testValue = new \stdClass();
         $testValue->name = 'test';
         $container->singleton('TestContext', $testValue);
 
         $hooks = new Hooks();
-        $result = $hooks->useContext('TestContext');
+        $result = $hooks->context('TestContext');
 
         $this->assertSame($testValue, $result);
 
@@ -228,13 +228,13 @@ class HooksTest extends TestCase
         $container->clear();
     }
 
-    public function testUseContextReturnsNullForUnregistered(): void
+    public function testContextReturnsNullForUnregistered(): void
     {
-        $container = \Tui\Tui::getContainer();
+        $container = \Xocdr\Tui\Tui::getContainer();
         $container->clear();
 
         $hooks = new Hooks();
-        $result = $hooks->useContext('NonExistentContext');
+        $result = $hooks->context('NonExistentContext');
 
         $this->assertNull($result);
     }

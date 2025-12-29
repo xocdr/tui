@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Tui;
+namespace Xocdr\Tui;
 
-use Tui\Components\Component;
-use Tui\Contracts\EventDispatcherInterface;
-use Tui\Contracts\HookContextInterface;
-use Tui\Contracts\RendererInterface;
-use Tui\Events\EventDispatcher;
-use Tui\Hooks\HookContext;
-use Tui\Render\ComponentRenderer;
-use Tui\Render\ExtensionRenderTarget;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Contracts\EventDispatcherInterface;
+use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Render\ExtensionRenderTarget;
 
 /**
- * Fluent builder for creating Instance objects.
+ * Fluent builder for creating Application objects.
  *
  * Provides a clean API for configuring TUI applications
  * with dependency injection support.
@@ -114,15 +114,15 @@ class InstanceBuilder
     }
 
     /**
-     * Build the Instance.
+     * Build the Application.
      */
-    public function build(): Instance
+    public function build(): Application
     {
         if ($this->component === null) {
             throw new \RuntimeException('Component is required');
         }
 
-        return new Instance(
+        return new Application(
             $this->component,
             $this->options,
             $this->eventDispatcher,
@@ -132,14 +132,14 @@ class InstanceBuilder
     }
 
     /**
-     * Build and start the Instance.
+     * Build and start the Application.
      */
-    public function start(): Instance
+    public function start(): Application
     {
-        $instance = $this->build();
-        $instance->start();
+        $app = $this->build();
+        $app->start();
 
-        return $instance;
+        return $app;
     }
 
     /**

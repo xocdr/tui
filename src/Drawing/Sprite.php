@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Drawing;
+namespace Xocdr\Tui\Drawing;
 
-use Tui\Contracts\SpriteInterface;
+use Xocdr\Tui\Contracts\SpriteInterface;
 
 /**
  * Animated sprite system.

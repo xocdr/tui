@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Fragment;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\Text;
 
 class FragmentTest extends TestCase
 {
@@ -48,13 +48,17 @@ class FragmentTest extends TestCase
 
     public function testRender(): void
     {
+        if (!extension_loaded('tui')) {
+            $this->markTestSkipped('ext-tui extension is required for this test');
+        }
+
         $fragment = Fragment::create([
             Text::create('Hello'),
         ]);
 
         $rendered = $fragment->render();
 
-        $this->assertInstanceOf(\TuiBox::class, $rendered);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
         $this->assertCount(1, $rendered->children);
     }
 }

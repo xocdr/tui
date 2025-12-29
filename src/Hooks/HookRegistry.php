@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Hooks;
+namespace Xocdr\Tui\Hooks;
 
-use Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\HookContextInterface;
 
 /**
  * Global registry for hook contexts.

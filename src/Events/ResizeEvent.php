@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Events;
+namespace Xocdr\Tui\Events;
 
 /**
  * Event dispatched when the terminal is resized.

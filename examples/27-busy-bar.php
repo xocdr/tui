@@ -8,10 +8,10 @@
  * - Creating busy/loading bars
  * - HSL mode: from-to color with rainbow interpolation
  * - RGB mode: array of colors with calculated values in between
- * - Auto-animating using useInterval
+ * - Auto-animating using interval
  * - Moving gradient effect (like Claude Code/exocoder streaming indicator)
  *
- * Run in your terminal: php examples/22-busy-bar.php
+ * Run in your terminal: php examples/27-busy-bar.php
  * Press ESC to exit.
  */
 
@@ -19,15 +19,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Style\Color;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useInterval;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -43,7 +41,8 @@ if (!Tui::isInteractive()) {
  * @param string $fromColor Start color (name or hex)
  * @param string $toColor End color (name or hex)
  */
-function renderHslBar(int $width, int $frame, string $fromColor, string $toColor, bool $loop = true): Box {
+function renderHslBar(int $width, int $frame, string $fromColor, string $toColor, bool $loop = true): Box
+{
     $blocks = [];
     $from = Color::nameToHex($fromColor);
     $to = Color::nameToHex($toColor);
@@ -52,14 +51,15 @@ function renderHslBar(int $width, int $frame, string $fromColor, string $toColor
         // Calculate position with phase offset for animation
         // Use abs() to handle negative frame values for reverse animation
         $phase = (abs($frame) % 100) / 100.0;
-        if ($frame < 0) $phase = 1.0 - $phase; // Reverse direction
+        if ($frame < 0) {
+            $phase = 1.0 - $phase;
+        } // Reverse direction
         $pos = fmod(($i / $width) + $phase, 1.0);
 
         // Create a smooth wave pattern for intensity
         $intensity = (sin($pos * M_PI * 2) + 1) / 2;
 
         // For looping: go from->to for first half, to->from for second half
-        $color;
         if ($loop) {
             if ($pos < 0.5) {
                 // First half: from -> to
@@ -90,7 +90,8 @@ function renderHslBar(int $width, int $frame, string $fromColor, string $toColor
  * @param int $frame Current animation frame
  * @param array $colors Array of hex colors to interpolate between
  */
-function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true): Box {
+function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true): Box
+{
     $blocks = [];
     $numColors = count($colors);
 
@@ -104,7 +105,9 @@ function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true):
         // Calculate position with phase offset for animation
         // Use abs() to handle negative frame values for reverse animation
         $phase = (abs($frame) % 100) / 100.0;
-        if ($frame < 0) $phase = 1.0 - $phase; // Reverse direction
+        if ($frame < 0) {
+            $phase = 1.0 - $phase;
+        } // Reverse direction
         $pos = fmod(($i / $width) + $phase, 1.0);
 
         // Create a smooth wave pattern
@@ -124,9 +127,9 @@ function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true):
         // Vary brightness based on wave intensity
         $rgb = Color::hexToRgb($color);
         $darken = 0.3 + $intensity * 0.7;
-        $r = (int)($rgb['r'] * $darken);
-        $g = (int)($rgb['g'] * $darken);
-        $b = (int)($rgb['b'] * $darken);
+        $r = (int) ($rgb['r'] * $darken);
+        $g = (int) ($rgb['g'] * $darken);
+        $b = (int) ($rgb['b'] * $darken);
         $finalColor = Color::rgbToHex($r, $g, $b);
 
         $blocks[] = Text::create('━')->color($finalColor);
@@ -134,58 +137,64 @@ function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true):
     return Box::row($blocks);
 }
 
-$app = function () {
-    ['exit' => $exit] = useApp();
-    [$frame, $setFrame] = useState(0);
+class BusyBarDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    // Auto-animate every 50ms
-    useInterval(function () use ($setFrame) {
-        $setFrame(fn ($f) => $f + 1);
-    }, 50);
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
+        [$frame, $setFrame] = $this->hooks()->state(0);
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+        // Auto-animate every 50ms
+        $this->hooks()->interval(function () use ($setFrame) {
+            $setFrame(fn ($f) => $f + 1);
+        }, 50);
 
-    // RGB gradient color arrays (interpolate between these)
-    $cyanGradient = ['#003344', '#006688', '#00aacc', '#00ffff', '#00aacc', '#006688'];
-    $rainbowGradient = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
-    $purpleGradient = ['#220033', '#440066', '#6600aa', '#aa00ff', '#6600aa', '#440066'];
-    $fireGradient = ['#330000', '#660000', '#cc3300', '#ff6600', '#ffcc00', '#ff6600', '#cc3300'];
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
 
-    return Box::column([
-        Text::create('Busy Bar Demo')->bold()->cyan(),
-        Text::create('Two gradient modes: HSL (color wheel) and RGB (color stops)')->dim(),
-        Text::create(''),
+        // RGB gradient color arrays (interpolate between these)
+        $cyanGradient = ['#003344', '#006688', '#00aacc', '#00ffff', '#00aacc', '#006688'];
+        $rainbowGradient = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'];
+        $purpleGradient = ['#220033', '#440066', '#6600aa', '#aa00ff', '#6600aa', '#440066'];
+        $fireGradient = ['#330000', '#660000', '#cc3300', '#ff6600', '#ffcc00', '#ff6600', '#cc3300'];
 
-        // HSL Mode - From/To colors with rainbow interpolation
-        Text::create('HSL Mode (from-to with color wheel interpolation):')->bold(),
-        Text::create('  Red -> Blue:'),
-        Box::create()->padding(0, 2)->children([renderHslBar(50, $frame, 'red', 'blue')]),
-        Text::create('  Cyan -> Magenta:'),
-        Box::create()->padding(0, 2)->children([renderHslBar(50, -$frame, 'cyan', 'magenta')]),
-        Text::create('  #ff6600 -> #00ff66:'),
-        Box::create()->padding(0, 2)->children([renderHslBar(50, $frame * 2, '#ff6600', '#00ff66')]),
-        Text::create(''),
+        return Box::column([
+            Text::create('Busy Bar Demo')->bold()->cyan(),
+            Text::create('Two gradient modes: HSL (color wheel) and RGB (color stops)')->dim(),
+            Text::create(''),
 
-        // RGB Mode - Array of colors
-        Text::create('RGB Mode (array of color stops with interpolation):')->bold(),
-        Text::create('  Cyan:'),
-        Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $cyanGradient)]),
-        Text::create('  Rainbow:'),
-        Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame * 2, $rainbowGradient)]),
-        Text::create('  Purple:'),
-        Box::create()->padding(0, 2)->children([renderRgbBar(50, -$frame, $purpleGradient)]),
-        Text::create('  Fire:'),
-        Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $fireGradient)]),
-        Text::create(''),
+            // HSL Mode - From/To colors with rainbow interpolation
+            Text::create('HSL Mode (from-to with color wheel interpolation):')->bold(),
+            Text::create('  Red -> Blue:'),
+            Box::create()->padding(0, 2)->children([renderHslBar(50, $frame, 'red', 'blue')]),
+            Text::create('  Cyan -> Magenta:'),
+            Box::create()->padding(0, 2)->children([renderHslBar(50, -$frame, 'cyan', 'magenta')]),
+            Text::create('  #ff6600 -> #00ff66:'),
+            Box::create()->padding(0, 2)->children([renderHslBar(50, $frame * 2, '#ff6600', '#00ff66')]),
+            Text::create(''),
 
-        Text::create('Press ESC to exit.')->dim(),
-        Text::create("Frame: {$frame}")->dim(),
-    ]);
-};
+            // RGB Mode - Array of colors
+            Text::create('RGB Mode (array of color stops with interpolation):')->bold(),
+            Text::create('  Cyan:'),
+            Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $cyanGradient)]),
+            Text::create('  Rainbow:'),
+            Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame * 2, $rainbowGradient)]),
+            Text::create('  Purple:'),
+            Box::create()->padding(0, 2)->children([renderRgbBar(50, -$frame, $purpleGradient)]),
+            Text::create('  Fire:'),
+            Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $fireGradient)]),
+            Text::create(''),
 
-$instance = Tui::render($app);
+            Text::create('Press ESC to exit.')->dim(),
+            Text::create("Frame: {$frame}")->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new BusyBarDemo());
 $instance->waitUntilExit();

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Static_;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Static_;
+use Xocdr\Tui\Components\Text;
 
 class StaticTest extends TestCase
 {
@@ -63,7 +63,7 @@ class StaticTest extends TestCase
 
         $rendered = $static->render();
 
-        $this->assertInstanceOf(\TuiBox::class, $rendered);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
         $this->assertEquals('column', $rendered->flexDirection);
         $this->assertCount(1, $rendered->children);
     }

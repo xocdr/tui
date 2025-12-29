@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Animation\Gradient;
-use Tui\Components\Fragment;
-use Tui\Components\ProgressBar;
+use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\ProgressBar;
 
 class ProgressBarTest extends TestCase
 {

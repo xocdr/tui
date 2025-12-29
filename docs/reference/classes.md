@@ -2,17 +2,24 @@
 
 Complete reference for all classes in xocdr/tui.
 
+> **Note:** The ext-tui C extension uses the `Xocdr\Tui` namespace for its classes (e.g., `\Xocdr\Tui\Box`, `\Xocdr\Tui\Text`). Some classes like `\TuiKey`, `\TuiInstance`, and `\TuiFocusEvent` remain in the global namespace. All `tui_*` functions remain in the global namespace.
+
 ## Entry Points
 
 ### Tui (Static Facade)
 
 ```php
-use Tui\Tui;
+use Xocdr\Tui\Tui;
 
 // Rendering
 Tui::render($component, $options)   // Render and return Instance
 Tui::create($component, $options)   // Alias for render
+Tui::renderToString($component)     // Render to string (no C ext needed)
 Tui::builder()                      // Get InstanceBuilder
+
+// Extension checks
+Tui::isExtensionLoaded()            // Check if ext-tui is loaded
+Tui::ensureExtensionLoaded()        // Throw if ext-tui not loaded
 
 // Terminal utilities
 Tui::isInteractive()                // Check if TTY
@@ -60,12 +67,22 @@ $instance->setInterval($ms, $cb)    // Alias for addTimer
 $instance->clearInterval($id)       // Alias for removeTimer
 $instance->onTick($handler)         // Per-frame callback
 
+// Output control
+$instance->clear()                  // Clear terminal
+$instance->getLastOutput()          // Get last rendered output
+$instance->setLastOutput($output)   // Set last output (testing)
+
+// Console capture and element measurement
+$instance->getCapturedOutput()      // Get stray echo/print from component renders
+$instance->measureElement($id)      // Get element dimensions ['x', 'y', 'width', 'height']
+
 // Getters
 $instance->getId()                  // Instance ID
 $instance->getSize()                // Terminal size
 $instance->getEventDispatcher()     // Get EventDispatcher
 $instance->getHookContext()         // Get HookContext
 $instance->getOptions()             // Get render options
+$instance->getTuiInstance()         // Get \Xocdr\Tui\TuiInstance
 ```
 
 ### InstanceBuilder
@@ -96,7 +113,7 @@ Tui::builder()
 ### Box
 
 ```php
-use Tui\Components\Box;
+use Xocdr\Tui\Components\Box;
 
 // Creation
 Box::create()
@@ -105,7 +122,7 @@ Box::row($children)
 
 // Layout
 ->flexDirection('column')
-->alignItems('center')
+->alignItems('center')              // 'flex-start', 'flex-end', 'center', 'stretch', 'baseline'
 ->justifyContent('center')
 ->flexGrow(1)
 ->flexShrink(0)
@@ -119,6 +136,8 @@ Box::row($children)
 ->minHeight(5)
 ->maxWidth(60)
 ->maxHeight(20)
+->aspectRatio(16/9)            // Width/height ratio
+->direction('ltr')              // 'ltr' or 'rtl' layout direction
 
 // Spacing
 ->padding(1)
@@ -135,13 +154,37 @@ Box::row($children)
 // Border
 ->border('single')
 ->borderColor('#fff')
+->borderTopColor('#ff0000')         // (ext-tui 0.1.3+)
+->borderRightColor('#00ff00')       // (ext-tui 0.1.3+)
+->borderBottomColor('#0000ff')      // (ext-tui 0.1.3+)
+->borderLeftColor('#ffff00')        // (ext-tui 0.1.3+)
+->borderXColor('#ff00ff')           // Left + right (ext-tui 0.1.3+)
+->borderYColor('#00ffff')           // Top + bottom (ext-tui 0.1.3+)
 
 // Colors
 ->color('#fff')
 ->bgColor('#000')
 
+// Layout extras
+->aspectRatio(16/9)             // Width/height ratio
+->direction('rtl')              // 'ltr' or 'rtl' layout direction
+
 // Focus
 ->focusable(true)
+
+// Key (for list reconciliation)
+->key($key)
+->getKey()
+
+// ID (for focus-by-id and measureElement)
+->id($id)
+->getId()
+
+// Border title
+->borderTitle($title)
+->borderTitlePosition($pos)  // 'top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'
+->borderTitleColor($color)
+->borderTitleStyle($style)
 
 // Children
 ->children([...])
@@ -155,7 +198,7 @@ Box::row($children)
 ### Text
 
 ```php
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Text;
 
 // Creation
 Text::create('content')
@@ -197,16 +240,22 @@ Text::create('content')
 ->wrap('word')
 ->noWrap()
 
+// Hyperlinks (OSC 8)
+->hyperlink($url)
+->hyperlinkFallback($fallback)
+
 // Getters
 ->getContent()
 ->getStyle()
+->getHyperlinkUrl()
+->isHyperlinkFallbackEnabled()
 ->render()
 ```
 
 ### Table
 
 ```php
-use Tui\Components\Table;
+use Xocdr\Tui\Components\Table;
 
 // Creation
 Table::create($headers)
@@ -238,7 +287,7 @@ Table::create($headers)
 ### ProgressBar
 
 ```php
-use Tui\Components\ProgressBar;
+use Xocdr\Tui\Components\ProgressBar;
 
 // Creation
 ProgressBar::create()
@@ -268,7 +317,7 @@ ProgressBar::create()
 ### BusyBar
 
 ```php
-use Tui\Components\BusyBar;
+use Xocdr\Tui\Components\BusyBar;
 
 // Creation
 BusyBar::create()
@@ -291,7 +340,7 @@ BusyBar::create()
 ### Spinner
 
 ```php
-use Tui\Components\Spinner;
+use Xocdr\Tui\Components\Spinner;
 
 // Creation
 Spinner::create($type)
@@ -320,15 +369,86 @@ Spinner::getTypes()
 ### Other Components
 
 ```php
-use Tui\Components\Fragment;
-use Tui\Components\Spacer;
-use Tui\Components\Newline;
-use Tui\Components\Static_;
+use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\Spacer;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Static_;
+use Xocdr\Tui\Components\StaticOutput;
+use Xocdr\Tui\Components\Transform;
 
 Fragment::create()->children([...])
 Spacer::create()
 Newline::create($count = 1)
 Static_::create($items)->children($renderFn)
+StaticOutput::create($items)              // Alias for Static_
+```
+
+### Transform
+
+```php
+use Xocdr\Tui\Components\Transform;
+
+// Creation
+Transform::create($content)               // String or Component
+
+// Color effects
+->gradient($from, $to, $mode)             // Color gradient
+->rainbow($saturation, $lightness)        // Rainbow effect
+->alternate($colors)                      // Alternating colors
+
+// Case transforms
+->uppercase()
+->lowercase()
+
+// Line formatting
+->lineNumbers($startFrom, $format)
+->indent($spaces)
+->prefix($prefix)
+->suffix($suffix)
+->trim()
+
+// Text manipulation
+->highlight($term, $color, $bgColor)      // Highlight occurrences
+->wrapLines($maxWidth, $continuation)     // Wrap long lines
+->truncate($maxWidth, $ellipsis)          // Truncate with ellipsis
+->stripAnsi()                             // Remove ANSI codes
+->reverse()                               // Reverse each line
+->center($width)                          // Center lines
+->rightAlign($width)                      // Right-align lines
+
+// Custom transform
+->transform($callable)                    // fn($line, $index): string
+
+// Rendering
+->render()
+```
+
+### Line
+
+```php
+use Xocdr\Tui\Components\Line;
+
+// Creation
+Line::horizontal($length)
+Line::vertical($length)
+
+// Style
+->style($style)        // 'single', 'double', 'bold', 'round', 'dashed', 'classic'
+->color($color)        // Hex color
+->dim($dim)            // Dim the line
+
+// Labels (horizontal only)
+->label($label)
+->labelPosition($pos)  // 'left', 'center', 'right'
+->labelColor($color)
+
+// Connectors
+->startCap($char)      // e.g., '├', '┌', '╠'
+->endCap($char)        // e.g., '┤', '┐', '╣'
+
+// Rendering
+->toString()
+->render()
 ```
 
 ---
@@ -338,7 +458,7 @@ Static_::create($items)->children($renderFn)
 ### Canvas
 
 ```php
-use Tui\Drawing\Canvas;
+use Xocdr\Tui\Drawing\Canvas;
 
 // Creation
 Canvas::create($width, $height, $mode)
@@ -380,7 +500,7 @@ Canvas::block($width, $height)
 ### Buffer
 
 ```php
-use Tui\Drawing\Buffer;
+use Xocdr\Tui\Drawing\Buffer;
 
 // Creation
 Buffer::create($width, $height)
@@ -409,7 +529,7 @@ Buffer::create($width, $height)
 ### Sprite
 
 ```php
-use Tui\Drawing\Sprite;
+use Xocdr\Tui\Drawing\Sprite;
 
 // Creation
 Sprite::create($animations, $default, $loop)
@@ -451,7 +571,7 @@ Sprite::fromFrames($frames, $duration, $loop)
 ### Easing
 
 ```php
-use Tui\Animation\Easing;
+use Xocdr\Tui\Animation\Easing;
 
 // Apply easing
 Easing::ease($t, $name)
@@ -491,7 +611,7 @@ Easing::getAvailable()
 ### Tween
 
 ```php
-use Tui\Animation\Tween;
+use Xocdr\Tui\Animation\Tween;
 
 // Creation
 Tween::create($from, $to, $duration, $easing)
@@ -515,7 +635,7 @@ Tween::create($from, $to, $duration, $easing)
 ### Gradient
 
 ```php
-use Tui\Animation\Gradient;
+use Xocdr\Tui\Animation\Gradient;
 
 // Creation
 Gradient::create($stops, $steps)
@@ -523,6 +643,17 @@ Gradient::between($from, $to, $steps)
 Gradient::rainbow($steps)
 Gradient::grayscale($steps)
 Gradient::heatmap($steps)
+Gradient::hueRotate($baseColor, $steps)   // Full 360° color wheel
+Gradient::fromPalette($name, $from, $to, $steps)  // Tailwind palette
+
+// Interpolation modes
+->hsl()                        // HSL interpolation (smoother)
+->rgb()                        // RGB interpolation (default)
+->circular()                   // Loop back to start color
+
+// Animation
+->offset($offset)              // Shift colors by offset
+->frame($frame)                // Alias for offset()
 
 // Colors
 ->getColors()
@@ -538,7 +669,7 @@ Gradient::heatmap($steps)
 ### Style
 
 ```php
-use Tui\Style\Style;
+use Xocdr\Tui\Style\Style;
 
 // Creation
 Style::create()
@@ -567,12 +698,11 @@ Style::create()
 ### Color
 
 ```php
-use Tui\Style\Color;
+use Xocdr\Tui\Style\Color;
 
 // Conversions
 Color::hexToRgb($hex)
 Color::rgbToHex($r, $g, $b)
-Color::rgbTo256($r, $g, $b)
 Color::rgbToHsl($r, $g, $b)
 Color::hslToRgb($h, $s, $l)
 Color::hslToHex($h, $s, $l)
@@ -580,23 +710,44 @@ Color::hslToHex($h, $s, $l)
 // Interpolation
 Color::lerp($colorA, $colorB, $t)
 
+// CSS Named Colors (141 colors via ext-tui Color enum)
+Color::css($name)                  // Get hex from CSS name
+Color::isCssColor($name)           // Check if valid CSS color
+Color::cssNames()                  // Get all CSS color names
+
 // Palette
 Color::palette($name, $shade)
+
+// Universal resolver
+Color::resolve($color)             // Resolve CSS name, hex, or palette to hex
 ```
 
 ### Border
 
 ```php
-use Tui\Style\Border;
+use Xocdr\Tui\Style\Border;
 
 // Get border characters
 Border::getChars($style)
+
+// Get specific character
+Border::char($style, $name)  // 'horizontal', 'vertical', 'topLeft', 'cross', etc.
+
+// Get available styles
+Border::styles()             // ['single', 'double', 'round', 'bold', 'dashed', 'invisible', 'classic', 'arrow']
+
+// Check if style exists
+Border::hasStyle($style)
 
 // Constants
 Border::SINGLE
 Border::DOUBLE
 Border::ROUND
 Border::BOLD
+Border::DASHED
+Border::INVISIBLE
+Border::CLASSIC
+Border::ARROW
 ```
 
 ---
@@ -606,16 +757,17 @@ Border::BOLD
 ### TextUtils
 
 ```php
-use Tui\Text\TextUtils;
+use Xocdr\Tui\Text\TextUtils;
 
-TextUtils::width($text)
+TextUtils::width($text)                            // Uses tui_string_width_ansi()
 TextUtils::wrap($text, $width)
-TextUtils::truncate($text, $width, $ellipsis)
+TextUtils::truncate($text, $width, $ellipsis, $position)  // $position: 'end', 'start', 'middle'
 TextUtils::pad($text, $width, $align, $char)
 TextUtils::left($text, $width, $char)
 TextUtils::right($text, $width, $char)
 TextUtils::center($text, $width, $char)
-TextUtils::stripAnsi($text)
+TextUtils::stripAnsi($text)                        // Uses tui_strip_ansi()
+TextUtils::sliceAnsi($text, $start, $end)          // Uses tui_slice_ansi()
 ```
 
 ---
@@ -625,7 +777,7 @@ TextUtils::stripAnsi($text)
 ### EventDispatcher
 
 ```php
-use Tui\Events\EventDispatcher;
+use Xocdr\Tui\Events\EventDispatcher;
 
 $dispatcher = new EventDispatcher();
 
@@ -648,13 +800,13 @@ $dispatcher->removeAll()
 ### Event Classes
 
 ```php
-use Tui\Events\InputEvent;
-use Tui\Events\FocusEvent;
-use Tui\Events\ResizeEvent;
+use Xocdr\Tui\Events\InputEvent;
+use Xocdr\Tui\Events\FocusEvent;
+use Xocdr\Tui\Events\ResizeEvent;
 
 // InputEvent
 $event->key        // Character pressed
-$event->nativeKey  // TuiKey object
+$event->nativeKey  // \TuiKey object (global namespace)
 
 // FocusEvent
 $event->previousId
@@ -675,7 +827,7 @@ $event->deltaY
 ### Container
 
 ```php
-use Tui\Container;
+use Xocdr\Tui\Container;
 
 $container = Container::getInstance();
 
@@ -698,15 +850,190 @@ $container->keys()
 ## Contracts (Interfaces)
 
 ```php
-use Tui\Contracts\NodeInterface;
-use Tui\Contracts\RenderTargetInterface;
-use Tui\Contracts\RendererInterface;
-use Tui\Contracts\EventDispatcherInterface;
-use Tui\Contracts\HookContextInterface;
-use Tui\Contracts\InstanceInterface;
-use Tui\Contracts\HooksInterface;
-use Tui\Contracts\BufferInterface;
-use Tui\Contracts\CanvasInterface;
-use Tui\Contracts\SpriteInterface;
-use Tui\Contracts\TableInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\RenderTargetInterface;
+use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Contracts\EventDispatcherInterface;
+use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\InstanceInterface;
+use Xocdr\Tui\Contracts\HooksInterface;
+use Xocdr\Tui\Contracts\BufferInterface;
+use Xocdr\Tui\Contracts\CanvasInterface;
+use Xocdr\Tui\Contracts\SpriteInterface;
+use Xocdr\Tui\Contracts\TableInterface;
+```
+
+---
+
+## Exceptions
+
+```php
+use Xocdr\Tui\Exceptions\TuiException;
+use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Exceptions\RenderException;
+use Xocdr\Tui\Exceptions\ValidationException;
+
+// TuiException - Base exception class
+throw new TuiException('Something went wrong');
+
+// ExtensionNotLoadedException - When ext-tui is not loaded
+Tui::ensureExtensionLoaded();  // Throws if not loaded
+
+// RenderException - Rendering errors
+throw new RenderException('Render failed', 'MyComponent');
+$e->getComponentName()  // Returns 'MyComponent'
+
+// ValidationException - Validation errors
+throw new ValidationException('Invalid input', [
+    'name' => 'Name is required',
+    'email' => 'Invalid email format',
+]);
+$e->getErrors()           // All errors as array
+$e->getError('name')      // Get specific error
+$e->hasError('email')     // Check if error exists
+```
+
+---
+
+## Terminal
+
+### Capabilities
+
+```php
+use Xocdr\Tui\Terminal\Capabilities;
+
+// Hyperlinks
+Capabilities::supportsHyperlinks()     // OSC 8 support
+
+// Colors
+Capabilities::supportsTrueColor()      // 24-bit color
+Capabilities::supports256Color()       // 256 color palette
+Capabilities::supportsBasicColor()     // 16 colors
+
+// Images
+Capabilities::supportsITermImages()
+Capabilities::supportsKittyGraphics()
+Capabilities::supportsSixel()
+Capabilities::getBestImageProtocol()   // 'iterm', 'kitty', 'sixel', or null
+
+// Unicode
+Capabilities::supportsUnicode()
+Capabilities::supportsBraille()        // For Canvas
+Capabilities::supportsEmoji()
+
+// Terminal info
+Capabilities::getTerminalProgram()     // 'iTerm.app', 'WezTerm', etc.
+Capabilities::getTerminalVersion()
+Capabilities::isKnownTerminal($name)
+
+// Caching
+Capabilities::refresh()                // Re-detect capabilities
+Capabilities::all()                    // Get all capabilities as array
+```
+
+---
+
+## Focus
+
+### FocusManager
+
+```php
+use Xocdr\Tui\Focus\FocusManager;
+
+$focusManager = new FocusManager($instance);
+
+// Navigation
+$focusManager->focusNext()
+$focusManager->focusPrevious()
+$focusManager->focus($id)
+
+// Enable/disable
+$focusManager->enableFocus()
+$focusManager->disableFocus()
+$focusManager->isEnabled()
+
+// State
+$focusManager->getCurrentFocusId()
+```
+
+---
+
+## Debug
+
+### Inspector
+
+```php
+use Xocdr\Tui\Debug\Inspector;
+
+$inspector = new Inspector($app);
+
+// Enable/disable
+$inspector->enable()
+$inspector->disable()
+$inspector->toggle()
+$inspector->isEnabled()
+
+// Component tree
+$inspector->getComponentTree()
+$inspector->dumpTree()
+
+// Hook states
+$inspector->getHookStates()
+$inspector->logStateChange($hookId, $old, $new)
+
+// Performance
+$inspector->recordRender($renderMs)
+$inspector->getMetrics()
+$inspector->getSummary()
+
+// Reset
+$inspector->reset()
+```
+
+---
+
+## Testing
+
+```php
+use Xocdr\Tui\Testing\MockInstance;
+use Xocdr\Tui\Testing\MockTuiKey;
+use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Testing\TuiAssertions;
+
+// TestRenderer - Render to string
+$renderer = new TestRenderer();
+$output = $renderer->render($component);
+$lines = $renderer->getOutputLines();
+
+// MockInstance - Full mock for testing
+$mock = new MockInstance();
+$mock->start();
+$mock->simulateInput('q');
+$mock->simulateInput('up', ['ctrl' => true]);
+$mock->simulateResize(120, 40);
+$mock->addTimer(100, $callback);
+$mock->tickTimers(500);
+$mock->getLastOutput();
+$mock->clear();
+
+// MockTuiKey - Mock keyboard input
+$key = new MockTuiKey('a', 'a');
+$key = MockTuiKey::fromChar('x', ['ctrl' => true]);
+
+// TuiAssertions - PHPUnit trait
+class MyTest extends TestCase {
+    use TuiAssertions;
+
+    public function test(): void {
+        $renderer = new TestRenderer();
+        $renderer->render($component);
+
+        $this->assertOutputContains($renderer, 'Hello');
+        $this->assertOutputNotContains($renderer, 'Goodbye');
+        $this->assertHasBoldText($renderer, 'Important');
+        $this->assertHasBorder($renderer);
+        $this->assertLineCount($renderer, 5);
+        $this->assertLineEquals($renderer, 0, 'First line');
+    }
+}
 ```

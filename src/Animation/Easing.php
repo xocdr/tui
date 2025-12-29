@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Animation;
+namespace Xocdr\Tui\Animation;
 
 /**
  * Easing functions for smooth animations.

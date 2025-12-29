@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\BusyBar;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\BusyBar;
+use Xocdr\Tui\Components\Text;
 
 class BusyBarTest extends TestCase
 {

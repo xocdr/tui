@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Render;
+namespace Xocdr\Tui\Render;
 
-use Tui\Contracts\NodeInterface;
-use Tui\Contracts\RenderTargetInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\RenderTargetInterface;
 
 /**
  * Render target that creates nodes using the ext-tui C extension.

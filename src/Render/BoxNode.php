@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tui\Render;
+namespace Xocdr\Tui\Render;
 
-use Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
  * Wrapper for TuiBox that implements NodeInterface.
  */
 class BoxNode implements NodeInterface
 {
-    private \TuiBox $native;
+    private \Xocdr\Tui\Ext\Box $native;
 
     /** @var array<NodeInterface> */
     private array $children = [];
@@ -21,7 +21,7 @@ class BoxNode implements NodeInterface
      */
     public function __construct(array $style = [])
     {
-        $this->native = new \TuiBox($style);
+        $this->native = new \Xocdr\Tui\Ext\Box($style);
     }
 
     public function addChild(NodeInterface $child): void
@@ -38,7 +38,7 @@ class BoxNode implements NodeInterface
         return $this->children;
     }
 
-    public function getNative(): \TuiBox
+    public function getNative(): \Xocdr\Tui\Ext\Box
     {
         return $this->native;
     }

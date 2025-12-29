@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
-use Tui\Contracts\TableInterface;
-use Tui\Style\Border;
+use Xocdr\Tui\Contracts\TableInterface;
+use Xocdr\Tui\Style\Border;
 
 /**
  * Table component for displaying tabular data.

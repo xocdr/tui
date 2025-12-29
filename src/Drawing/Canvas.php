@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Drawing;
+namespace Xocdr\Tui\Drawing;
 
-use Tui\Contracts\CanvasInterface;
+use Xocdr\Tui\Contracts\CanvasInterface;
 
 /**
  * High-resolution canvas using Braille characters.

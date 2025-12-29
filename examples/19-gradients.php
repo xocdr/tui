@@ -17,13 +17,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Animation\Gradient;
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -39,7 +39,8 @@ $grayscale = Gradient::grayscale($width);
 $custom = Gradient::create(['#ff0088', '#00ff88', '#0088ff'], $width);
 
 // Helper to render a gradient bar using Box::row with colored blocks
-function renderGradientBar(Gradient $gradient, int $width): \Tui\Components\Box {
+function renderGradientBar(Gradient $gradient, int $width): Box
+{
     $blocks = [];
     for ($i = 0; $i < $width; $i++) {
         $color = $gradient->getColor($i);
@@ -48,38 +49,52 @@ function renderGradientBar(Gradient $gradient, int $width): \Tui\Components\Box 
     return Box::row($blocks);
 }
 
-// Render gradient bars
-$app = function () use ($width, $rainbow, $heatmap, $grayscale, $custom) {
-    ['exit' => $exit] = useApp();
+class GradientsDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+    public function __construct(
+        private int $width,
+        private Gradient $rainbow,
+        private Gradient $heatmap,
+        private Gradient $grayscale,
+        private Gradient $custom,
+    ) {
+    }
 
-    return Box::column([
-        Text::create('Color Gradients Demo')->bold()->cyan(),
-        Text::create(''),
-        Text::create('Rainbow Gradient:')->bold(),
-        renderGradientBar($rainbow, $width),
-        Text::create(''),
-        Text::create('Heatmap Gradient:')->bold(),
-        renderGradientBar($heatmap, $width),
-        Text::create(''),
-        Text::create('Grayscale Gradient:')->bold(),
-        renderGradientBar($grayscale, $width),
-        Text::create(''),
-        Text::create('Custom Gradient (pink -> green -> blue):')->bold(),
-        renderGradientBar($custom, $width),
-        Text::create(''),
-        Text::create("First color: {$rainbow->getColor(0)}")->dim(),
-        Text::create("Middle color: {$rainbow->at(0.5)}")->dim(),
-        Text::create("Last color: {$rainbow->getColor($width - 1)}")->dim(),
-        Text::create(''),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-$instance = Tui::render($app);
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
+
+        return Box::column([
+            Text::create('Color Gradients Demo')->bold()->cyan(),
+            Text::create(''),
+            Text::create('Rainbow Gradient:')->bold(),
+            renderGradientBar($this->rainbow, $this->width),
+            Text::create(''),
+            Text::create('Heatmap Gradient:')->bold(),
+            renderGradientBar($this->heatmap, $this->width),
+            Text::create(''),
+            Text::create('Grayscale Gradient:')->bold(),
+            renderGradientBar($this->grayscale, $this->width),
+            Text::create(''),
+            Text::create('Custom Gradient (pink -> green -> blue):')->bold(),
+            renderGradientBar($this->custom, $this->width),
+            Text::create(''),
+            Text::create("First color: {$this->rainbow->getColor(0)}")->dim(),
+            Text::create("Middle color: {$this->rainbow->at(0.5)}")->dim(),
+            Text::create("Last color: {$this->rainbow->getColor($this->width - 1)}")->dim(),
+            Text::create(''),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new GradientsDemo($width, $rainbow, $heatmap, $grayscale, $custom));
 $instance->waitUntilExit();

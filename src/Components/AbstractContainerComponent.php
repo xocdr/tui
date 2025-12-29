@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
 /**
  * Abstract base class for container components.
@@ -53,15 +53,15 @@ abstract class AbstractContainerComponent implements Component
     /**
      * Render children into a TuiBox.
      */
-    protected function renderChildrenInto(\TuiBox $box): void
+    protected function renderChildrenInto(\Xocdr\Tui\Ext\Box $box): void
     {
         foreach ($this->children as $child) {
             if ($child instanceof Component) {
                 $rendered = $child->render();
                 $box->addChild($rendered);
             } elseif (is_string($child)) {
-                $box->addChild(new \TuiText($child));
-            } elseif ($child instanceof \TuiBox || $child instanceof \TuiText) {
+                $box->addChild(new \Xocdr\Tui\Ext\Text($child));
+            } elseif ($child instanceof \Xocdr\Tui\Ext\Box || $child instanceof \Xocdr\Tui\Ext\Text) {
                 $box->addChild($child);
             }
         }

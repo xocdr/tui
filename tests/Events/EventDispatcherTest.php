@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Events;
+namespace Xocdr\Tui\Tests\Events;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Events\Event;
-use Tui\Events\EventDispatcher;
+use Xocdr\Tui\Events\Event;
+use Xocdr\Tui\Events\EventDispatcher;
 
 class EventDispatcherTest extends TestCase
 {

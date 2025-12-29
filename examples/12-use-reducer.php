@@ -2,29 +2,27 @@
 <?php
 
 /**
- * useReducer - Redux-like state management
+ * Reducer - Redux-like state management
  *
  * Demonstrates:
- * - useReducer hook for complex state
+ * - reducer hook for complex state
  * - Action-based state updates
  * - Centralized state logic
  *
- * Press 'q' to exit
+ * Press 'q' or ESC to exit
  */
 
 declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Newline;
-use Tui\Components\Text;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useReducer;
-
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal (TTY).\n";
@@ -61,62 +59,68 @@ function counterReducer(array $state, array $action): array
     };
 }
 
-$app = function () {
-    // Initial state
-    $initialState = [
-        'count' => 0,
-        'step' => 1,
-    ];
+class ReducerDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    [$state, $dispatch] = useReducer('counterReducer', $initialState);
-    $app = useApp();
+    public function render(): mixed
+    {
+        // Initial state
+        $initialState = [
+            'count' => 0,
+            'step' => 1,
+        ];
 
-    useInput(function (string $input, \TuiKey $key) use ($dispatch, $app) {
-        if ($key->upArrow) {
-            $dispatch(['type' => INCREMENT]);
-        } elseif ($key->downArrow) {
-            $dispatch(['type' => DECREMENT]);
-        } elseif ($key->return) {
-            $dispatch(['type' => RESET]);
-        } elseif ($input === '1') {
-            $dispatch(['type' => SET_STEP, 'payload' => 1]);
-        } elseif ($input === '5') {
-            $dispatch(['type' => SET_STEP, 'payload' => 5]);
-        } elseif ($input === '0') {
-            $dispatch(['type' => SET_STEP, 'payload' => 10]);
-        } elseif ($input === 'q') {
-            $app['exit'](0);
-        }
-    });
+        [$state, $dispatch] = $this->hooks()->reducer('counterReducer', $initialState);
+        $app = $this->hooks()->app();
 
-    return Box::column([
-        Text::create('=== useReducer Demo ===')->bold()->cyan(),
-        Text::create('Redux-like state management pattern')->dim(),
-        Newline::create(),
+        $this->hooks()->onInput(function (string $input, $key) use ($dispatch, $app) {
+            if ($key->upArrow) {
+                $dispatch(['type' => INCREMENT]);
+            } elseif ($key->downArrow) {
+                $dispatch(['type' => DECREMENT]);
+            } elseif ($key->return) {
+                $dispatch(['type' => RESET]);
+            } elseif ($input === '1') {
+                $dispatch(['type' => SET_STEP, 'payload' => 1]);
+            } elseif ($input === '5') {
+                $dispatch(['type' => SET_STEP, 'payload' => 5]);
+            } elseif ($input === '0') {
+                $dispatch(['type' => SET_STEP, 'payload' => 10]);
+            } elseif ($input === 'q' || $key->escape) {
+                $app['exit'](0);
+            }
+        });
 
-        Box::create()
-            ->border('round')
-            ->padding(1)
-            ->children([
-                Box::row([
-                    Text::create('Count: '),
-                    Text::create((string)$state['count'])
-                        ->bold()
-                        ->color($state['count'] === 0 ? '#808080' : '#00ff00'),
+        return Box::column([
+            Text::create('=== Reducer Demo ===')->bold()->cyan(),
+            Text::create('Redux-like state management pattern')->dim(),
+            Newline::create(),
+
+            Box::create()
+                ->border('round')
+                ->padding(1)
+                ->children([
+                    Box::row([
+                        Text::create('Count: '),
+                        Text::create((string) $state['count'])
+                            ->bold()
+                            ->color($state['count'] === 0 ? '#808080' : '#00ff00'),
+                    ]),
+                    Box::row([
+                        Text::create('Step: '),
+                        Text::create((string) $state['step'])->bold()->yellow(),
+                    ]),
                 ]),
-                Box::row([
-                    Text::create('Step: '),
-                    Text::create((string)$state['step'])->bold()->yellow(),
-                ]),
-            ]),
-        Newline::create(),
+            Newline::create(),
 
-        Text::create('Controls:')->bold(),
-        Text::create('  Up/Down   - Increment/Decrement by step'),
-        Text::create('  Enter     - Reset to 0'),
-        Text::create('  1/5/0     - Set step to 1/5/10'),
-        Text::create('  q         - Quit'),
-    ]);
-};
+            Text::create('Controls:')->bold(),
+            Text::create('  Up/Down   - Increment/Decrement by step'),
+            Text::create('  Enter     - Reset to 0'),
+            Text::create('  1/5/0     - Set step to 1/5/10'),
+            Text::create('  q         - Quit'),
+        ]);
+    }
+}
 
-Tui::render($app)->waitUntilExit();
+Tui::render(new ReducerDemo())->waitUntilExit();

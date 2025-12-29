@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Contracts;
+namespace Xocdr\Tui\Contracts;
 
-use Tui\Components\Component;
+use Xocdr\Tui\Components\Component;
 
 /**
  * Interface for component rendering.

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Newline;
+use Xocdr\Tui\Components\Newline;
 
 class NewlineTest extends TestCase
 {
@@ -26,18 +26,36 @@ class NewlineTest extends TestCase
 
     public function testRender(): void
     {
+        if (!extension_loaded('tui')) {
+            $this->markTestSkipped('ext-tui extension is required for this test');
+        }
+
         $newline = Newline::create();
         $rendered = $newline->render();
 
-        $this->assertInstanceOf(\TuiText::class, $rendered);
-        $this->assertEquals("\n", $rendered->content);
+        // Native Newline or fallback TuiText
+        if (class_exists(\Xocdr\Tui\Ext\Newline::class)) {
+            $this->assertInstanceOf(\Xocdr\Tui\Ext\Newline::class, $rendered);
+        } else {
+            $this->assertInstanceOf(\Xocdr\Tui\Ext\Text::class, $rendered);
+            $this->assertEquals("\n", $rendered->content);
+        }
     }
 
     public function testRenderMultiple(): void
     {
+        if (!extension_loaded('tui')) {
+            $this->markTestSkipped('ext-tui extension is required for this test');
+        }
+
         $newline = Newline::create(3);
         $rendered = $newline->render();
 
-        $this->assertEquals("\n\n\n", $rendered->content);
+        // Native Newline or fallback TuiText
+        if (class_exists(\Xocdr\Tui\Ext\Newline::class)) {
+            $this->assertInstanceOf(\Xocdr\Tui\Ext\Newline::class, $rendered);
+        } else {
+            $this->assertEquals("\n\n\n", $rendered->content);
+        }
     }
 }

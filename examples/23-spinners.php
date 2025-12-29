@@ -17,58 +17,63 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Spinner;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Spinner;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
     exit(1);
 }
 
-$app = function () {
-    ['exit' => $exit] = useApp();
-    [$frame, $setFrame] = useState(0);
+class SpinnersDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit, $setFrame) {
-        if ($key->escape) {
-            $exit();
-        } elseif ($input === ' ') {
-            $setFrame(fn ($f) => $f + 1);
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
+        [$frame, $setFrame] = $this->hooks()->state(0);
+
+        $this->hooks()->onInput(function ($input, $key) use ($exit, $setFrame) {
+            if ($key->escape) {
+                $exit();
+            } elseif ($input === ' ') {
+                $setFrame(fn ($f) => $f + 1);
+            }
+        });
+
+        // Create spinners of each type
+        $spinnerTypes = Spinner::getTypes();
+        $spinners = [];
+
+        foreach ($spinnerTypes as $type) {
+            $spinner = Spinner::create($type)->setFrame($frame);
+            $spinners[] = sprintf('  %-8s %s', $type, $spinner->getFrame());
         }
-    });
 
-    // Create spinners of each type
-    $spinnerTypes = Spinner::getTypes();
-    $spinners = [];
-
-    foreach ($spinnerTypes as $type) {
-        $spinner = Spinner::create($type)->setFrame($frame);
-        $spinners[] = sprintf('  %-8s %s', $type, $spinner->getFrame());
+        return Box::column([
+            Text::create('Spinner Demo')->bold()->cyan(),
+            Text::create(''),
+            Text::create('Available spinner types:'),
+            Text::create(''),
+            ...array_map(fn ($s) => Text::create($s), $spinners),
+            Text::create(''),
+            Text::create('With label:'),
+            Text::create('  ' . Spinner::dots()->setFrame($frame)->label('Loading...')->toString()),
+            Text::create(''),
+            Text::create('Controls:')->bold(),
+            Text::create('  SPACE - Advance frame'),
+            Text::create(''),
+            Text::create("Frame: {$frame}")->dim(),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
     }
+}
 
-    return Box::column([
-        Text::create('Spinner Demo')->bold()->cyan(),
-        Text::create(''),
-        Text::create('Available spinner types:'),
-        Text::create(''),
-        ...array_map(fn ($s) => Text::create($s), $spinners),
-        Text::create(''),
-        Text::create('With label:'),
-        Text::create('  ' . Spinner::dots()->setFrame($frame)->label('Loading...')->toString()),
-        Text::create(''),
-        Text::create('Controls:')->bold(),
-        Text::create('  SPACE - Advance frame'),
-        Text::create(''),
-        Text::create("Frame: {$frame}")->dim(),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
-
-$instance = Tui::render($app);
+$instance = Tui::render(new SpinnersDemo());
 $instance->waitUntilExit();

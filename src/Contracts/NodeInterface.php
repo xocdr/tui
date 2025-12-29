@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Contracts;
+namespace Xocdr\Tui\Contracts;
 
 /**
  * Interface for renderable nodes in the TUI tree.
@@ -25,9 +25,9 @@ interface NodeInterface
     public function getChildren(): array;
 
     /**
-     * Get the underlying native node (TuiBox or TuiText).
+     * Get the underlying native node (Box or Text).
      *
-     * @return \TuiBox|\TuiText
+     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
      */
     public function getNative(): object;
 }

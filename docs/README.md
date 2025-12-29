@@ -10,7 +10,7 @@ Step-by-step guides for building TUI applications:
 
 - [Getting Started](manual/getting-started.md) - Installation, first app, core concepts
 - [Components](manual/components.md) - Box, Text, Table, Spinner, ProgressBar, etc.
-- [Hooks](manual/hooks.md) - useState, useEffect, useInput, and more
+- [Hooks](manual/hooks.md) - state, onRender, onInput, and more
 - [Styling](manual/styling.md) - Colors, text attributes, borders
 - [Drawing](manual/drawing.md) - Canvas, Buffer, Sprite for graphics
 - [Animation](manual/animation.md) - Easing, Tween, Gradient utilities
@@ -20,13 +20,13 @@ Step-by-step guides for building TUI applications:
 Complete API reference:
 
 - [Classes](reference/classes.md) - All classes and methods
-- [Functions](reference/functions.md) - Hook functions
+- [Hooks](reference/hooks.md) - Hooks class reference
 
 ### Specifications
 
 Technical specifications:
 
-- [ext-tui-specs.md](specs/ext-tui-specs.md) - C extension specification
+- [ext-tui-specs.md](https://github.com/xocdr/ext-tui/blob/main/docs/specs/ext-tui-specs.md) - C extension specification (external)
 - [xocdr-tui-specs.md](specs/xocdr-tui-specs.md) - PHP library specification
 
 ## Quick Start
@@ -39,19 +39,18 @@ composer require xocdr/tui
 <?php
 require 'vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useApp;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Tui;
 
 $app = function() {
-    [$count, $setCount] = useState(0);
-    ['exit' => $exit] = useApp();
+    $hooks = new Hooks(Tui::getApplication());
 
-    useInput(function($key, $keyInfo) use ($setCount, $exit) {
+    [$count, $setCount] = $hooks->state(0);
+    ['exit' => $exit] = $hooks->app();
+
+    $hooks->onInput(function($key, $keyInfo) use ($setCount, $exit) {
         if ($keyInfo->escape) $exit();
         if ($key === '+') $setCount(fn($c) => $c + 1);
         if ($key === '-') $setCount(fn($c) => $c - 1);
@@ -73,14 +72,16 @@ Tui::render($app)->waitUntilExit();
 
 ## Features
 
-- **Component-Based** - Build UIs with composable Box and Text components
-- **Hooks** - State management with useState, useEffect, useReducer, and more
+- **Component-Based** - Build UIs with composable Box, Text, Line, and Transform components
+- **Hooks** - State management with state(), onRender(), onInput(), and more
 - **Flexbox Layout** - Powered by Yoga engine via ext-tui
 - **Rich Styling** - Full color support including Tailwind palette
 - **Drawing** - Canvas, Buffer, and Sprite for graphics
 - **Animation** - 28 easing functions, tweening, color gradients
 - **Event System** - Priority-based event dispatching
-- **Focus Management** - Tab navigation between focusable elements
+- **Focus Management** - Tab navigation and focus-by-id
+- **Terminal Detection** - Automatic capability detection for hyperlinks, images, colors
+- **Debug Inspector** - Runtime component tree and performance inspection
 
 ## Related
 

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Box;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
 
 class BoxTest extends TestCase
 {
@@ -73,6 +73,10 @@ class BoxTest extends TestCase
 
     public function testRender(): void
     {
+        if (!extension_loaded('tui')) {
+            $this->markTestSkipped('ext-tui extension is required for this test');
+        }
+
         $box = Box::create()
             ->flexDirection('column')
             ->children([
@@ -82,7 +86,7 @@ class BoxTest extends TestCase
         $rendered = $box->render();
 
         // render() now returns a TuiBox object
-        $this->assertInstanceOf(\TuiBox::class, $rendered);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
         $this->assertEquals('column', $rendered->flexDirection);
         $this->assertCount(1, $rendered->children);
     }

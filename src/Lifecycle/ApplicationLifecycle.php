@@ -2,15 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Tui\Lifecycle;
+namespace Xocdr\Tui\Lifecycle;
 
-use TuiInstance as ExtTuiInstance;
+use Xocdr\Tui\Ext\Instance as ExtInstance;
 
 /**
  * Manages the lifecycle of a TUI application.
  *
  * Handles terminal setup, event loop, and cleanup.
  * Extracted from Instance class for Single Responsibility.
+ *
+ * Uses ext-tui's Xocdr\Tui\Ext\Instance which now has methods like:
+ * - rerender(), unmount(), waitUntilExit()
+ * - addTimer(), removeTimer(), setTickHandler()
+ * - setInputHandler(), setFocusHandler(), setResizeHandler()
+ * - focusNext(), focusPrev(), getFocusedNode()
+ * - getSize(), clear()
+ * - state(), onInput(), focus(), focusManager()
  */
 class ApplicationLifecycle
 {
@@ -18,7 +26,7 @@ class ApplicationLifecycle
 
     private bool $unmounted = false;
 
-    private ?ExtTuiInstance $tuiInstance = null;
+    private ?ExtInstance $extInstance = null;
 
     /** @var array<string, mixed> */
     private array $options;
@@ -36,8 +44,11 @@ class ApplicationLifecycle
 
     /**
      * Start the application with the given render callback.
+     *
+     * The render callback receives the ext-tui Instance which has
+     * hook methods like state(), onInput(), etc.
      */
-    public function start(callable $renderCallback): ExtTuiInstance
+    public function start(callable $renderCallback): ExtInstance
     {
         if ($this->running || $this->unmounted) {
             throw new \RuntimeException('Application already started or unmounted');
@@ -45,12 +56,12 @@ class ApplicationLifecycle
 
         $this->running = true;
 
-        $this->tuiInstance = tui_render($renderCallback, [
+        $this->extInstance = tui_render($renderCallback, [
             'fullscreen' => $this->options['fullscreen'],
             'exitOnCtrlC' => $this->options['exitOnCtrlC'],
         ]);
 
-        return $this->tuiInstance;
+        return $this->extInstance;
     }
 
     /**
@@ -65,9 +76,9 @@ class ApplicationLifecycle
         $this->running = false;
         $this->unmounted = true;
 
-        if ($this->tuiInstance !== null) {
-            tui_unmount($this->tuiInstance);
-            $this->tuiInstance = null;
+        if ($this->extInstance !== null) {
+            $this->extInstance->unmount();
+            $this->extInstance = null;
         }
     }
 
@@ -88,11 +99,11 @@ class ApplicationLifecycle
     }
 
     /**
-     * Get the underlying TuiInstance.
+     * Get the underlying ext-tui Instance.
      */
-    public function getTuiInstance(): ?ExtTuiInstance
+    public function getTuiInstance(): ?ExtInstance
     {
-        return $this->tuiInstance;
+        return $this->extInstance;
     }
 
     /**
@@ -110,11 +121,11 @@ class ApplicationLifecycle
      */
     public function rerender(): void
     {
-        if (!$this->running || $this->unmounted || $this->tuiInstance === null) {
+        if (!$this->running || $this->unmounted || $this->extInstance === null) {
             return;
         }
 
-        tui_rerender($this->tuiInstance);
+        $this->extInstance->rerender();
     }
 
     /**
@@ -122,11 +133,11 @@ class ApplicationLifecycle
      */
     public function waitUntilExit(): void
     {
-        if (!$this->running || $this->tuiInstance === null) {
+        if (!$this->running || $this->extInstance === null) {
             return;
         }
 
-        tui_wait_until_exit($this->tuiInstance);
+        $this->extInstance->waitUntilExit();
     }
 
     /**
@@ -136,10 +147,10 @@ class ApplicationLifecycle
      */
     public function getSize(): ?array
     {
-        if ($this->tuiInstance === null) {
+        if ($this->extInstance === null) {
             return null;
         }
 
-        return tui_get_size($this->tuiInstance);
+        return $this->extInstance->getSize();
     }
 }

@@ -2,34 +2,38 @@
 
 declare(strict_types=1);
 
-namespace Tui;
+namespace Xocdr\Tui;
 
-use Tui\Components\Component;
-use Tui\Components\StatefulComponent;
-use Tui\Contracts\EventDispatcherInterface;
-use Tui\Contracts\HookContextInterface;
-use Tui\Contracts\InstanceInterface;
-use Tui\Contracts\RendererInterface;
-use Tui\Events\EventDispatcher;
-use Tui\Events\FocusEvent;
-use Tui\Events\InputEvent;
-use Tui\Events\ResizeEvent;
-use Tui\Input\Key;
-use Tui\Input\Modifier;
-use Tui\Hooks\HookContext;
-use Tui\Hooks\HookRegistry;
-use Tui\Lifecycle\ApplicationLifecycle;
-use Tui\Render\ComponentRenderer;
-use Tui\Render\ExtensionRenderTarget;
-use TuiInstance as ExtTuiInstance;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\StatefulComponent;
+use Xocdr\Tui\Contracts\EventDispatcherInterface;
+use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\InstanceInterface;
+use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Debug\Inspector;
+use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Events\FocusEvent;
+use Xocdr\Tui\Events\InputEvent;
+use Xocdr\Tui\Events\ResizeEvent;
+use Xocdr\Tui\Focus\FocusManager;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookRegistry;
+use Xocdr\Tui\Input\Key;
+use Xocdr\Tui\Input\Modifier;
+use Xocdr\Tui\Lifecycle\ApplicationLifecycle;
+use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Render\ExtensionRenderTarget;
 
 /**
- * Represents a running Tui application instance.
+ * Represents a running Tui application.
  *
- * Orchestrates rendering, events, and hooks while delegating
- * specific responsibilities to focused classes.
+ * Wraps ext-tui's Xocdr\Tui\Ext\Instance and adds PHP-specific features:
+ * - EventDispatcher with priorities and handler IDs
+ * - ComponentRenderer for PHP component builders
+ * - Additional hooks (onRender, memo, reducer, etc.)
+ * - HookContext/HookRegistry for PHP hook state management
  */
-class Instance implements InstanceInterface
+class Application implements InstanceInterface
 {
     private string $id;
 
@@ -48,8 +52,16 @@ class Instance implements InstanceInterface
 
     private int $previousHeight = 0;
 
-    /** @var array<array{interval: int, callback: callable}> Timers queued before TuiInstance is ready */
+    /** @var array<array{interval: int, callback: callable}> Timers queued before ext-tui Instance is ready */
     private array $pendingTimers = [];
+
+    private string $lastOutput = '';
+
+    private ?FocusManager $focusManager = null;
+
+    private bool $tabNavigationEnabled = true;
+
+    private ?Inspector $inspector = null;
 
     /**
      * @param callable|Component|StatefulComponent $component
@@ -76,7 +88,7 @@ class Instance implements InstanceInterface
             $this->hookContext->setRerenderCallback(fn () => $this->rerender());
         }
 
-        // Attach stateful components to this instance
+        // Attach stateful components to this application
         if ($this->component instanceof StatefulComponent) {
             $this->component->attachTo($this);
         }
@@ -117,17 +129,17 @@ class Instance implements InstanceInterface
     }
 
     /**
-     * Register timers that were queued before the TuiInstance was available.
+     * Register timers that were queued before the ext-tui Instance was available.
      */
     private function flushPendingTimers(): void
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance === null) {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance === null) {
             return;
         }
 
         foreach ($this->pendingTimers as $timer) {
-            tui_add_timer($tuiInstance, $timer['interval'], $timer['callback']);
+            $extInstance->addTimer($timer['interval'], $timer['callback']);
         }
 
         $this->pendingTimers = [];
@@ -136,9 +148,9 @@ class Instance implements InstanceInterface
     /**
      * Render the component tree.
      *
-     * @return \TuiBox|\TuiText
+     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
      */
-    private function renderComponent(): \TuiBox|\TuiText
+    private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
     {
         // Run with hook context
         $node = HookRegistry::withContext($this->hookContext, function () {
@@ -150,20 +162,22 @@ class Instance implements InstanceInterface
 
     /**
      * Set up native extension event handlers.
+     *
+     * @param \Xocdr\Tui\Ext\Instance $extInstance The ext-tui Instance
      */
-    private function setupNativeHandlers(ExtTuiInstance $tuiInstance): void
+    private function setupNativeHandlers(\Xocdr\Tui\Ext\Instance $extInstance): void
     {
-        // Input handler
+        // Input handler - use Instance method API
         if ($this->eventDispatcher->hasListeners('input')) {
-            tui_set_input_handler($tuiInstance, function (\TuiKey $key) {
+            $extInstance->setInputHandler(function (\Xocdr\Tui\Ext\Key $key) {
                 $event = new InputEvent($key->key, $key);
                 $this->eventDispatcher->emit('input', $event);
             });
         }
 
-        // Focus handler
+        // Focus handler - use Instance method API
         if ($this->eventDispatcher->hasListeners('focus')) {
-            tui_set_focus_handler($tuiInstance, function (\TuiFocusEvent $nativeEvent) {
+            $extInstance->setFocusHandler(function (\Xocdr\Tui\Ext\FocusEvent $nativeEvent) {
                 $event = new FocusEvent(
                     $nativeEvent->previousId ?? null,
                     $nativeEvent->currentId ?? null,
@@ -173,8 +187,8 @@ class Instance implements InstanceInterface
             });
         }
 
-        // Resize handler
-        tui_set_resize_handler($tuiInstance, function () {
+        // Resize handler - use Instance method API
+        $extInstance->setResizeHandler(function () {
             $size = $this->lifecycle->getSize();
             if ($size === null) {
                 return;
@@ -192,6 +206,31 @@ class Instance implements InstanceInterface
 
             $this->eventDispatcher->emit('resize', $event);
         });
+
+        // Tab navigation bindings
+        $this->setupTabNavigation();
+    }
+
+    /**
+     * Set up Tab and Shift+Tab for focus navigation.
+     */
+    private function setupTabNavigation(): void
+    {
+        if (!$this->tabNavigationEnabled) {
+            return;
+        }
+
+        // Tab -> focus next
+        $this->onKey(Key::TAB, function (\Xocdr\Tui\Ext\Key $key) {
+            if (!$key->shift) {
+                $this->focusNext();
+            }
+        }, -100); // Low priority so user handlers can override
+
+        // Shift+Tab -> focus previous
+        $this->onKey([Modifier::SHIFT, Key::TAB], function (\Xocdr\Tui\Ext\Key $key) {
+            $this->focusPrevious();
+        }, -100);
     }
 
     /**
@@ -265,7 +304,7 @@ class Instance implements InstanceInterface
     /**
      * Get the underlying TuiInstance.
      */
-    public function getTuiInstance(): ?ExtTuiInstance
+    public function getTuiInstance(): ?\Xocdr\Tui\Ext\Instance
     {
         return $this->lifecycle->getTuiInstance();
     }
@@ -282,9 +321,9 @@ class Instance implements InstanceInterface
         }, $priority);
 
         // Update native handler if already running
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            tui_set_input_handler($tuiInstance, function (\TuiKey $key) {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->setInputHandler(function (\Xocdr\Tui\Ext\Key $key) {
                 $event = new InputEvent($key->key, $key);
                 $this->eventDispatcher->emit('input', $event);
             });
@@ -296,11 +335,11 @@ class Instance implements InstanceInterface
     /**
      * Register a handler for a specific key or key combination.
      *
-     * Provides an event-style API similar to ext-event/ReactPHP for
+     * Provides an event-style API for
      * registering key-specific handlers.
      *
      * @param Key|string|array<Key|Modifier|string> $key The key to listen for
-     * @param callable(\TuiKey): void $handler Handler to call when key is pressed
+     * @param callable(\Xocdr\Tui\Ext\Key): void $handler Handler to call when key is pressed
      * @param int $priority Higher priority = called first
      * @return string Handler ID for removal
      *
@@ -319,7 +358,7 @@ class Instance implements InstanceInterface
      */
     public function onKey(Key|string|array $key, callable $handler, int $priority = 0): string
     {
-        return $this->onInput(function (string $input, \TuiKey $tuiKey) use ($key, $handler) {
+        return $this->onInput(function (string $input, \Xocdr\Tui\Ext\Key $tuiKey) use ($key, $handler) {
             if ($this->matchesKey($key, $input, $tuiKey)) {
                 $handler($tuiKey);
             }
@@ -331,7 +370,7 @@ class Instance implements InstanceInterface
      *
      * @param Key|string|array<Key|Modifier|string> $pattern
      */
-    private function matchesKey(Key|string|array $pattern, string $input, \TuiKey $tuiKey): bool
+    private function matchesKey(Key|string|array $pattern, string $input, \Xocdr\Tui\Ext\Key $tuiKey): bool
     {
         // Array pattern: [Modifier, Key] or [Modifier, Modifier, Key]
         if (is_array($pattern)) {
@@ -408,21 +447,127 @@ class Instance implements InstanceInterface
      */
     public function focusNext(): void
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            tui_focus_next($tuiInstance);
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->focusNext();
         }
     }
 
     /**
      * Move focus to the previous focusable element.
      */
-    public function focusPrev(): void
+    public function focusPrevious(): void
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            tui_focus_prev($tuiInstance);
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->focusPrev();
         }
+    }
+
+    /**
+     * Focus a specific element by its ID.
+     *
+     * @param string $id The focusable element's ID
+     */
+    public function focus(string $id): void
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null && method_exists($extInstance, 'focus')) {
+            $extInstance->focus($id);
+        }
+    }
+
+    /**
+     * Get the FocusManager service.
+     */
+    public function getFocusManager(): FocusManager
+    {
+        if ($this->focusManager === null) {
+            $this->focusManager = new FocusManager($this);
+        }
+
+        return $this->focusManager;
+    }
+
+    /**
+     * Enable Tab/Shift+Tab focus navigation.
+     */
+    public function enableTabNavigation(): self
+    {
+        $this->tabNavigationEnabled = true;
+
+        return $this;
+    }
+
+    /**
+     * Disable Tab/Shift+Tab focus navigation.
+     *
+     * Use this when you need Tab key for other purposes (e.g., text input).
+     */
+    public function disableTabNavigation(): self
+    {
+        $this->tabNavigationEnabled = false;
+
+        return $this;
+    }
+
+    /**
+     * Check if Tab navigation is enabled.
+     */
+    public function isTabNavigationEnabled(): bool
+    {
+        return $this->tabNavigationEnabled;
+    }
+
+    /**
+     * Enable debug mode with the Inspector.
+     *
+     * When enabled, you can access the inspector via getInspector()
+     * and use Ctrl+Shift+D to toggle debug output.
+     */
+    public function enableDebug(): self
+    {
+        $this->inspector = new Inspector($this);
+        $this->inspector->enable();
+
+        // Set up Ctrl+Shift+D to toggle inspector
+        $this->onKey(['d'], function (\Xocdr\Tui\Ext\Key $key) {
+            if ($key->ctrl && $key->shift && $this->inspector !== null) {
+                $this->inspector->toggle();
+                $this->rerender();
+            }
+        }, -50);
+
+        return $this;
+    }
+
+    /**
+     * Get the debug inspector.
+     */
+    public function getInspector(): ?Inspector
+    {
+        return $this->inspector;
+    }
+
+    /**
+     * Check if debug mode is enabled.
+     */
+    public function isDebugEnabled(): bool
+    {
+        return $this->inspector !== null && $this->inspector->isEnabled();
+    }
+
+    /**
+     * Get the root rendered node (for inspector tree traversal).
+     */
+    public function getRootNode(): mixed
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null && method_exists($extInstance, 'getRootNode')) {
+            return $extInstance->getRootNode();
+        }
+
+        return null;
     }
 
     /**
@@ -442,9 +587,9 @@ class Instance implements InstanceInterface
      */
     public function getFocusedNode(): ?array
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            return tui_get_focused_node($tuiInstance);
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            return $extInstance->getFocusedNode();
         }
 
         return null;
@@ -474,13 +619,13 @@ class Instance implements InstanceInterface
      */
     public function addTimer(int $intervalMs, callable $callback): int
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            return tui_add_timer($tuiInstance, $intervalMs, $callback);
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            return $extInstance->addTimer($intervalMs, $callback);
         }
 
-        // Queue the timer to be registered after TuiInstance is available
-        // This happens when useInterval is called during initial render
+        // Queue the timer to be registered after Instance is available
+        // This happens when interval() is called during initial render
         $this->pendingTimers[] = ['interval' => $intervalMs, 'callback' => $callback];
 
         // Return a placeholder ID (pending timers will get real IDs when flushed)
@@ -494,9 +639,9 @@ class Instance implements InstanceInterface
      */
     public function removeTimer(int $timerId): void
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            tui_remove_timer($tuiInstance, $timerId);
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->removeTimer($timerId);
         }
     }
 
@@ -504,7 +649,7 @@ class Instance implements InstanceInterface
      * Set a tick handler that is called on every event loop iteration.
      *
      * Use this for polling external data sources, processing queues,
-     * or integrating with other event systems (like ReactPHP streams).
+     * or integrating with other event systems.
      *
      * @param callable(): void $handler Handler called each tick
      *
@@ -517,16 +662,16 @@ class Instance implements InstanceInterface
      *     }
      * });
      *
-     * // Integration with ReactPHP
+     * // Integration with event loop
      * $instance->onTick(function () use ($loop) {
-     *     $loop->futureTick(fn() => null); // Keep ReactPHP running
+     *     $loop->futureTick(fn() => null); // Keep event loop running
      * });
      */
     public function onTick(callable $handler): void
     {
-        $tuiInstance = $this->lifecycle->getTuiInstance();
-        if ($tuiInstance !== null) {
-            tui_set_tick_handler($tuiInstance, $handler);
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->setTickHandler($handler);
         }
     }
 
@@ -553,5 +698,82 @@ class Instance implements InstanceInterface
     public function clearInterval(int $timerId): void
     {
         $this->removeTimer($timerId);
+    }
+
+    /**
+     * Clear the terminal output.
+     *
+     * Clears the current terminal screen and resets the cursor position.
+     */
+    public function clear(): void
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->clear();
+        }
+        $this->lastOutput = '';
+    }
+
+    /**
+     * Get the last rendered output.
+     *
+     * Returns a string representation of the last rendered frame.
+     * Useful for testing and debugging.
+     */
+    public function getLastOutput(): string
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null && method_exists($extInstance, 'getOutput')) {
+            return $extInstance->getOutput();
+        }
+
+        return $this->lastOutput;
+    }
+
+    /**
+     * Set the last output (for testing).
+     *
+     * @internal
+     */
+    public function setLastOutput(string $output): void
+    {
+        $this->lastOutput = $output;
+    }
+
+    /**
+     * Get captured console output from the last render.
+     *
+     * Returns any stray echo/print output that occurred during
+     * component rendering. Useful for debugging and testing.
+     *
+     * @return string|null Captured output or null if none
+     */
+    public function getCapturedOutput(): ?string
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null && method_exists($extInstance, 'getCapturedOutput')) {
+            return $extInstance->getCapturedOutput();
+        }
+
+        return null;
+    }
+
+    /**
+     * Measure an element's dimensions by its ID.
+     *
+     * Returns the position and size of a rendered element.
+     * The element must have an id property set.
+     *
+     * @param string $id Element ID to measure
+     * @return array{x: int, y: int, width: int, height: int}|null Dimensions or null if not found
+     */
+    public function measureElement(string $id): ?array
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null && method_exists($extInstance, 'measureElement')) {
+            return $extInstance->measureElement($id);
+        }
+
+        return null;
     }
 }

@@ -7,7 +7,7 @@ TUI provides extensive styling options for text and components.
 ### Basic Text Styles
 
 ```php
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Text;
 
 Text::create('Hello')
     ->bold()
@@ -147,7 +147,7 @@ Text::create('Palette')
 ### Borders
 
 ```php
-use Tui\Components\Box;
+use Xocdr\Tui\Components\Box;
 
 Box::create()
     ->border('single')        // Border style
@@ -193,7 +193,7 @@ Box::create()
 For programmatic styling, use the `Style` class:
 
 ```php
-use Tui\Style\Style;
+use Xocdr\Tui\Style\Style;
 
 $style = Style::create()
     ->color('#ff0000')
@@ -235,7 +235,7 @@ $array = $style->toArray();
 The `Color` class provides color utilities:
 
 ```php
-use Tui\Style\Color;
+use Xocdr\Tui\Style\Color;
 
 // Conversions
 $rgb = Color::hexToRgb('#ff0000');  // [r: 255, g: 0, b: 0]
@@ -254,7 +254,6 @@ $blue500 = Color::palette('blue', 500);  // '#3b82f6'
 ```php
 static hexToRgb(string $hex): array
 static rgbToHex(int $r, int $g, int $b): string
-static rgbTo256(int $r, int $g, int $b): int
 static rgbToHsl(int $r, int $g, int $b): array
 static hslToRgb(float $h, float $s, float $l): array
 static hslToHex(float $h, float $s, float $l): string
@@ -269,7 +268,7 @@ static palette(string $name, int $shade = 500): string
 The `Border` class provides border style definitions:
 
 ```php
-use Tui\Style\Border;
+use Xocdr\Tui\Style\Border;
 
 $chars = Border::getChars(Border::ROUND);
 // ['topLeft' => '╭', 'top' => '─', 'topRight' => '╮', ...]
@@ -289,7 +288,7 @@ $chars = Border::getChars(Border::ROUND);
 ### Width Measurement
 
 ```php
-use Tui\Text\TextUtils;
+use Xocdr\Tui\Text\TextUtils;
 
 // Get display width (handles Unicode)
 $width = TextUtils::width('Hello 世界');  // 11
@@ -324,6 +323,49 @@ $right = TextUtils::right($text, 20);      // Right-aligned
 // Remove ANSI escape codes
 $plain = TextUtils::stripAnsi($coloredText);
 ```
+
+### ANSI-Aware Utilities
+
+```php
+// Get width ignoring ANSI codes
+$width = tui_string_width_ansi($coloredText);
+
+// Slice by display position, preserving ANSI codes
+$slice = tui_slice_ansi($coloredText, 0, 10);
+```
+
+---
+
+## CSS Named Colors
+
+The Color class integrates with the ext-tui Color enum providing 141 CSS named colors:
+
+```php
+use Xocdr\Tui\Style\Color;
+
+// CSS color lookup
+$hex = Color::css('coral');        // '#ff7f50'
+$hex = Color::css('dodgerblue');   // '#1e90ff'
+
+// Check if valid CSS color
+Color::isCssColor('salmon');       // true
+
+// Get all CSS color names
+$names = Color::cssNames();        // 141 colors
+
+// In Box or Text components (ext-tui native support)
+new TuiBox(['borderColor' => 'coral'])
+new TuiText('Hello', ['color' => 'dodgerblue'])
+```
+
+**Available Colors (141 total):**
+- **Basic:** black, white, gray, grey, silver, red, green, blue, yellow, cyan, magenta
+- **Extended:** coral, salmon, khaki, gold, orchid, violet, indigo, crimson, tomato
+- **Blues:** aliceblue, azure, cornflowerblue, darkblue, deepskyblue, dodgerblue, lightblue, lightskyblue, mediumblue, midnightblue, navy, powderblue, royalblue, skyblue, steelblue
+- **Greens:** chartreuse, darkgreen, darkolivegreen, darkseagreen, forestgreen, lawngreen, lightgreen, lime, limegreen, mediumseagreen, mediumspringgreen, mintcream, olive, olivedrab, palegreen, seagreen, springgreen, yellowgreen
+- **Reds:** crimson, darkred, firebrick, indianred, lightcoral, maroon, orangered, palevioletred, salmon, tomato
+- **Purples:** blueviolet, darkorchid, darkviolet, fuchsia, lavender, magenta, mediumorchid, mediumpurple, mediumvioletred, orchid, plum, purple, rebeccapurple, thistle, violet
+- **All other standard CSS colors:** aliceblue, antiquewhite, aqua, aquamarine, beige, bisque, etc.
 
 ## See Also
 

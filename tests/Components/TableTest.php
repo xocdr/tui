@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Table;
+use Xocdr\Tui\Components\Table;
 
 class TableTest extends TestCase
 {
@@ -143,7 +143,7 @@ class TableTest extends TestCase
 
         $text = $table->toText();
 
-        $this->assertInstanceOf(\Tui\Components\Text::class, $text);
+        $this->assertInstanceOf(\Xocdr\Tui\Components\Text::class, $text);
     }
 
     public function testFluentInterface(): void

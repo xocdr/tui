@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
 /**
  * Fragment component for grouping children.
@@ -28,9 +28,9 @@ class Fragment extends AbstractContainerComponent
     /**
      * Render the fragment as a minimal TuiBox wrapper.
      */
-    public function render(): \TuiBox
+    public function render(): \Xocdr\Tui\Ext\Box
     {
-        $box = new \TuiBox([]);
+        $box = new \Xocdr\Tui\Ext\Box([]);
         $this->renderChildrenInto($box);
 
         return $box;

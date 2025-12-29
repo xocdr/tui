@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Animation;
+namespace Xocdr\Tui\Animation;
 
 /**
  * Spinner animation styles library.
@@ -15,8 +15,8 @@ namespace Tui\Animation;
  * $spinner = Spinner::get('dots');
  * $frame = $spinner['frames'][$frameIndex % count($spinner['frames'])];
  *
- * // Use with useInterval
- * useInterval(fn() => $setFrame(fn($f) => $f + 1), Spinner::interval('dots'));
+ * // Use with interval hook
+ * $hooks->interval(fn() => $setFrame(fn($f) => $f + 1), Spinner::interval('dots'));
  *
  * // Get current frame
  * $icon = Spinner::frame('dots', $frameIndex);

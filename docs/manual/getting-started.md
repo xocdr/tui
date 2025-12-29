@@ -5,7 +5,7 @@ This guide will help you build your first terminal UI application with xocdr/tui
 ## Prerequisites
 
 - **PHP**: 8.4 or higher
-- **xocdr/ext-tui**: The C extension providing terminal rendering (see [ext-tui specs](../specs/ext-tui-specs.md))
+- **xocdr/ext-tui**: The C extension providing terminal rendering (see [ext-tui specs](https://github.com/xocdr/ext-tui/blob/main/docs/specs/ext-tui-specs.md))
 
 ## Installation
 
@@ -20,16 +20,22 @@ Ensure the ext-tui extension is installed and enabled. See the [ext-tui document
 
 ```php
 <?php
-if (!extension_loaded('tui')) {
+require 'vendor/autoload.php';
+use Xocdr\Tui\Tui;
+
+// Check extension (recommended way)
+if (!Tui::isExtensionLoaded()) {
     die("ext-tui extension is required\n");
 }
 
-require 'vendor/autoload.php';
-use Tui\Tui;
+// Or let Tui throw a descriptive exception
+Tui::ensureExtensionLoaded();
 
 echo "Terminal size: " . json_encode(Tui::getTerminalSize()) . "\n";
 echo "Interactive: " . (Tui::isInteractive() ? 'yes' : 'no') . "\n";
 ```
+
+> **Note:** The ext-tui C extension uses the `Xocdr\Tui\Ext` namespace for its classes (e.g., `\Xocdr\Tui\Ext\Box`, `\Xocdr\Tui\Ext\Text`). All `tui_*` functions remain in the global namespace.
 
 ## Your First App
 
@@ -37,9 +43,9 @@ echo "Interactive: " . (Tui::isInteractive() ? 'yes' : 'no') . "\n";
 <?php
 require 'vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Tui;
 
 // Define your app as a callable
 $app = fn() => Box::column([
@@ -61,7 +67,7 @@ TUI uses a component-based architecture where your UI is built from composable c
 `Box` is a flexbox container that handles layout:
 
 ```php
-use Tui\Components\Box;
+use Xocdr\Tui\Components\Box;
 
 // Vertical layout (column)
 Box::column([
@@ -89,7 +95,7 @@ Box::create()
 `Text` displays styled text content:
 
 ```php
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Text;
 
 // Basic text
 Text::create('Hello');
@@ -109,40 +115,45 @@ Text::create('Styled')
 
 ## Adding Interactivity
 
-Use hooks to add state and handle input:
+Use class-based components with `HooksAwareTrait` for state and input handling:
 
 ```php
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useApp;
+class Counter implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-$app = function() {
-    // State hook
-    [$count, $setCount] = useState(0);
-    ['exit' => $exit] = useApp();
+    public function render(): mixed
+    {
+        // State hook
+        [$count, $setCount] = $this->hooks()->state(0);
+        ['exit' => $exit] = $this->hooks()->app();
 
-    // Input hook
-    useInput(function($key, $keyInfo) use ($setCount, $exit) {
-        if ($keyInfo->escape) {
-            $exit();
-        } elseif ($key === '+' || $key === '=') {
-            $setCount(fn($c) => $c + 1);
-        } elseif ($key === '-') {
-            $setCount(fn($c) => $c - 1);
-        }
-    });
+        // Input hook
+        $this->hooks()->onInput(function($key, $keyInfo) use ($setCount, $exit) {
+            if ($keyInfo->escape) {
+                $exit();
+            } elseif ($key === '+' || $key === '=') {
+                $setCount(fn($c) => $c + 1);
+            } elseif ($key === '-') {
+                $setCount(fn($c) => $c - 1);
+            }
+        });
 
-    return Box::column([
-        Text::create("Count: {$count}")->bold(),
-        Text::create('+/- to change, ESC to exit')->dim(),
-    ]);
-};
+        return Box::column([
+            Text::create("Count: {$count}")->bold(),
+            Text::create('+/- to change, ESC to exit')->dim(),
+        ]);
+    }
+}
 
-Tui::render($app)->waitUntilExit();
+Tui::render(new Counter())->waitUntilExit();
 ```
 
 ## Layout with Flexbox
@@ -187,7 +198,7 @@ Box::create()
 Use `Spacer` to push content apart:
 
 ```php
-use Tui\Components\Spacer;
+use Xocdr\Tui\Components\Spacer;
 
 Box::row([
     Text::create('Left'),
@@ -199,20 +210,28 @@ Box::row([
 ## Handling Exit
 
 ```php
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
 
-$app = function() {
-    ['exit' => $exit] = useApp();
+class QuitDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function($key) use ($exit) {
-        if ($key === 'q') {
-            $exit(0); // Exit with code 0
-        }
-    });
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-    return Text::create('Press Q to quit');
-};
+        $this->hooks()->onInput(function($key) use ($exit) {
+            if ($key === 'q') {
+                $exit(0); // Exit with code 0
+            }
+        });
+
+        return Text::create('Press Q to quit');
+    }
+}
 ```
 
 ## Complete Example
@@ -223,51 +242,55 @@ Here's a more complete example with multiple features:
 <?php
 require 'vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Components\Spacer;
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useApp;
+class GreetingApp implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-$app = function() {
-    [$name, $setName] = useState('World');
-    [$editing, $setEditing] = useState(false);
-    ['exit' => $exit] = useApp();
+    public function render(): mixed
+    {
+        [$name, $setName] = $this->hooks()->state('World');
+        [$editing, $setEditing] = $this->hooks()->state(false);
+        ['exit' => $exit] = $this->hooks()->app();
 
-    useInput(function($key, $keyInfo) use ($setEditing, $editing, $setName, $exit) {
-        if ($key === 'q' && !$editing) {
-            $exit(0);
-        } elseif ($key === 'e') {
-            $setEditing(fn($e) => !$e);
-        } elseif ($editing && $keyInfo->return) {
-            $setEditing(false);
-        } elseif ($editing && strlen($key) === 1) {
-            $setName(fn($n) => $n . $key);
-        } elseif ($editing && $keyInfo->backspace) {
-            $setName(fn($n) => substr($n, 0, -1));
-        }
-    });
+        $this->hooks()->onInput(function($key, $keyInfo) use ($setEditing, $editing, $setName, $exit) {
+            if ($key === 'q' && !$editing) {
+                $exit(0);
+            } elseif ($key === 'e') {
+                $setEditing(fn($e) => !$e);
+            } elseif ($editing && $keyInfo->return) {
+                $setEditing(false);
+            } elseif ($editing && strlen($key) === 1) {
+                $setName(fn($n) => $n . $key);
+            } elseif ($editing && $keyInfo->backspace) {
+                $setName(fn($n) => substr($n, 0, -1));
+            }
+        });
 
-    return Box::create()
-        ->border('round')
-        ->padding(2)
-        ->children([
-            Box::row([
-                Text::create('Hello, ')->bold(),
-                Text::create($name)->cyan(),
-                Text::create('!'),
-            ]),
-            Text::create(''),
-            $editing
-                ? Text::create('Type your name, Enter to confirm')->yellow()
-                : Text::create('E to edit, Q to quit')->dim(),
-        ]);
-};
+        return Box::create()
+            ->border('round')
+            ->padding(2)
+            ->children([
+                Box::row([
+                    Text::create('Hello, ')->bold(),
+                    Text::create($name)->cyan(),
+                    Text::create('!'),
+                ]),
+                Text::create(''),
+                $editing
+                    ? Text::create('Type your name, Enter to confirm')->yellow()
+                    : Text::create('E to edit, Q to quit')->dim(),
+            ]);
+    }
+}
 
-Tui::render($app)->waitUntilExit();
+Tui::render(new GreetingApp())->waitUntilExit();
 ```
 
 ## Next Steps

@@ -2,30 +2,27 @@
 <?php
 
 /**
- * useContext - Shared state across components
+ * Context - Shared state across components
  *
  * Demonstrates:
- * - useContext hook for accessing shared state
+ * - context hook for accessing shared state
  * - Container-based dependency injection
  * - Theme and configuration sharing
  *
- * Press 'q' to exit
+ * Press 'q' or ESC to exit
  */
 
 declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Newline;
-use Tui\Components\Text;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useContext;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useState;
-
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal (TTY).\n";
@@ -35,7 +32,7 @@ if (!Tui::isInteractive()) {
 /**
  * Theme configuration class.
  *
- * This is registered in the container and accessed via useContext.
+ * This is registered in the container and accessed via context.
  */
 final readonly class ThemeContext
 {
@@ -78,68 +75,74 @@ $container->singleton(UserContext::class, new UserContext(
     role: 'admin',
 ));
 
-$app = function () {
-    // Access shared contexts
-    $theme = useContext(ThemeContext::class);
-    $user = useContext(UserContext::class);
+class ContextDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    [$level, $setLevel] = useState(0);
-    $app = useApp();
+    public function render(): mixed
+    {
+        // Access shared contexts
+        $theme = $this->hooks()->context(ThemeContext::class);
+        $user = $this->hooks()->context(UserContext::class);
 
-    useInput(function (string $input, \TuiKey $key) use ($setLevel, $app) {
-        if ($key->upArrow) {
-            $setLevel(fn ($n) => min(15, $n + 1));
-        } elseif ($key->downArrow) {
-            $setLevel(fn ($n) => max(0, $n - 1));
-        } elseif ($input === 'q') {
-            $app['exit'](0);
-        }
-    });
+        [$level, $setLevel] = $this->hooks()->state(0);
+        $app = $this->hooks()->app();
 
-    $levelColor = $theme?->getColorForLevel($level) ?? '#ffffff';
+        $this->hooks()->onInput(function (string $input, $key) use ($setLevel, $app) {
+            if ($key->upArrow) {
+                $setLevel(fn ($n) => min(15, $n + 1));
+            } elseif ($key->downArrow) {
+                $setLevel(fn ($n) => max(0, $n - 1));
+            } elseif ($input === 'q' || $key->escape) {
+                $app['exit'](0);
+            }
+        });
 
-    return Box::column([
-        Text::create('=== useContext Demo ===')
-            ->bold()
-            ->color($theme?->primaryColor ?? '#00ffff'),
-        Text::create('Shared state across components')->dim(),
-        Newline::create(),
+        $levelColor = $theme?->getColorForLevel($level) ?? '#ffffff';
 
-        // User info from context
-        Box::create()
-            ->border($theme?->borderStyle ?? 'single')
-            ->borderColor('#888888')
-            ->padding(1)
-            ->children([
-                Text::create('User Context:')->bold(),
-                Text::create('Name: ' . ($user?->name ?? 'Unknown'))
-                    ->color($theme?->primaryColor ?? '#00ffff'),
-                Text::create('Role: ' . ($user?->role ?? 'guest'))->dim(),
-            ]),
-        Newline::create(),
+        return Box::column([
+            Text::create('=== Context Demo ===')
+                ->bold()
+                ->color($theme?->primaryColor ?? '#00ffff'),
+            Text::create('Shared state across components')->dim(),
+            Newline::create(),
 
-        // Theme-aware level display - color changes based on level
-        Box::create()
-            ->border($theme?->borderStyle ?? 'single')
-            ->borderColor('#888888')
-            ->padding(1)
-            ->children([
-                Text::create('Level Monitor:')->bold(),
-                Box::row([
-                    Text::create('Value: '),
-                    Text::create((string)$level)->bold()->color($levelColor),
+            // User info from context
+            Box::create()
+                ->border($theme?->borderStyle ?? 'single')
+                ->borderColor('#888888')
+                ->padding(1)
+                ->children([
+                    Text::create('User Context:')->bold(),
+                    Text::create('Name: ' . ($user?->name ?? 'Unknown'))
+                        ->color($theme?->primaryColor ?? '#00ffff'),
+                    Text::create('Role: ' . ($user?->role ?? 'guest'))->dim(),
                 ]),
-                Text::create(
-                    $level >= 10 ? 'Status: CRITICAL' :
-                    ($level >= 5 ? 'Status: Warning' : 'Status: Normal')
-                )->color($levelColor),
-            ]),
-        Newline::create(),
+            Newline::create(),
 
-        Text::create('Controls:')->bold(),
-        Text::create('  Up/Down - Change level'),
-        Text::create('  q       - Quit'),
-    ]);
-};
+            // Theme-aware level display - color changes based on level
+            Box::create()
+                ->border($theme?->borderStyle ?? 'single')
+                ->borderColor('#888888')
+                ->padding(1)
+                ->children([
+                    Text::create('Level Monitor:')->bold(),
+                    Box::row([
+                        Text::create('Value: '),
+                        Text::create((string) $level)->bold()->color($levelColor),
+                    ]),
+                    Text::create(
+                        $level >= 10 ? 'Status: CRITICAL' :
+                        ($level >= 5 ? 'Status: Warning' : 'Status: Normal')
+                    )->color($levelColor),
+                ]),
+            Newline::create(),
 
-Tui::render($app)->waitUntilExit();
+            Text::create('Controls:')->bold(),
+            Text::create('  Up/Down - Change level'),
+            Text::create('  q       - Quit'),
+        ]);
+    }
+}
+
+Tui::render(new ContextDemo())->waitUntilExit();

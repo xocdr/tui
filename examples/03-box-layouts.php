@@ -18,109 +18,115 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Newline;
-use Tui\Components\Spacer;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Spacer;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal (TTY).\n";
     exit(1);
 }
 
-$app = function () {
-    ['exit' => $exit] = useApp();
+class BoxLayoutsDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-    return Box::column([
-    Text::create('=== Box Layouts Demo ===')->bold()->cyan(),
-    Newline::create(),
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
 
-    // Row layout
-    Text::create('Row Layout:')->bold(),
-    Box::row([
-        Text::create('[Item 1]')->green(),
-        Text::create('[Item 2]')->yellow(),
-        Text::create('[Item 3]')->red(),
-    ]),
-    Newline::create(),
+        return Box::column([
+            Text::create('=== Box Layouts Demo ===')->bold()->cyan(),
+            Newline::create(),
 
-    // Column layout
-    Text::create('Column Layout:')->bold(),
-    Box::column([
-        Text::create('[Item A]')->green(),
-        Text::create('[Item B]')->yellow(),
-        Text::create('[Item C]')->red(),
-    ]),
-    Newline::create(),
+            // Row layout
+            Text::create('Row Layout:')->bold(),
+            Box::row([
+                Text::create('[Item 1]')->green(),
+                Text::create('[Item 2]')->yellow(),
+                Text::create('[Item 3]')->red(),
+            ]),
+            Newline::create(),
 
-    // With spacer
-    Text::create('Row with Spacer (pushes right item):')->bold(),
-    Box::row([
-        Text::create('[Left]')->green(),
-        Spacer::create(),
-        Text::create('[Right]')->red(),
-    ])->width(40),
-    Newline::create(),
+            // Column layout
+            Text::create('Column Layout:')->bold(),
+            Box::column([
+                Text::create('[Item A]')->green(),
+                Text::create('[Item B]')->yellow(),
+                Text::create('[Item C]')->red(),
+            ]),
+            Newline::create(),
 
-    // With different padding values
-    Text::create('Padding Comparison:')->bold(),
-    Box::row([
-        Box::create()
-            ->padding(0)
-            ->border('single')
-            ->children([Text::create('pad=0')]),
-        Box::create()
-            ->padding(1)
-            ->border('single')
-            ->children([Text::create('pad=1')]),
-        Box::create()
-            ->padding(2)
-            ->border('single')
-            ->children([Text::create('pad=2')]),
-        Box::create()
-            ->padding(3)
-            ->border('single')
-            ->children([Text::create('pad=3')]),
-    ])->gap(2),
-    Newline::create(),
+            // With spacer
+            Text::create('Row with Spacer (pushes right item):')->bold(),
+            Box::row([
+                Text::create('[Left]')->green(),
+                Spacer::create(),
+                Text::create('[Right]')->red(),
+            ])->width(40),
+            Newline::create(),
 
-    // With gap
-    Text::create('Row with Gap (2):')->bold(),
-    Box::row([
-        Text::create('[A]')->green(),
-        Text::create('[B]')->yellow(),
-        Text::create('[C]')->red(),
-    ])->gap(2),
-    Newline::create(),
+            // With different padding values
+            Text::create('Padding Comparison:')->bold(),
+            Box::row([
+                Box::create()
+                    ->padding(0)
+                    ->border('single')
+                    ->children([Text::create('pad=0')]),
+                Box::create()
+                    ->padding(1)
+                    ->border('single')
+                    ->children([Text::create('pad=1')]),
+                Box::create()
+                    ->padding(2)
+                    ->border('single')
+                    ->children([Text::create('pad=2')]),
+                Box::create()
+                    ->padding(3)
+                    ->border('single')
+                    ->children([Text::create('pad=3')]),
+            ])->gap(2),
+            Newline::create(),
 
-    // Nested boxes
-    Text::create('Nested Boxes:')->bold(),
-    Box::row([
-        Box::column([
-            Text::create('Left Column')->bold(),
-            Text::create('  - Item 1'),
-            Text::create('  - Item 2'),
-        ]),
-        Box::create()->width(4), // spacer
-        Box::column([
-            Text::create('Right Column')->bold(),
-            Text::create('  - Item A'),
-            Text::create('  - Item B'),
-        ]),
-    ]),
-    Newline::create(),
-    Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+            // With gap
+            Text::create('Row with Gap (2):')->bold(),
+            Box::row([
+                Text::create('[A]')->green(),
+                Text::create('[B]')->yellow(),
+                Text::create('[C]')->red(),
+            ])->gap(2),
+            Newline::create(),
 
-Tui::render($app)->waitUntilExit();
+            // Nested boxes
+            Text::create('Nested Boxes:')->bold(),
+            Box::row([
+                Box::column([
+                    Text::create('Left Column')->bold(),
+                    Text::create('  - Item 1'),
+                    Text::create('  - Item 2'),
+                ]),
+                Box::create()->width(4), // spacer
+                Box::column([
+                    Text::create('Right Column')->bold(),
+                    Text::create('  - Item A'),
+                    Text::create('  - Item B'),
+                ]),
+            ]),
+            Newline::create(),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+Tui::render(new BoxLayoutsDemo())->waitUntilExit();

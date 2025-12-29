@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Tui\Render;
+namespace Xocdr\Tui\Render;
 
-use Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
  * Wrapper for TuiText that implements NodeInterface.
  */
 class TextNode implements NodeInterface
 {
-    private \TuiText $native;
+    private \Xocdr\Tui\Ext\Text $native;
 
     /**
      * @param array<string, mixed> $style
      */
     public function __construct(string $content, array $style = [])
     {
-        $this->native = new \TuiText($content, $style);
+        $this->native = new \Xocdr\Tui\Ext\Text($content, $style);
     }
 
     public function addChild(NodeInterface $child): void
@@ -35,7 +35,7 @@ class TextNode implements NodeInterface
         return [];
     }
 
-    public function getNative(): \TuiText
+    public function getNative(): \Xocdr\Tui\Ext\Text
     {
         return $this->native;
     }

@@ -20,3 +20,6 @@ composer.lock
 
 # Coverage
 /coverage/
+
+# Working directory (temp files, results, summaries)
+.working/

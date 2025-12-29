@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
-use Tui\Style\Style;
+use Xocdr\Tui\Style\Style;
 
 /**
  * Flexbox container component.
@@ -24,6 +24,18 @@ class Box extends AbstractContainerComponent
     private array $style = [];
 
     private ?Style $textStyle = null;
+
+    private ?string $key = null;
+
+    private ?string $id = null;
+
+    private ?string $borderTitleText = null;
+
+    private string $borderTitlePosition = 'top-center';
+
+    private ?string $borderTitleColor = null;
+
+    private ?string $borderTitleStyle = null;
 
     /**
      * Create a new Box instance.
@@ -117,6 +129,35 @@ class Box extends AbstractContainerComponent
         return $this;
     }
 
+    /**
+     * Set the aspect ratio (width/height).
+     *
+     * When set, the layout engine will maintain this ratio.
+     * For example, 16/9 for widescreen, 1.0 for square.
+     *
+     * @param float $ratio Width divided by height (e.g., 16/9, 4/3, 1.0)
+     */
+    public function aspectRatio(float $ratio): self
+    {
+        $this->style['aspectRatio'] = $ratio;
+        return $this;
+    }
+
+    /**
+     * Set the layout direction.
+     *
+     * Controls the base direction for flex layout:
+     * - 'ltr' (left-to-right, default)
+     * - 'rtl' (right-to-left)
+     *
+     * @param string $direction 'ltr' or 'rtl'
+     */
+    public function direction(string $direction): self
+    {
+        $this->style['direction'] = $direction;
+        return $this;
+    }
+
     // Spacing
 
     public function padding(int $padding): self
@@ -179,6 +220,141 @@ class Box extends AbstractContainerComponent
         return $this;
     }
 
+    /**
+     * Set a title to display in the border.
+     *
+     * @param string $title The title text
+     */
+    public function borderTitle(string $title): self
+    {
+        $this->borderTitleText = $title;
+
+        return $this;
+    }
+
+    /**
+     * Set the position of the border title.
+     *
+     * @param string $position 'top-left', 'top-center', 'top-right',
+     *                         'bottom-left', 'bottom-center', 'bottom-right'
+     */
+    public function borderTitlePosition(string $position): self
+    {
+        $this->borderTitlePosition = $position;
+
+        return $this;
+    }
+
+    /**
+     * Set the color of the border title.
+     */
+    public function borderTitleColor(string $color): self
+    {
+        $this->borderTitleColor = $color;
+
+        return $this;
+    }
+
+    /**
+     * Set the style of the border title text.
+     *
+     * @param string $style 'bold', 'dim', 'italic', etc.
+     */
+    public function borderTitleStyle(string $style): self
+    {
+        $this->borderTitleStyle = $style;
+
+        return $this;
+    }
+
+    /**
+     * Get the border title text.
+     */
+    public function getBorderTitle(): ?string
+    {
+        return $this->borderTitleText;
+    }
+
+    /**
+     * Get the border title position.
+     */
+    public function getBorderTitlePosition(): string
+    {
+        return $this->borderTitlePosition;
+    }
+
+    /**
+     * Get the border title color.
+     */
+    public function getBorderTitleColor(): ?string
+    {
+        return $this->borderTitleColor;
+    }
+
+    /**
+     * Get the border title style.
+     */
+    public function getBorderTitleStyle(): ?string
+    {
+        return $this->borderTitleStyle;
+    }
+
+    /**
+     * Set the top border color.
+     */
+    public function borderTopColor(string $color): self
+    {
+        $this->style['borderTopColor'] = $color;
+        return $this;
+    }
+
+    /**
+     * Set the right border color.
+     */
+    public function borderRightColor(string $color): self
+    {
+        $this->style['borderRightColor'] = $color;
+        return $this;
+    }
+
+    /**
+     * Set the bottom border color.
+     */
+    public function borderBottomColor(string $color): self
+    {
+        $this->style['borderBottomColor'] = $color;
+        return $this;
+    }
+
+    /**
+     * Set the left border color.
+     */
+    public function borderLeftColor(string $color): self
+    {
+        $this->style['borderLeftColor'] = $color;
+        return $this;
+    }
+
+    /**
+     * Set horizontal border colors (left and right).
+     */
+    public function borderXColor(string $color): self
+    {
+        $this->style['borderLeftColor'] = $color;
+        $this->style['borderRightColor'] = $color;
+        return $this;
+    }
+
+    /**
+     * Set vertical border colors (top and bottom).
+     */
+    public function borderYColor(string $color): self
+    {
+        $this->style['borderTopColor'] = $color;
+        $this->style['borderBottomColor'] = $color;
+        return $this;
+    }
+
     // Colors
 
     public function color(string $color): self
@@ -212,6 +388,47 @@ class Box extends AbstractContainerComponent
     }
 
     /**
+     * Set a unique key for this box.
+     *
+     * Keys help with list reconciliation and identifying elements
+     * when rendering dynamic lists of components.
+     */
+    public function key(?string $key): self
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    /**
+     * Get the key.
+     */
+    public function getKey(): ?string
+    {
+        return $this->key;
+    }
+
+    /**
+     * Set a unique ID for this box.
+     *
+     * IDs are used for focus-by-ID support, allowing programmatic
+     * focus control via FocusManager::focus($id).
+     */
+    public function id(?string $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * Get the ID.
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    /**
      * Get style properties.
      *
      * @return array<string, mixed>
@@ -224,9 +441,31 @@ class Box extends AbstractContainerComponent
     /**
      * Render the component to a TuiBox.
      */
-    public function render(): \TuiBox
+    public function render(): \Xocdr\Tui\Ext\Box
     {
-        $box = new \TuiBox($this->style);
+        $style = $this->style;
+
+        // Add key and id to style array for the native Box
+        if ($this->key !== null) {
+            $style['key'] = $this->key;
+        }
+        if ($this->id !== null) {
+            $style['id'] = $this->id;
+        }
+
+        // Add border title properties
+        if ($this->borderTitleText !== null) {
+            $style['borderTitle'] = $this->borderTitleText;
+            $style['borderTitlePosition'] = $this->borderTitlePosition;
+            if ($this->borderTitleColor !== null) {
+                $style['borderTitleColor'] = $this->borderTitleColor;
+            }
+            if ($this->borderTitleStyle !== null) {
+                $style['borderTitleStyle'] = $this->borderTitleStyle;
+            }
+        }
+
+        $box = new \Xocdr\Tui\Ext\Box($style);
         $this->renderChildrenInto($box);
 
         return $box;

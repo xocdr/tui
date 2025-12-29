@@ -18,13 +18,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Table;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Table;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -41,29 +41,36 @@ $table = Table::create(['Name', 'Age', 'City', 'Score'])
     ->setAlign(1, true)  // Right-align Age
     ->setAlign(3, true); // Right-align Score
 
-// Render the table
-$lines = $table->render();
+class TableDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-$app = function () use ($table) {
-    ['exit' => $exit] = useApp();
+    public function __construct(private Table $table)
+    {
+    }
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-    $lines = $table->render();
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
 
-    return Box::column([
-        Text::create('Table Component Demo')->bold()->cyan(),
-        Text::create(''),
-        ...array_map(fn ($line) => Text::create($line), $lines),
-        Text::create(''),
-        Text::create('Features: headers, alignment, borders')->dim(),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+        $lines = $this->table->render();
 
-$instance = Tui::render($app);
+        return Box::column([
+            Text::create('Table Component Demo')->bold()->cyan(),
+            Text::create(''),
+            ...array_map(fn ($line) => Text::create($line), $lines),
+            Text::create(''),
+            Text::create('Features: headers, alignment, borders')->dim(),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new TableDemo($table));
 $instance->waitUntilExit();

@@ -2,40 +2,40 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests;
+namespace Xocdr\Tui\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Box;
-use Tui\Container;
-use Tui\Events\EventDispatcher;
-use Tui\Hooks\HookContext;
-use Tui\Instance;
-use Tui\InstanceBuilder;
-use Tui\Render\ComponentRenderer;
-use Tui\Tests\Mocks\MockRenderTarget;
-use Tui\Tui;
+use Xocdr\Tui\Application;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Container;
+use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\InstanceBuilder;
+use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
+use Xocdr\Tui\Tui;
 
 class TuiTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        Tui::clearInstances();
+        Tui::clearApplications();
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-        Tui::clearInstances();
+        Tui::clearApplications();
     }
 
     public function testCreate(): void
     {
         $component = fn () => Box::create();
-        $instance = Tui::create($component);
+        $app = Tui::create($component);
 
-        $this->assertInstanceOf(Instance::class, $instance);
-        $this->assertFalse($instance->isRunning());
+        $this->assertInstanceOf(Application::class, $app);
+        $this->assertFalse($app->isRunning());
     }
 
     public function testCreateWithDependencies(): void
@@ -45,7 +45,7 @@ class TuiTest extends TestCase
         $hookContext = new HookContext();
         $renderer = new ComponentRenderer(new MockRenderTarget());
 
-        $instance = Tui::createWithDependencies(
+        $app = Tui::createWithDependencies(
             $component,
             [],
             $dispatcher,
@@ -53,9 +53,9 @@ class TuiTest extends TestCase
             $renderer
         );
 
-        $this->assertInstanceOf(Instance::class, $instance);
-        $this->assertSame($dispatcher, $instance->getEventDispatcher());
-        $this->assertSame($hookContext, $instance->getHookContext());
+        $this->assertInstanceOf(Application::class, $app);
+        $this->assertSame($dispatcher, $app->getEventDispatcher());
+        $this->assertSame($hookContext, $app->getHookContext());
     }
 
     public function testBuilder(): void
@@ -65,98 +65,98 @@ class TuiTest extends TestCase
         $this->assertInstanceOf(InstanceBuilder::class, $builder);
     }
 
-    public function testGetInstanceReturnsNull(): void
+    public function testGetApplicationReturnsNull(): void
     {
-        $this->assertNull(Tui::getInstance());
+        $this->assertNull(Tui::getApplication());
     }
 
-    public function testSetAndGetInstance(): void
+    public function testSetAndGetApplication(): void
     {
         $component = fn () => Box::create();
-        $instance = new Instance($component, []);
+        $app = new Application($component, []);
 
-        Tui::setInstance($instance);
+        Tui::setApplication($app);
 
-        $this->assertSame($instance, Tui::getInstance());
+        $this->assertSame($app, Tui::getApplication());
     }
 
-    public function testSetInstanceNull(): void
+    public function testSetApplicationNull(): void
     {
         $component = fn () => Box::create();
-        $instance = new Instance($component, []);
+        $app = new Application($component, []);
 
-        Tui::setInstance($instance);
-        Tui::setInstance(null);
+        Tui::setApplication($app);
+        Tui::setApplication(null);
 
-        $this->assertNull(Tui::getInstance());
+        $this->assertNull(Tui::getApplication());
     }
 
-    public function testGetInstanceById(): void
+    public function testGetApplicationById(): void
     {
         $component = fn () => Box::create();
-        $instance = Tui::create($component);
+        $app = Tui::create($component);
 
-        $retrieved = Tui::getInstanceById($instance->getId());
+        $retrieved = Tui::getApplicationById($app->getId());
 
-        $this->assertSame($instance, $retrieved);
+        $this->assertSame($app, $retrieved);
     }
 
-    public function testGetInstanceByIdReturnsNull(): void
+    public function testGetApplicationByIdReturnsNull(): void
     {
-        $this->assertNull(Tui::getInstanceById('nonexistent'));
+        $this->assertNull(Tui::getApplicationById('nonexistent'));
     }
 
-    public function testGetInstances(): void
-    {
-        $component = fn () => Box::create();
-        $instance1 = Tui::create($component);
-        $instance2 = Tui::create($component);
-
-        $instances = Tui::getInstances();
-
-        $this->assertCount(2, $instances);
-        $this->assertArrayHasKey($instance1->getId(), $instances);
-        $this->assertArrayHasKey($instance2->getId(), $instances);
-    }
-
-    public function testRemoveInstance(): void
+    public function testGetApplications(): void
     {
         $component = fn () => Box::create();
-        $instance = Tui::create($component);
-        $id = $instance->getId();
+        $app1 = Tui::create($component);
+        $app2 = Tui::create($component);
 
-        Tui::removeInstance($id);
+        $apps = Tui::getApplications();
 
-        $this->assertNull(Tui::getInstanceById($id));
+        $this->assertCount(2, $apps);
+        $this->assertArrayHasKey($app1->getId(), $apps);
+        $this->assertArrayHasKey($app2->getId(), $apps);
     }
 
-    public function testRemoveInstanceClearsCurrentIfMatch(): void
+    public function testRemoveApplication(): void
     {
         $component = fn () => Box::create();
-        $instance = Tui::create($component);
+        $app = Tui::create($component);
+        $id = $app->getId();
+
+        Tui::removeApplication($id);
+
+        $this->assertNull(Tui::getApplicationById($id));
+    }
+
+    public function testRemoveApplicationClearsCurrentIfMatch(): void
+    {
+        $component = fn () => Box::create();
+        $app = Tui::create($component);
 
         // Set as current
-        Tui::setInstance($instance);
-        $this->assertSame($instance, Tui::getInstance());
+        Tui::setApplication($app);
+        $this->assertSame($app, Tui::getApplication());
 
         // Remove
-        Tui::removeInstance($instance->getId());
+        Tui::removeApplication($app->getId());
 
-        $this->assertNull(Tui::getInstance());
+        $this->assertNull(Tui::getApplication());
     }
 
-    public function testClearInstances(): void
+    public function testClearApplications(): void
     {
         $component = fn () => Box::create();
         Tui::create($component);
         Tui::create($component);
 
-        $this->assertCount(2, Tui::getInstances());
+        $this->assertCount(2, Tui::getApplications());
 
-        Tui::clearInstances();
+        Tui::clearApplications();
 
-        $this->assertEmpty(Tui::getInstances());
-        $this->assertNull(Tui::getInstance());
+        $this->assertEmpty(Tui::getApplications());
+        $this->assertNull(Tui::getApplication());
     }
 
     public function testGetContainer(): void

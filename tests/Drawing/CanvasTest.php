@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Drawing;
+namespace Xocdr\Tui\Tests\Drawing;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Drawing\Canvas;
+use Xocdr\Tui\Drawing\Canvas;
 
 class CanvasTest extends TestCase
 {

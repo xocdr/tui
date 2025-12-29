@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Components;
+namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Text;
 
 class TextTest extends TestCase
 {
@@ -55,11 +55,15 @@ class TextTest extends TestCase
 
     public function testRender(): void
     {
+        if (!extension_loaded('tui')) {
+            $this->markTestSkipped('ext-tui extension is required for this test');
+        }
+
         $text = Text::create('Hello')->bold();
         $rendered = $text->render();
 
         // render() now returns a TuiText object
-        $this->assertInstanceOf(\TuiText::class, $rendered);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\Text::class, $rendered);
         $this->assertEquals('Hello', $rendered->content);
         $this->assertTrue($rendered->bold);
     }

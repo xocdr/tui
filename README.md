@@ -9,7 +9,7 @@ A Terminal UI framework for PHP. Build beautiful, interactive terminal applicati
 ## Features
 
 - 🎨 **Component-based** - Build UIs with composable components (Box, Text, etc.)
-- ⚡ **Hooks** - useState, useEffect, useMemo, useInput, and more
+- ⚡ **Hooks** - state, onRender, memo, onInput, and more
 - 📦 **Flexbox layout** - Powered by Yoga layout engine via ext-tui
 - 🎯 **Focus management** - Tab navigation and focus tracking
 - 🔌 **Event system** - Priority-based event dispatching with propagation control
@@ -17,7 +17,7 @@ A Terminal UI framework for PHP. Build beautiful, interactive terminal applicati
 
 ## Requirements
 
-- PHP 8.1+
+- PHP 8.4+
 - ext-tui (C extension)
 
 ## Installation
@@ -31,18 +31,18 @@ composer require xocdr/tui
 ```php
 <?php
 
-use Tui\Tui;
-use Tui\Components\Box;
-use Tui\Components\Text;
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useApp;
+use Xocdr\Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Hooks\Hooks;
 
 $app = function () {
-    [$count, $setCount] = useState(0);
-    ['exit' => $exit] = useApp();
+    $hooks = new Hooks(Tui::getApplication());
 
-    useInput(function ($key) use ($setCount, $exit) {
+    [$count, $setCount] = $hooks->state(0);
+    ['exit' => $exit] = $hooks->app();
+
+    $hooks->onInput(function ($key) use ($setCount, $exit) {
         if ($key === 'q') {
             $exit();
         }
@@ -71,7 +71,7 @@ Tui::render($app)->waitUntilExit();
 Flexbox container for layout:
 
 ```php
-use Tui\Components\Box;
+use Xocdr\Tui\Components\Box;
 
 Box::create()
     ->flexDirection('column')  // 'row' | 'column'
@@ -83,6 +83,8 @@ Box::create()
     ->gap(1)
     ->width(50)
     ->height(10)
+    ->aspectRatio(16/9)        // Width/height ratio
+    ->direction('ltr')         // 'ltr' | 'rtl' layout direction
     ->border('single')         // 'single' | 'double' | 'round' | 'bold'
     ->borderColor('blue')
     ->children([...]);
@@ -97,7 +99,7 @@ Box::row([...]);    // flexDirection('row')
 Styled text content:
 
 ```php
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Text;
 
 Text::create('Hello World')
     ->bold()
@@ -119,10 +121,10 @@ Text::create('Info')->blue()->bold();
 ### Other Components
 
 ```php
-use Tui\Components\Fragment;
-use Tui\Components\Spacer;
-use Tui\Components\Newline;
-use Tui\Components\Static_;
+use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\Spacer;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Static_;
 
 // Fragment - group without extra node
 Fragment::create([
@@ -146,14 +148,20 @@ Static_::create($logItems);
 
 ## Hooks
 
-### useState
+The `Hooks` class provides state management and side effects for components.
+
+```php
+use Xocdr\Tui\Hooks\Hooks;
+
+$hooks = new Hooks($instance);
+```
+
+### state
 
 Manage component state:
 
 ```php
-use function Tui\Hooks\useState;
-
-[$count, $setCount] = useState(0);
+[$count, $setCount] = $hooks->state(0);
 
 // Direct value
 $setCount(5);
@@ -162,14 +170,12 @@ $setCount(5);
 $setCount(fn($prev) => $prev + 1);
 ```
 
-### useEffect
+### onRender
 
 Run side effects:
 
 ```php
-use function Tui\Hooks\useEffect;
-
-useEffect(function () {
+$hooks->onRender(function () {
     // Effect runs when deps change
     $timer = startTimer();
 
@@ -178,58 +184,49 @@ useEffect(function () {
 }, [$dependency]);
 ```
 
-### useMemo / useCallback
+### memo / callback
 
 Memoize values and callbacks:
 
 ```php
-use function Tui\Hooks\useMemo;
-use function Tui\Hooks\useCallback;
-
-$expensive = useMemo(fn() => computeExpensiveValue($data), [$data]);
-$handler = useCallback(fn($e) => handleEvent($e), [$dependency]);
+$expensive = $hooks->memo(fn() => computeExpensiveValue($data), [$data]);
+$handler = $hooks->callback(fn($e) => handleEvent($e), [$dependency]);
 ```
 
-### useRef
+### ref
 
 Create mutable references:
 
 ```php
-use function Tui\Hooks\useRef;
-
-$ref = useRef(null);
+$ref = $hooks->ref(null);
 $ref->current = 'new value'; // Doesn't trigger re-render
 ```
 
-### useReducer
+### reducer
 
 Complex state with reducer pattern:
 
 ```php
-use function Tui\Hooks\useReducer;
-
 $reducer = fn($state, $action) => match($action['type']) {
     'increment' => $state + 1,
     'decrement' => $state - 1,
     default => $state,
 };
 
-[$count, $dispatch] = useReducer($reducer, 0);
+[$count, $dispatch] = $hooks->reducer($reducer, 0);
 $dispatch(['type' => 'increment']);
 ```
 
-### useInput
+### onInput
 
 Handle keyboard input:
 
 ```php
-use function Tui\Hooks\useInput;
-
-useInput(function ($key, $nativeKey) {
+$hooks->onInput(function ($key, $nativeKey) {
     if ($key === 'q') {
         // Handle quit
     }
-    if ($nativeKey->name === 'up') {
+    if ($nativeKey->upArrow) {
         // Handle arrow key
     }
     if ($nativeKey->ctrl && $key === 'c') {
@@ -238,81 +235,94 @@ useInput(function ($key, $nativeKey) {
 }, ['isActive' => true]);
 ```
 
-### useApp
+### app
 
 Access application controls:
 
 ```php
-use function Tui\Hooks\useApp;
-
-['exit' => $exit] = useApp();
+['exit' => $exit] = $hooks->app();
 $exit(0); // Exit with code 0
 ```
 
-### useFocus / useFocusManager
+### focus / focusManager
 
 Manage focus:
 
 ```php
-use function Tui\Hooks\useFocus;
-use function Tui\Hooks\useFocusManager;
-
 // Check focus state
-['isFocused' => $isFocused, 'focus' => $focus] = useFocus([
+['isFocused' => $isFocused, 'focus' => $focus] = $hooks->focus([
     'autoFocus' => true,
 ]);
 
 // Navigate focus
-['focusNext' => $next, 'focusPrevious' => $prev] = useFocusManager();
+['focusNext' => $next, 'focusPrevious' => $prev] = $hooks->focusManager();
 ```
 
-### useStdout
+### stdout
 
 Get terminal info:
 
 ```php
-use function Tui\Hooks\useStdout;
+['columns' => $cols, 'rows' => $rows, 'write' => $write] = $hooks->stdout();
+```
 
-['columns' => $cols, 'rows' => $rows, 'write' => $write] = useStdout();
+### HooksAware Trait
+
+For components, use the `HooksAwareTrait` for convenient access:
+
+```php
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+
+class MyComponent implements HooksAwareInterface
+{
+    use HooksAwareTrait;
+
+    public function render(): mixed
+    {
+        [$count, $setCount] = $this->hooks()->state(0);
+        // ...
+    }
+}
 ```
 
 ## Events
 
-Listen to events on the instance:
+Listen to events on the application:
 
 ```php
-$instance = Tui::render($app);
+$app = Tui::render($myApp);
 
 // Input events
-$instance->onInput(function ($key, $nativeKey) {
+$app->onInput(function ($key, $nativeKey) {
     echo "Key pressed: $key";
 }, priority: 10);
 
 // Resize events
-$instance->onResize(function ($event) {
+$app->onResize(function ($event) {
     echo "New size: {$event->width}x{$event->height}";
 });
 
 // Focus events
-$instance->onFocus(function ($event) {
+$app->onFocus(function ($event) {
     echo "Focus changed to: {$event->currentId}";
 });
 
 // Remove handler
-$handlerId = $instance->onInput($handler);
-$instance->off($handlerId);
+$handlerId = $app->onInput($handler);
+$app->off($handlerId);
 ```
 
 ## Advanced Usage
 
-### Instance Builder
+### Application Builder
 
 Configure with fluent API:
 
 ```php
-use Tui\Tui;
+use Xocdr\Tui\Tui;
 
-$instance = Tui::builder()
+$app = Tui::builder()
     ->component($myApp)
     ->fullscreen(true)
     ->exitOnCtrlC(true)
@@ -327,13 +337,13 @@ $instance = Tui::builder()
 For testing or custom configurations:
 
 ```php
-use Tui\Instance;
-use Tui\Events\EventDispatcher;
-use Tui\Hooks\HookContext;
-use Tui\Render\ComponentRenderer;
-use Tui\Render\ExtensionRenderTarget;
+use Xocdr\Tui\Application;
+use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Render\ExtensionRenderTarget;
 
-$instance = new Instance(
+$app = new Application(
     $component,
     ['fullscreen' => true],
     new EventDispatcher(),
@@ -347,8 +357,8 @@ $instance = new Instance(
 Use mock implementations:
 
 ```php
-use Tui\Tests\Mocks\MockRenderTarget;
-use Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
+use Xocdr\Tui\Render\ComponentRenderer;
 
 $target = new MockRenderTarget();
 $renderer = new ComponentRenderer($target);
@@ -364,7 +374,7 @@ $this->assertCount(2, $target->createdNodes);
 ### Style Builder
 
 ```php
-use Tui\Style\Style;
+use Xocdr\Tui\Style\Style;
 
 $style = Style::create()
     ->bold()
@@ -376,17 +386,32 @@ $style = Style::create()
 ### Color Utilities
 
 ```php
-use Tui\Style\Color;
+use Xocdr\Tui\Style\Color;
 
+// Conversions
 $rgb = Color::hexToRgb('#ff0000'); // ['r' => 255, 'g' => 0, 'b' => 0]
 $hex = Color::rgbToHex(255, 0, 0); // '#ff0000'
 $lerped = Color::lerp('#000000', '#ffffff', 0.5); // '#808080'
+
+// CSS Named Colors (141 colors via ext-tui Color enum)
+$hex = Color::css('coral');       // '#ff7f50'
+$hex = Color::css('dodgerblue');  // '#1e90ff'
+Color::isCssColor('salmon');      // true
+$names = Color::cssNames();       // All 141 color names
+
+// Tailwind Palette
+$blue500 = Color::palette('blue', 500);  // '#3b82f6'
+
+// Universal resolver
+$hex = Color::resolve('coral');           // CSS name
+$hex = Color::resolve('#ff0000');         // Hex passthrough
+$hex = Color::resolve('red-500');         // Tailwind palette
 ```
 
 ### Border Styles
 
 ```php
-use Tui\Style\Border;
+use Xocdr\Tui\Style\Border;
 
 Border::SINGLE;  // ┌─┐│└─┘
 Border::DOUBLE;  // ╔═╗║╚═╝
@@ -421,7 +446,8 @@ src/
 ├── Hooks/               # State management hooks
 │   ├── HookContext.php
 │   ├── HookRegistry.php
-│   └── functions.php
+│   ├── Hooks.php         # Primary hooks API
+│   └── HooksAwareTrait.php
 ├── Render/              # Rendering pipeline
 │   ├── ComponentRenderer.php
 │   ├── ExtensionRenderTarget.php
@@ -429,7 +455,7 @@ src/
 ├── Style/               # Styling utilities
 ├── Lifecycle/           # Application lifecycle
 ├── Container.php        # DI container
-├── Instance.php         # Application instance
+├── Application.php      # Application wrapper
 ├── InstanceBuilder.php  # Fluent builder
 └── Tui.php              # Main entry point
 ```

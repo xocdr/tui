@@ -2,25 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Tui\Hooks;
+namespace Xocdr\Tui\Hooks;
 
-use Tui\Animation\Tween;
-use Tui\Contracts\HookContextInterface;
-use Tui\Contracts\HooksInterface;
-use Tui\Contracts\InstanceInterface;
-use Tui\Drawing\Canvas;
-use Tui\Events\InputEvent;
+use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\HooksInterface;
+use Xocdr\Tui\Contracts\InstanceInterface;
+use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Events\InputEvent;
 
 /**
- * Service class for React-like hooks.
+ * Service class for component state and lifecycle management.
  *
- * This class provides an object-oriented alternative to the global hook functions,
- * enabling proper dependency injection and testability.
+ * This class provides methods for state management, side effects,
+ * and input handling in TUI components.
  *
  * @example
- * $hooks = new Hooks($instance);
- * [$count, $setCount] = $hooks->useState(0);
- * $hooks->useEffect(fn() => echo "Mounted", []);
+ * class MyComponent implements Component, HooksAwareInterface
+ * {
+ *     use HooksAwareTrait;
+ *
+ *     public function render(): mixed
+ *     {
+ *         [$count, $setCount] = $this->hooks()->state(0);
+ *         $this->hooks()->onRender(fn() => echo "Mounted", []);
+ *     }
+ * }
  */
 final readonly class Hooks implements HooksInterface
 {
@@ -43,99 +50,99 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * State hook - maintains state between renders.
+     * State - maintains state between renders.
      *
      * @template T
      * @param T $initial Initial value
      * @return array{0: T, 1: callable(T|callable(T): T): void}
      */
-    public function useState(mixed $initial): array
+    public function state(mixed $initial): array
     {
-        return $this->getContext()->useState($initial);
+        return $this->getContext()->state($initial);
     }
 
     /**
-     * Effect hook - run side effects after render.
+     * OnRender - run side effects after render.
      *
      * @param callable $effect Effect function that may return a cleanup callable
      * @param array<mixed> $deps
      */
-    public function useEffect(callable $effect, array $deps = []): void
+    public function onRender(callable $effect, array $deps = []): void
     {
-        $this->getContext()->useEffect($effect, $deps);
+        $this->getContext()->onRender($effect, $deps);
     }
 
     /**
-     * Memo hook - memoize expensive computations.
+     * Memo - memoize expensive computations.
      *
      * @template T
      * @param callable(): T $factory
      * @param array<mixed> $deps
      * @return T
      */
-    public function useMemo(callable $factory, array $deps = []): mixed
+    public function memo(callable $factory, array $deps = []): mixed
     {
-        return $this->getContext()->useMemo($factory, $deps);
+        return $this->getContext()->memo($factory, $deps);
     }
 
     /**
-     * Callback hook - memoize callbacks.
+     * Callback - memoize callbacks.
      *
      * @param callable $callback
      * @param array<mixed> $deps
      * @return callable
      */
-    public function useCallback(callable $callback, array $deps = []): callable
+    public function callback(callable $callback, array $deps = []): callable
     {
         $context = $this->getContext();
 
         if ($context instanceof HookContext) {
-            return $context->useCallback($callback, $deps);
+            return $context->callback($callback, $deps);
         }
 
-        return $context->useMemo(fn () => $callback, $deps);
+        return $context->memo(fn () => $callback, $deps);
     }
 
     /**
-     * Ref hook - create a mutable reference.
+     * Ref - create a mutable reference.
      *
      * @template T
      * @param T $initial
      * @return object{current: T}
      */
-    public function useRef(mixed $initial): object
+    public function ref(mixed $initial): object
     {
         $context = $this->getContext();
 
         if ($context instanceof HookContext) {
-            return $context->useRef($initial);
+            return $context->ref($initial);
         }
 
-        [$ref] = $context->useState((object) ['current' => $initial]);
+        [$ref] = $context->state((object) ['current' => $initial]);
 
         return $ref;
     }
 
     /**
-     * Input hook - register keyboard input handler.
+     * OnInput - register keyboard input handler.
      *
-     * @param callable(string, \TuiKey): void $handler
+     * @param callable(string, \Xocdr\Tui\Ext\Key): void $handler
      * @param array{isActive?: bool} $options
      */
-    public function useInput(callable $handler, array $options = []): void
+    public function onInput(callable $handler, array $options = []): void
     {
         $isActive = $options['isActive'] ?? true;
         if (!$isActive) {
             return;
         }
 
-        $instance = $this->instance ?? \Tui\Tui::getInstance();
-        if ($instance === null) {
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        if ($app === null) {
             return;
         }
 
-        $this->useEffect(function () use ($handler, $instance) {
-            $dispatcher = $instance->getEventDispatcher();
+        $this->onRender(function () use ($handler, $app) {
+            $dispatcher = $app->getEventDispatcher();
 
             $handlerId = $dispatcher->on('input', function (InputEvent $event) use ($handler) {
                 $handler($event->key, $event->nativeKey);
@@ -148,30 +155,45 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * App hook - get app control functions.
+     * App - get app control functions.
      *
      * @return array{exit: callable(int=): void}
      */
-    public function useApp(): array
+    public function app(): array
     {
-        $instance = $this->instance ?? \Tui\Tui::getInstance();
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
 
         return [
-            'exit' => function (int $code = 0) use ($instance): void {
-                $instance?->unmount();
+            'exit' => function (int $code = 0) use ($app): void {
+                $app?->unmount();
                 exit($code);
             },
         ];
     }
 
     /**
-     * Stdout hook - get terminal dimensions and write access.
+     * Stdout - get terminal dimensions and write access.
      *
-     * @return array{columns: int, rows: int, write: callable(string): void}
+     * Uses native \Xocdr\Tui\Ext\StdoutContext if available (ext-tui 0.1.3+).
+     *
+     * @return array{columns: int, rows: int, write: callable(string): void, isTTY?: bool}
      */
-    public function useStdout(): array
+    public function stdout(): array
     {
-        $size = \Tui\Tui::getTerminalSize();
+        // Use native StdoutContext if available (ext-tui 0.1.3+)
+        if (class_exists(\Xocdr\Tui\Ext\StdoutContext::class)) {
+            $ctx = new \Xocdr\Tui\Ext\StdoutContext();
+
+            return [
+                'columns' => $ctx->columns ?? 80,
+                'rows' => $ctx->rows ?? 24,
+                'write' => fn (string $text) => $ctx->write($text),
+                'isTTY' => $ctx->isTTY ?? true,
+            ];
+        }
+
+        // Fallback implementation
+        $size = \Xocdr\Tui\Tui::getTerminalSize();
 
         return [
             'columns' => $size['width'],
@@ -183,30 +205,52 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * Focus hook - manage focus state.
+     * Focus - manage focus state.
+     *
+     * Uses native \Xocdr\Tui\Ext\Focus if available (ext-tui 0.1.3+).
      *
      * @param array{autoFocus?: bool, isActive?: bool, id?: string} $options
-     * @return array{isFocused: bool, focus: callable(): void}
+     * @return array{isFocused: bool, focus: callable(string=): void}
      */
-    public function useFocus(array $options = []): array
+    public function focus(array $options = []): array
     {
-        $instance = $this->instance ?? \Tui\Tui::getInstance();
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
         $autoFocus = $options['autoFocus'] ?? false;
         $isActive = $options['isActive'] ?? true;
+        $id = $options['id'] ?? null;
 
-        $focusedNode = $instance?->getFocusedNode();
+        // Use native Focus class if available (ext-tui 0.1.3+)
+        if (class_exists(\Xocdr\Tui\Ext\Focus::class) && $app !== null) {
+            $tuiInstance = $app->getTuiInstance();
+            if ($tuiInstance !== null && method_exists($tuiInstance, 'focus')) {
+                $focus = $tuiInstance->focus();
+
+                return [
+                    'isFocused' => $focus->isFocused ?? ($autoFocus && $isActive),
+                    'focus' => function (string $targetId = '') use ($focus, $id): void {
+                        $focus->focus($targetId ?: $id ?? '');
+                    },
+                ];
+            }
+        }
+
+        // Fallback implementation
+        $focusedNode = $app?->getFocusedNode();
         $isFocused = $focusedNode !== null && $isActive;
 
         return [
             'isFocused' => $isFocused || $autoFocus,
-            'focus' => static function (): void {
+            'focus' => static function (string $targetId = ''): void {
                 // Would need node ID tracking to focus specific element
             },
         ];
     }
 
     /**
-     * Focus manager hook - navigate focus between elements.
+     * FocusManager - navigate focus between elements.
+     *
+     * Uses native \Xocdr\Tui\Ext\FocusManager if available (ext-tui 0.1.3+),
+     * otherwise falls back to the PHP FocusManager service class.
      *
      * @return array{
      *     focusNext: callable(): void,
@@ -216,31 +260,61 @@ final readonly class Hooks implements HooksInterface
      *     disableFocus: callable(): void
      * }
      */
-    public function useFocusManager(): array
+    public function focusManager(): array
     {
-        $instance = $this->instance ?? \Tui\Tui::getInstance();
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
 
+        // Use native FocusManager class if available (ext-tui 0.1.3+)
+        if (class_exists(\Xocdr\Tui\Ext\FocusManager::class) && $app !== null) {
+            $tuiInstance = $app->getTuiInstance();
+            if ($tuiInstance !== null && method_exists($tuiInstance, 'focusManager')) {
+                $manager = $tuiInstance->focusManager();
+
+                return [
+                    'focusNext' => function () use ($manager): void {
+                        $manager->focusNext();
+                    },
+                    'focusPrevious' => function () use ($manager): void {
+                        $manager->focusPrevious();
+                    },
+                    'focus' => function (string $id) use ($manager): void {
+                        $manager->focus($id);
+                    },
+                    'enableFocus' => function () use ($manager): void {
+                        $manager->enableFocus();
+                    },
+                    'disableFocus' => function () use ($manager): void {
+                        $manager->disableFocus();
+                    },
+                ];
+            }
+        }
+
+        // Use PHP FocusManager service class
+        if ($app !== null && method_exists($app, 'getFocusManager')) {
+            $manager = $app->getFocusManager();
+
+            return [
+                'focusNext' => fn () => $manager->focusNext(),
+                'focusPrevious' => fn () => $manager->focusPrevious(),
+                'focus' => fn (string $id) => $manager->focus($id),
+                'enableFocus' => fn () => $manager->enableFocus(),
+                'disableFocus' => fn () => $manager->disableFocus(),
+            ];
+        }
+
+        // Minimal fallback
         return [
-            'focusNext' => function () use ($instance): void {
-                $instance?->focusNext();
-            },
-            'focusPrevious' => function () use ($instance): void {
-                $instance?->focusPrev();
-            },
-            'focus' => static function (string $id): void {
-                // Would need node ID tracking to focus specific element
-            },
-            'enableFocus' => function (): void {
-                // Enable focus system
-            },
-            'disableFocus' => function (): void {
-                // Disable focus system
-            },
+            'focusNext' => fn () => $app?->focusNext(),
+            'focusPrevious' => fn () => $app?->focusPrevious(),
+            'focus' => static fn (string $id) => null,
+            'enableFocus' => static fn () => null,
+            'disableFocus' => static fn () => null,
         ];
     }
 
     /**
-     * Reducer hook - manage complex state with reducer pattern.
+     * Reducer - manage complex state with reducer pattern.
      *
      * @template S
      * @template A
@@ -248,9 +322,9 @@ final readonly class Hooks implements HooksInterface
      * @param S $initialState
      * @return array{0: S, 1: callable(A): void}
      */
-    public function useReducer(callable $reducer, mixed $initialState): array
+    public function reducer(callable $reducer, mixed $initialState): array
     {
-        [$state, $setState] = $this->useState($initialState);
+        [$state, $setState] = $this->state($initialState);
 
         $dispatch = function (mixed $action) use ($reducer, $state, $setState): void {
             $newState = $reducer($state, $action);
@@ -261,53 +335,53 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * Context hook - access shared context values.
+     * Context - access shared context values.
      *
      * @template T
      * @param class-string<T> $contextClass
      * @return T|null
      */
-    public function useContext(string $contextClass): mixed
+    public function context(string $contextClass): mixed
     {
-        $container = \Tui\Tui::getContainer();
+        $container = \Xocdr\Tui\Tui::getContainer();
 
         return $container->get($contextClass);
     }
 
     /**
-     * Interval hook - run a callback at a fixed interval.
+     * Interval - run a callback at a fixed interval.
      *
      * @param callable $callback The callback to run
      * @param int $ms Interval in milliseconds
      * @param bool $isActive Whether the interval is active
      */
-    public function useInterval(callable $callback, int $ms, bool $isActive = true): void
+    public function interval(callable $callback, int $ms, bool $isActive = true): void
     {
-        $callbackRef = $this->useRef($callback);
+        $callbackRef = $this->ref($callback);
         $callbackRef->current = $callback;
 
-        $instance = $this->instance ?? \Tui\Tui::getInstance();
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
 
-        $this->useEffect(function () use ($callbackRef, $ms, $isActive, $instance) {
-            if (!$isActive || $instance === null) {
+        $this->onRender(function () use ($callbackRef, $ms, $isActive, $app) {
+            if (!$isActive || $app === null) {
                 return null;
             }
 
-            // Add timer using the instance's timer system
-            $timerId = $instance->addTimer($ms, function () use ($callbackRef) {
+            // Add timer using the application's timer system
+            $timerId = $app->addTimer($ms, function () use ($callbackRef) {
                 ($callbackRef->current)();
             });
 
-            return function () use ($instance, $timerId) {
+            return function () use ($app, $timerId) {
                 if ($timerId >= 0) {
-                    $instance->removeTimer($timerId);
+                    $app->removeTimer($timerId);
                 }
             };
         }, [$ms, $isActive]);
     }
 
     /**
-     * Animation hook - manage animation state.
+     * Animation - manage animation state.
      *
      * @param float $from Starting value
      * @param float $to Ending value
@@ -315,15 +389,15 @@ final readonly class Hooks implements HooksInterface
      * @param string $easing Easing function name
      * @return array{value: float, isAnimating: bool, start: callable, reset: callable}
      */
-    public function useAnimation(
+    public function animation(
         float $from,
         float $to,
         int $duration,
         string $easing = 'linear'
     ): array {
-        [$tween, $setTween] = $this->useState(new Tween($from, $to, $duration, $easing));
-        [$isAnimating, $setIsAnimating] = $this->useState(false);
-        [$value, $setValue] = $this->useState($from);
+        [$tween, $setTween] = $this->state(new Tween($from, $to, $duration, $easing));
+        [$isAnimating, $setIsAnimating] = $this->state(false);
+        [$value, $setValue] = $this->state($from);
 
         $start = function () use ($setIsAnimating, $tween): void {
             $tween->reset();
@@ -336,7 +410,7 @@ final readonly class Hooks implements HooksInterface
             $setValue($from);
         };
 
-        $this->useEffect(function () use ($isAnimating, $tween, $setValue, $setIsAnimating) {
+        $this->onRender(function () use ($isAnimating, $tween, $setValue, $setIsAnimating) {
             if (!$isAnimating) {
                 return null;
             }
@@ -356,16 +430,16 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * Canvas hook - create and manage a canvas.
+     * Canvas - create and manage a canvas.
      *
      * @param int $width Canvas width in terminal cells
      * @param int $height Canvas height in terminal cells
      * @param string $mode Canvas mode ('braille', 'block', 'ascii')
      * @return array{canvas: Canvas, clear: callable, render: callable(): array<string>}
      */
-    public function useCanvas(int $width, int $height, string $mode = 'braille'): array
+    public function canvas(int $width, int $height, string $mode = 'braille'): array
     {
-        $canvasRef = $this->useRef(null);
+        $canvasRef = $this->ref(null);
 
         if ($canvasRef->current === null) {
             $canvasRef->current = new Canvas($width, $height, $mode);
@@ -382,28 +456,28 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * Previous value hook - get the previous value of a variable.
+     * Previous - get the previous value of a variable.
      *
      * @template T
      * @param T $value Current value
      * @return T|null Previous value (null on first render)
      */
-    public function usePrevious(mixed $value): mixed
+    public function previous(mixed $value): mixed
     {
-        $ref = $this->useRef(null);
+        $ref = $this->ref(null);
         $previous = $ref->current;
         $ref->current = $value;
         return $previous;
     }
 
     /**
-     * Toggle hook - boolean state with toggle function.
+     * Toggle - boolean state with toggle function.
      *
      * @return array{0: bool, 1: callable(): void, 2: callable(bool): void}
      */
-    public function useToggle(bool $initial = false): array
+    public function toggle(bool $initial = false): array
     {
-        [$value, $setValue] = $this->useState($initial);
+        [$value, $setValue] = $this->state($initial);
 
         $toggle = function () use ($setValue): void {
             $setValue(fn (bool $v) => !$v);
@@ -413,13 +487,13 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * Counter hook - numeric counter with increment/decrement.
+     * Counter - numeric counter with increment/decrement.
      *
      * @return array{count: int, increment: callable, decrement: callable, reset: callable, set: callable(int): void}
      */
-    public function useCounter(int $initial = 0): array
+    public function counter(int $initial = 0): array
     {
-        [$count, $setCount] = $this->useState($initial);
+        [$count, $setCount] = $this->state($initial);
 
         return [
             'count' => $count,
@@ -431,7 +505,7 @@ final readonly class Hooks implements HooksInterface
     }
 
     /**
-     * List hook - manage a list of items.
+     * List - manage a list of items.
      *
      * @template T
      * @param array<T> $initial
@@ -444,9 +518,9 @@ final readonly class Hooks implements HooksInterface
      *     set: callable(array<T>): void
      * }
      */
-    public function useList(array $initial = []): array
+    public function list(array $initial = []): array
     {
-        [$items, $setItems] = $this->useState($initial);
+        [$items, $setItems] = $this->state($initial);
 
         return [
             'items' => $items,

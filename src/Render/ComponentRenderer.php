@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tui\Render;
+namespace Xocdr\Tui\Render;
 
-use Tui\Components\Component;
-use Tui\Components\StatefulComponent;
-use Tui\Contracts\NodeInterface;
-use Tui\Contracts\RendererInterface;
-use Tui\Contracts\RenderTargetInterface;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\StatefulComponent;
+use Xocdr\Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Contracts\RenderTargetInterface;
 
 /**
  * Renders component trees to node trees.
@@ -47,11 +47,11 @@ class ComponentRenderer implements RendererInterface
         }
 
         // Native extension objects - wrap them
-        if ($value instanceof \TuiBox) {
+        if ($value instanceof \Xocdr\Tui\Ext\Box) {
             return $this->wrapNativeBox($value);
         }
 
-        if ($value instanceof \TuiText) {
+        if ($value instanceof \Xocdr\Tui\Ext\Text) {
             return $this->wrapNativeText($value);
         }
 
@@ -116,7 +116,7 @@ class ComponentRenderer implements RendererInterface
     /**
      * Wrap a native TuiBox in a NodeInterface.
      */
-    private function wrapNativeBox(\TuiBox $native): NodeInterface
+    private function wrapNativeBox(\Xocdr\Tui\Ext\Box $native): NodeInterface
     {
         return new NativeBoxWrapper($native);
     }
@@ -124,7 +124,7 @@ class ComponentRenderer implements RendererInterface
     /**
      * Wrap a native TuiText in a NodeInterface.
      */
-    private function wrapNativeText(\TuiText $native): NodeInterface
+    private function wrapNativeText(\Xocdr\Tui\Ext\Text $native): NodeInterface
     {
         return new NativeTextWrapper($native);
     }

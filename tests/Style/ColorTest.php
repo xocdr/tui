@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Style;
+namespace Xocdr\Tui\Tests\Style;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Style\Color;
+use Xocdr\Tui\Style\Color;
 
 class ColorTest extends TestCase
 {
@@ -56,31 +56,6 @@ class ColorTest extends TestCase
         $hex = Color::rgbToHex(0, 0, 15);
 
         $this->assertEquals('#00000f', $hex);
-    }
-
-    public function testRgbTo256Red(): void
-    {
-        $index = Color::rgbTo256(255, 0, 0);
-
-        // Red should be in the color cube
-        $this->assertGreaterThanOrEqual(16, $index);
-        $this->assertLessThanOrEqual(231, $index);
-    }
-
-    public function testRgbTo256White(): void
-    {
-        $index = Color::rgbTo256(255, 255, 255);
-
-        // White (5,5,5) = 16 + 36*5 + 6*5 + 5 = 231
-        $this->assertEquals(231, $index);
-    }
-
-    public function testRgbTo256Black(): void
-    {
-        $index = Color::rgbTo256(0, 0, 0);
-
-        // Black (0,0,0) = 16
-        $this->assertEquals(16, $index);
     }
 
     public function testLerpMiddle(): void

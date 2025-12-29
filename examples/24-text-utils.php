@@ -18,13 +18,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Text\TextUtils;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Text\TextUtils;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -55,38 +55,54 @@ $padLeft = TextUtils::left('left', 15);
 $padRight = TextUtils::right('right', 15);
 $padCenter = TextUtils::center('center', 15);
 
-$app = function () use ($widths, $wrapped, $truncated, $padLeft, $padRight, $padCenter) {
-    ['exit' => $exit] = useApp();
+class TextUtilsDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+    public function __construct(
+        private array $widths,
+        private array $wrapped,
+        private string $truncated,
+        private string $padLeft,
+        private string $padRight,
+        private string $padCenter,
+    ) {
+    }
 
-    return Box::column([
-        Text::create('Text Utilities Demo')->bold()->cyan(),
-        Text::create(''),
-        Text::create('String Width (Unicode-aware):')->bold(),
-        ...array_map(
-            fn ($w) => Text::create(sprintf('  "%s" = %d cells', $w[0], $w[1])),
-            $widths
-        ),
-        Text::create(''),
-        Text::create('Text Wrapping (30 chars):')->bold(),
-        ...array_map(fn ($line) => Text::create('  │' . $line . '│'), $wrapped),
-        Text::create(''),
-        Text::create('Truncation (25 chars):')->bold(),
-        Text::create("  \"{$truncated}\""),
-        Text::create(''),
-        Text::create('Padding/Alignment (15 chars):')->bold(),
-        Text::create("  Left:   │{$padLeft}│"),
-        Text::create("  Right:  │{$padRight}│"),
-        Text::create("  Center: │{$padCenter}│"),
-        Text::create(''),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-$instance = Tui::render($app);
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
+
+        return Box::column([
+            Text::create('Text Utilities Demo')->bold()->cyan(),
+            Text::create(''),
+            Text::create('String Width (Unicode-aware):')->bold(),
+            ...array_map(
+                fn ($w) => Text::create(sprintf('  "%s" = %d cells', $w[0], $w[1])),
+                $this->widths
+            ),
+            Text::create(''),
+            Text::create('Text Wrapping (30 chars):')->bold(),
+            ...array_map(fn ($line) => Text::create('  │' . $line . '│'), $this->wrapped),
+            Text::create(''),
+            Text::create('Truncation (25 chars):')->bold(),
+            Text::create("  \"{$this->truncated}\""),
+            Text::create(''),
+            Text::create('Padding/Alignment (15 chars):')->bold(),
+            Text::create("  Left:   │{$this->padLeft}│"),
+            Text::create("  Right:  │{$this->padRight}│"),
+            Text::create("  Center: │{$this->padCenter}│"),
+            Text::create(''),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new TextUtilsDemo($widths, $wrapped, $truncated, $padLeft, $padRight, $padCenter));
 $instance->waitUntilExit();

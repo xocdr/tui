@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tui;
+namespace Xocdr\Tui;
 
-use Tui\Components\Component;
-use Tui\Contracts\EventDispatcherInterface;
-use Tui\Contracts\HookContextInterface;
-use Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Contracts\EventDispatcherInterface;
+use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Testing\TestRenderer;
 
 /**
  * Main entry point for Tui applications.
@@ -17,45 +19,69 @@ use Tui\Contracts\RendererInterface;
  */
 class Tui
 {
-    private static ?Instance $currentInstance = null;
+    private static ?Application $currentApplication = null;
 
-    /** @var array<string, Instance> */
-    private static array $instances = [];
+    /** @var array<string, Application> */
+    private static array $applications = [];
 
     /**
      * Render a component to the terminal.
      *
      * @param callable|Component $component The root component
      * @param array<string, mixed> $options Render options
-     * @return Instance The render instance
+     * @return Application The application instance
+     *
+     * @throws ExtensionNotLoadedException If ext-tui is not loaded
      */
-    public static function render(callable|Component $component, array $options = []): Instance
+    public static function render(callable|Component $component, array $options = []): Application
     {
-        $instance = new Instance($component, $options);
-        self::$currentInstance = $instance;
-        self::$instances[$instance->getId()] = $instance;
+        self::ensureExtensionLoaded();
 
-        $instance->start();
+        $app = new Application($component, $options);
+        self::$currentApplication = $app;
+        self::$applications[$app->getId()] = $app;
 
-        return $instance;
+        $app->start();
+
+        return $app;
     }
 
     /**
-     * Create a new instance without starting it.
+     * Check if the ext-tui extension is loaded.
+     */
+    public static function isExtensionLoaded(): bool
+    {
+        return extension_loaded('tui');
+    }
+
+    /**
+     * Ensure the ext-tui extension is loaded.
+     *
+     * @throws ExtensionNotLoadedException If ext-tui is not loaded
+     */
+    public static function ensureExtensionLoaded(): void
+    {
+        if (!self::isExtensionLoaded()) {
+            throw new ExtensionNotLoadedException();
+        }
+    }
+
+    /**
+     * Create a new application without starting it.
      *
      * @param callable|Component $component The root component
      * @param array<string, mixed> $options Render options
      */
-    public static function create(callable|Component $component, array $options = []): Instance
+    public static function create(callable|Component $component, array $options = []): Application
     {
-        $instance = new Instance($component, $options);
-        self::$instances[$instance->getId()] = $instance;
+        $app = new Application($component, $options);
+        self::$applications[$app->getId()] = $app;
 
-        return $instance;
+        return $app;
     }
 
     /**
-     * Create a new instance with custom dependencies.
+     * Create a new application with custom dependencies.
      *
      * @param callable|Component $component The root component
      * @param array<string, mixed> $options Render options
@@ -66,17 +92,17 @@ class Tui
         ?EventDispatcherInterface $eventDispatcher = null,
         ?HookContextInterface $hookContext = null,
         ?RendererInterface $renderer = null
-    ): Instance {
-        $instance = new Instance(
+    ): Application {
+        $app = new Application(
             $component,
             $options,
             $eventDispatcher,
             $hookContext,
             $renderer
         );
-        self::$instances[$instance->getId()] = $instance;
+        self::$applications[$app->getId()] = $app;
 
-        return $instance;
+        return $app;
     }
 
     /**
@@ -88,67 +114,67 @@ class Tui
     }
 
     /**
-     * Get the current render instance.
+     * Get the current application.
      */
-    public static function getInstance(): ?Instance
+    public static function getApplication(): ?Application
     {
-        return self::$currentInstance;
+        return self::$currentApplication;
     }
 
     /**
-     * Set the current instance (for testing).
+     * Set the current application (for testing).
      */
-    public static function setInstance(?Instance $instance): void
+    public static function setApplication(?Application $app): void
     {
-        self::$currentInstance = $instance;
-        if ($instance !== null) {
-            self::$instances[$instance->getId()] = $instance;
+        self::$currentApplication = $app;
+        if ($app !== null) {
+            self::$applications[$app->getId()] = $app;
         }
     }
 
     /**
-     * Get an instance by ID.
+     * Get an application by ID.
      */
-    public static function getInstanceById(string $id): ?Instance
+    public static function getApplicationById(string $id): ?Application
     {
-        return self::$instances[$id] ?? null;
+        return self::$applications[$id] ?? null;
     }
 
     /**
-     * Get all active instances.
+     * Get all active applications.
      *
-     * @return array<string, Instance>
+     * @return array<string, Application>
      */
-    public static function getInstances(): array
+    public static function getApplications(): array
     {
-        return self::$instances;
+        return self::$applications;
     }
 
     /**
-     * Remove an instance by ID.
+     * Remove an application by ID.
      */
-    public static function removeInstance(string $id): void
+    public static function removeApplication(string $id): void
     {
-        if (isset(self::$instances[$id])) {
-            if (self::$currentInstance?->getId() === $id) {
-                self::$currentInstance = null;
+        if (isset(self::$applications[$id])) {
+            if (self::$currentApplication?->getId() === $id) {
+                self::$currentApplication = null;
             }
-            unset(self::$instances[$id]);
+            unset(self::$applications[$id]);
         }
     }
 
     /**
-     * Clear all instances (for testing).
+     * Clear all applications (for testing).
      */
-    public static function clearInstances(): void
+    public static function clearApplications(): void
     {
-        foreach (self::$instances as $instance) {
-            if ($instance->isRunning()) {
-                $instance->unmount();
+        foreach (self::$applications as $app) {
+            if ($app->isRunning()) {
+                $app->unmount();
             }
         }
-        self::$instances = [];
-        self::$currentInstance = null;
+        self::$applications = [];
+        self::$currentApplication = null;
     }
 
     /**
@@ -214,5 +240,25 @@ class Tui
     public static function truncate(string $text, int $width, string $ellipsis = '...'): string
     {
         return tui_truncate($text, $width, $ellipsis);
+    }
+
+    /**
+     * Render a component to a string without the C extension.
+     *
+     * Useful for testing, CI environments, or generating static output.
+     *
+     * @param callable|Component $component The component to render
+     * @param int $width Terminal width for rendering
+     * @param int $height Terminal height for rendering
+     * @return string The rendered output as a string
+     */
+    public static function renderToString(
+        callable|Component $component,
+        int $width = 80,
+        int $height = 24
+    ): string {
+        $renderer = new TestRenderer($width, $height);
+
+        return $renderer->render($component);
     }
 }

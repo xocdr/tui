@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components\Examples;
+namespace Xocdr\Tui\Components\Examples;
 
-use Tui\Components\StatefulComponent;
-use Tui\Components\Box;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\StatefulComponent;
+use Xocdr\Tui\Components\Text;
 
 /**
  * Example todo list component demonstrating StatefulComponent usage.
@@ -118,10 +118,10 @@ class TodoList extends StatefulComponent
      */
     public function getCompletedCount(): int
     {
-        return count(array_filter($this->state['items'], fn($item) => $item['completed']));
+        return count(array_filter($this->state['items'], fn ($item) => $item['completed']));
     }
 
-    public function render(): \TuiBox
+    public function render(): \Xocdr\Tui\Ext\Box
     {
         $title = $this->prop('title', 'Todo List');
         $items = $this->state['items'];

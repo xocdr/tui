@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Events;
+namespace Xocdr\Tui\Events;
+
+use Xocdr\Tui\Testing\MockKey;
 
 /**
  * Event dispatched when keyboard input is received.
@@ -11,7 +13,7 @@ class InputEvent extends Event
 {
     public function __construct(
         public readonly string $key,
-        public readonly \TuiKey $nativeKey
+        public readonly \Xocdr\Tui\Ext\Key|MockKey $nativeKey
     ) {
     }
 

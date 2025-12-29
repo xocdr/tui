@@ -17,16 +17,14 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Components\Newline;
-use Tui\Style\Color;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useState;
-
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal (TTY).\n";
@@ -53,78 +51,84 @@ Color::define('custom', '#ff6b6b', [
     950 => '#7f1d1d',
 ]);
 
-$app = function () {
-    $palettes = ['slate', 'gray', 'red', 'orange', 'amber', 'yellow', 'lime', 'green',
-                 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple',
-                 'fuchsia', 'pink', 'rose', 'brand', 'ocean', 'forest', 'custom'];
-    $shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+class ColorPaletteDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    [$paletteIndex, $setPaletteIndex] = useState(0);
-    $app = useApp();
+    public function render(): mixed
+    {
+        $palettes = ['slate', 'gray', 'red', 'orange', 'amber', 'yellow', 'lime', 'green',
+            'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple',
+            'fuchsia', 'pink', 'rose', 'brand', 'ocean', 'forest', 'custom'];
+        $shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
-    useInput(function (string $input, \TuiKey $key) use ($app, $palettes, $setPaletteIndex) {
-        if ($input === 'q') {
-            $app['exit'](0);
-        } elseif ($key->leftArrow) {
-            $setPaletteIndex(fn($i) => ($i - 1 + count($palettes)) % count($palettes));
-        } elseif ($key->rightArrow) {
-            $setPaletteIndex(fn($i) => ($i + 1) % count($palettes));
-        }
-    });
+        [$paletteIndex, $setPaletteIndex] = $this->hooks()->state(0);
+        $app = $this->hooks()->app();
 
-    $currentPalette = $palettes[$paletteIndex];
-    $rows = [];
+        $this->hooks()->onInput(function (string $input, $key) use ($app, $palettes, $setPaletteIndex) {
+            if ($input === 'q' || $key->escape) {
+                $app['exit'](0);
+            } elseif ($key->leftArrow) {
+                $setPaletteIndex(fn ($i) => ($i - 1 + count($palettes)) % count($palettes));
+            } elseif ($key->rightArrow) {
+                $setPaletteIndex(fn ($i) => ($i + 1) % count($palettes));
+            }
+        });
 
-    // Title
-    $rows[] = Text::create('Tailwind-style Color Palette')->bold()->palette('sky', 400);
-    $rows[] = Text::create('← → to change palette, q to quit')->dim();
-    $rows[] = Newline::create();
+        $currentPalette = $palettes[$paletteIndex];
+        $rows = [];
 
-    // Current palette name
-    $rows[] = Box::row([
-        Text::create('Palette: ')->dim(),
-        Text::create($currentPalette)->bold()->palette($currentPalette, 500),
-        Text::create(' (' . ($paletteIndex + 1) . '/' . count($palettes) . ')')->dim(),
-    ]);
-    $rows[] = Newline::create();
+        // Title
+        $rows[] = Text::create('Tailwind-style Color Palette')->bold()->palette('sky', 400);
+        $rows[] = Text::create('← → to change palette, q to quit')->dim();
+        $rows[] = Newline::create();
 
-    // Shade swatches
-    $rows[] = Text::create('Shades:')->bold();
-
-    $swatchRow = [];
-    foreach ($shades as $shade) {
-        $swatchRow[] = Text::create(' ' . str_pad((string)$shade, 4) . ' ')
-            ->bgPalette($currentPalette, $shade)
-            ->color($shade < 500 ? '#000000' : '#ffffff');
-    }
-    $rows[] = Box::row($swatchRow);
-    $rows[] = Newline::create();
-
-    // Example text in different shades
-    $rows[] = Text::create('Text examples:')->bold();
-    foreach ([300, 400, 500, 600, 700] as $shade) {
+        // Current palette name
         $rows[] = Box::row([
-            Text::create(str_pad((string)$shade, 4))->dim(),
-            Text::create(' The quick brown fox jumps over the lazy dog')
-                ->palette($currentPalette, $shade),
+            Text::create('Palette: ')->dim(),
+            Text::create($currentPalette)->bold()->palette($currentPalette, 500),
+            Text::create(' (' . ($paletteIndex + 1) . '/' . count($palettes) . ')')->dim(),
         ]);
+        $rows[] = Newline::create();
+
+        // Shade swatches
+        $rows[] = Text::create('Shades:')->bold();
+
+        $swatchRow = [];
+        foreach ($shades as $shade) {
+            $swatchRow[] = Text::create(' ' . str_pad((string) $shade, 4) . ' ')
+                ->bgPalette($currentPalette, $shade)
+                ->color($shade < 500 ? '#000000' : '#ffffff');
+        }
+        $rows[] = Box::row($swatchRow);
+        $rows[] = Newline::create();
+
+        // Example text in different shades
+        $rows[] = Text::create('Text examples:')->bold();
+        foreach ([300, 400, 500, 600, 700] as $shade) {
+            $rows[] = Box::row([
+                Text::create(str_pad((string) $shade, 4))->dim(),
+                Text::create(' The quick brown fox jumps over the lazy dog')
+                    ->palette($currentPalette, $shade),
+            ]);
+        }
+        $rows[] = Newline::create();
+
+        // Usage examples
+        $rows[] = Text::create('Usage:')->bold();
+        $rows[] = Text::create("  Text::create('Hello')->palette('$currentPalette', 500)")->palette('zinc', 400);
+        $rows[] = Text::create("  Text::create('Hello')->bgPalette('$currentPalette', 100)")->palette('zinc', 400);
+        $rows[] = Text::create("  Color::palette('$currentPalette', 500)  // Returns hex")->palette('zinc', 400);
+        $rows[] = Text::create("  Color::$currentPalette(500)             // Shorthand")->palette('zinc', 400);
+        $rows[] = Newline::create();
+
+        // Custom palette definition
+        $rows[] = Text::create('Define custom palettes:')->bold();
+        $rows[] = Text::create("  Color::define('brand', '#e3855a');  // Auto-generate shades")->palette('zinc', 400);
+        $rows[] = Text::create("  Color::define('custom', '#ff6b6b', [50 => '...', ...]);")->palette('zinc', 400);
+
+        return Box::column($rows);
     }
-    $rows[] = Newline::create();
+}
 
-    // Usage examples
-    $rows[] = Text::create('Usage:')->bold();
-    $rows[] = Text::create("  Text::create('Hello')->palette('$currentPalette', 500)")->palette('zinc', 400);
-    $rows[] = Text::create("  Text::create('Hello')->bgPalette('$currentPalette', 100)")->palette('zinc', 400);
-    $rows[] = Text::create("  Color::palette('$currentPalette', 500)  // Returns hex")->palette('zinc', 400);
-    $rows[] = Text::create("  Color::$currentPalette(500)             // Shorthand")->palette('zinc', 400);
-    $rows[] = Newline::create();
-
-    // Custom palette definition
-    $rows[] = Text::create('Define custom palettes:')->bold();
-    $rows[] = Text::create("  Color::define('brand', '#e3855a');  // Auto-generate shades")->palette('zinc', 400);
-    $rows[] = Text::create("  Color::define('custom', '#ff6b6b', [50 => '...', ...]);")->palette('zinc', 400);
-
-    return Box::column($rows);
-};
-
-Tui::render($app)->waitUntilExit();
+Tui::render(new ColorPaletteDemo())->waitUntilExit();

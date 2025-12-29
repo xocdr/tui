@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components\Examples;
+namespace Xocdr\Tui\Components\Examples;
 
-use Tui\Components\StatefulComponent;
-use Tui\Components\Box;
-use Tui\Components\Text;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\StatefulComponent;
+use Xocdr\Tui\Components\Text;
 
 /**
  * Example counter component demonstrating StatefulComponent usage.
@@ -32,7 +32,7 @@ class Counter extends StatefulComponent
     {
         // Example: Auto-increment every second if autoIncrement prop is set
         if ($this->prop('autoIncrement', false)) {
-            $this->setInterval(1000, fn() => $this->increment());
+            $this->setInterval(1000, fn () => $this->increment());
         }
     }
 
@@ -62,7 +62,7 @@ class Counter extends StatefulComponent
         return $this->state['count'];
     }
 
-    public function render(): \TuiBox
+    public function render(): \Xocdr\Tui\Ext\Box
     {
         $label = $this->prop('label', 'Count');
 

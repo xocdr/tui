@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Input;
+namespace Xocdr\Tui\Input;
 
 /**
  * Key constants for keyboard input handling.
@@ -55,7 +55,7 @@ enum Key: string
     /**
      * Check if a TuiKey matches this key.
      */
-    public function matches(\TuiKey $key): bool
+    public function matches(\Xocdr\Tui\Ext\Key $key): bool
     {
         return match ($this) {
             self::UP => $key->upArrow,

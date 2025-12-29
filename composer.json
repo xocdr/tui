@@ -20,15 +20,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Tui\\": "src/"
-        },
-        "files": [
-            "src/Hooks/functions.php"
-        ]
+            "Xocdr\\Tui\\": "src/"
+        }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tui\\Tests\\": "tests/"
+            "Xocdr\\Tui\\Tests\\": "tests/"
         }
     },
     "scripts": {

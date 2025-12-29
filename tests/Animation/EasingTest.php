@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Animation;
+namespace Xocdr\Tui\Tests\Animation;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Animation\Easing;
+use Xocdr\Tui\Animation\Easing;
 
 class EasingTest extends TestCase
 {

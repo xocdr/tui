@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Render;
+namespace Xocdr\Tui\Render;
 
-use Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
  * Wrapper for pre-existing TuiBox instances.
@@ -18,7 +18,7 @@ class NativeBoxWrapper implements NodeInterface
     private array $children = [];
 
     public function __construct(
-        private \TuiBox $native
+        private \Xocdr\Tui\Ext\Box $native
     ) {
     }
 
@@ -36,7 +36,7 @@ class NativeBoxWrapper implements NodeInterface
         return $this->children;
     }
 
-    public function getNative(): \TuiBox
+    public function getNative(): \Xocdr\Tui\Ext\Box
     {
         return $this->native;
     }

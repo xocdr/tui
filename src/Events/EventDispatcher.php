@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Events;
+namespace Xocdr\Tui\Events;
 
-use Tui\Contracts\EventDispatcherInterface;
+use Xocdr\Tui\Contracts\EventDispatcherInterface;
 
 /**
  * Event dispatcher with priority support and handler management.

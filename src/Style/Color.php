@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Style;
+namespace Xocdr\Tui\Style;
 
 /**
  * Color utilities.
@@ -36,27 +36,18 @@ class Color
      */
     public static function hexToRgb(string $hex): array
     {
-        // Use native extension if available
-        if (function_exists('tui_color_from_hex')) {
-            $result = tui_color_from_hex($hex);
-            return [
-                'r' => $result['r'] ?? $result[0] ?? 0,
-                'g' => $result['g'] ?? $result[1] ?? 0,
-                'b' => $result['b'] ?? $result[2] ?? 0,
-            ];
-        }
-
-        // PHP fallback
+        // Normalize short hex to full hex first
         $hex = ltrim($hex, '#');
-
         if (strlen($hex) === 3) {
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
         }
+        $hex = '#' . $hex;
 
+        $result = \tui_color_from_hex($hex);
         return [
-            'r' => hexdec(substr($hex, 0, 2)),
-            'g' => hexdec(substr($hex, 2, 2)),
-            'b' => hexdec(substr($hex, 4, 2)),
+            'r' => $result['r'] ?? $result[0] ?? 0,
+            'g' => $result['g'] ?? $result[1] ?? 0,
+            'b' => $result['b'] ?? $result[2] ?? 0,
         ];
     }
 
@@ -69,37 +60,11 @@ class Color
     }
 
     /**
-     * Convert RGB to nearest 256-color index.
-     */
-    public static function rgbTo256(int $r, int $g, int $b): int
-    {
-        // Use the 216-color cube (16-231)
-        $r = (int) round($r / 255 * 5);
-        $g = (int) round($g / 255 * 5);
-        $b = (int) round($b / 255 * 5);
-
-        return 16 + (36 * $r) + (6 * $g) + $b;
-    }
-
-    /**
      * Linear interpolation between two colors (RGB mode).
      */
     public static function lerp(string $colorA, string $colorB, float $t): string
     {
-        // Use native extension if available
-        if (function_exists('tui_lerp_color')) {
-            return tui_lerp_color($colorA, $colorB, $t);
-        }
-
-        // PHP fallback
-        $a = self::hexToRgb($colorA);
-        $b = self::hexToRgb($colorB);
-
-        $r = (int) ($a['r'] + ($b['r'] - $a['r']) * $t);
-        $g = (int) ($a['g'] + ($b['g'] - $a['g']) * $t);
-        $bVal = (int) ($a['b'] + ($b['b'] - $a['b']) * $t);
-
-        return self::rgbToHex($r, $g, $bVal);
+        return \tui_lerp_color($colorA, $colorB, $t);
     }
 
     /**
@@ -155,11 +120,21 @@ class Color
         }
 
         $hue2rgb = function ($p, $q, $t) {
-            if ($t < 0) $t += 1;
-            if ($t > 1) $t -= 1;
-            if ($t < 1/6) return $p + ($q - $p) * 6 * $t;
-            if ($t < 1/2) return $q;
-            if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
+            if ($t < 0) {
+                $t += 1;
+            }
+            if ($t > 1) {
+                $t -= 1;
+            }
+            if ($t < 1 / 6) {
+                return $p + ($q - $p) * 6 * $t;
+            }
+            if ($t < 1 / 2) {
+                return $q;
+            }
+            if ($t < 2 / 3) {
+                return $p + ($q - $p) * (2 / 3 - $t) * 6;
+            }
             return $p;
         };
 
@@ -168,9 +143,9 @@ class Color
         $h = $h / 360;
 
         return [
-            'r' => (int) round($hue2rgb($p, $q, $h + 1/3) * 255),
+            'r' => (int) round($hue2rgb($p, $q, $h + 1 / 3) * 255),
             'g' => (int) round($hue2rgb($p, $q, $h) * 255),
-            'b' => (int) round($hue2rgb($p, $q, $h - 1/3) * 255),
+            'b' => (int) round($hue2rgb($p, $q, $h - 1 / 3) * 255),
         ];
     }
 
@@ -221,28 +196,100 @@ class Color
     }
 
     /**
+     * Get a CSS named color as hex.
+     *
+     * Requires ext-tui Color enum.
+     *
+     * @param string $name CSS color name (case-insensitive)
+     * @return string|null Hex color or null if not found
+     */
+    public static function css(string $name): ?string
+    {
+        $color = \Xocdr\Tui\Ext\Color::fromName($name);
+        return $color?->value;
+    }
+
+    /**
+     * Get all CSS color names.
+     *
+     * @return array<string>
+     */
+    public static function cssNames(): array
+    {
+        return array_map(
+            fn($case) => strtolower($case->name),
+            \Xocdr\Tui\Ext\Color::cases()
+        );
+    }
+
+    /**
+     * Check if a string is a valid CSS color name.
+     */
+    public static function isCssColor(string $name): bool
+    {
+        return self::css($name) !== null;
+    }
+
+    /**
      * Named color to hex conversion.
+     *
+     * Supports CSS named colors, hex codes, and returns input unchanged
+     * if not recognized (for pass-through to ext-tui).
      */
     public static function nameToHex(string $name): string
     {
-        $colors = [
-            'black' => '#000000',
-            'white' => '#ffffff',
-            'red' => '#ff0000',
-            'green' => '#00ff00',
-            'blue' => '#0000ff',
-            'yellow' => '#ffff00',
-            'cyan' => '#00ffff',
-            'magenta' => '#ff00ff',
-            'orange' => '#ff8800',
-            'pink' => '#ff69b4',
-            'purple' => '#800080',
-            'gray' => '#808080',
-            'grey' => '#808080',
-        ];
+        // Already a hex color
+        if (str_starts_with($name, '#')) {
+            return $name;
+        }
 
-        $lower = strtolower($name);
-        return $colors[$lower] ?? $name;
+        // Try CSS color
+        $hex = self::css($name);
+        if ($hex !== null) {
+            return $hex;
+        }
+
+        // Return unchanged for ext-tui to handle (e.g., 'brightRed', 'ansi256:123')
+        return $name;
+    }
+
+    /**
+     * Resolve any color input to a hex color.
+     *
+     * Handles: hex codes, CSS names, Tailwind palette names with shade,
+     * RGB arrays, and ANSI color names.
+     *
+     * @param string|array{r: int, g: int, b: int} $color
+     */
+    public static function resolve(string|array $color): string
+    {
+        // RGB array
+        if (is_array($color)) {
+            return self::rgbToHex($color['r'], $color['g'], $color['b']);
+        }
+
+        // Already hex
+        if (str_starts_with($color, '#')) {
+            return $color;
+        }
+
+        // CSS named color
+        $hex = self::css($color);
+        if ($hex !== null) {
+            return $hex;
+        }
+
+        // Tailwind-style: "red-500", "blue-300"
+        if (preg_match('/^([a-z]+)-(\d+)$/i', $color, $matches)) {
+            $name = strtolower($matches[1]);
+            $shade = (int) $matches[2];
+            if (isset(self::$palette[$name][$shade]) || isset(self::$customPalettes[$name][$shade])) {
+                return self::palette($name, $shade);
+            }
+        }
+
+        // Return unchanged
+        return $color;
     }
 
     /**

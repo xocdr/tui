@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Style;
+namespace Xocdr\Tui\Style;
 
 /**
  * Style builder for text styling.

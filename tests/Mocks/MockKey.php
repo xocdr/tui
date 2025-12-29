@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Mocks;
+namespace Xocdr\Tui\Tests\Mocks;
 
 /**
- * Mock TuiKey class for testing without the C extension.
+ * Mock Key class for testing without the C extension.
  */
-class MockTuiKey
+class MockKey
 {
     public string $key = '';
     public string $name = '';

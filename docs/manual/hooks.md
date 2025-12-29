@@ -1,23 +1,51 @@
 # Hooks
 
-Hooks provide state management and side effects in TUI components. All hooks are available as global functions in the `Tui\Hooks` namespace.
+Hooks provide state management and side effects in TUI components. The recommended API is through class-based components with `HooksAwareTrait`.
+
+## Getting Started
+
+Components implement `HooksAwareInterface` and use `HooksAwareTrait` for hook access:
 
 ```php
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useEffect;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+
+class MyComponent implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
+
+    public function render(): mixed
+    {
+        [$count, $setCount] = $this->hooks()->state(0);
+        ['exit' => $exit] = $this->hooks()->app();
+
+        $this->hooks()->onInput(function($key, $keyInfo) use ($exit) {
+            if ($keyInfo->escape) {
+                $exit();
+            }
+        });
+
+        return Box::column([
+            Text::create("Count: {$count}"),
+        ]);
+    }
+}
+
+// Usage
+Tui::render(new MyComponent())->waitUntilExit();
 ```
+
+---
 
 ## Basic Hooks
 
-### useState
+### state
 
 Manage component state that persists across renders.
 
 ```php
-use function Tui\Hooks\useState;
-
-[$count, $setCount] = useState(0);
+[$count, $setCount] = $this->hooks()->state(0);
 
 // Update with value
 $setCount(5);
@@ -26,15 +54,13 @@ $setCount(5);
 $setCount(fn($c) => $c + 1);
 ```
 
-### useEffect
+### onRender
 
 Run side effects after render, with cleanup support.
 
 ```php
-use function Tui\Hooks\useEffect;
-
 // Run once on mount
-useEffect(function() {
+$this->hooks()->onRender(function() {
     // Setup
     return function() {
         // Cleanup (optional)
@@ -42,53 +68,45 @@ useEffect(function() {
 }, []);
 
 // Run when dependencies change
-useEffect(function() use ($count) {
+$this->hooks()->onRender(function() use ($count) {
     // Effect code
 }, [$count]);
 ```
 
-### useMemo
+### memo
 
 Memoize expensive computations.
 
 ```php
-use function Tui\Hooks\useMemo;
-
-$expensiveValue = useMemo(function() use ($data) {
+$expensiveValue = $this->hooks()->memo(function() use ($data) {
     return processData($data);
 }, [$data]);
 ```
 
-### useCallback
+### callback
 
 Memoize callbacks to prevent unnecessary re-renders.
 
 ```php
-use function Tui\Hooks\useCallback;
-
-$handler = useCallback(function($event) use ($value) {
+$handler = $this->hooks()->callback(function($event) use ($value) {
     // Handle event
 }, [$value]);
 ```
 
-### useRef
+### ref
 
 Create a mutable reference that persists across renders.
 
 ```php
-use function Tui\Hooks\useRef;
-
-$inputRef = useRef('');
+$inputRef = $this->hooks()->ref('');
 $inputRef->current = 'new value';
 ```
 
-### useReducer
+### reducer
 
 Manage complex state with a reducer function.
 
 ```php
-use function Tui\Hooks\useReducer;
-
 $reducer = function($state, $action) {
     return match($action['type']) {
         'increment' => ['count' => $state['count'] + 1],
@@ -97,7 +115,7 @@ $reducer = function($state, $action) {
     };
 };
 
-[$state, $dispatch] = useReducer($reducer, ['count' => 0]);
+[$state, $dispatch] = $this->hooks()->reducer($reducer, ['count' => 0]);
 
 $dispatch(['type' => 'increment']);
 ```
@@ -106,16 +124,14 @@ $dispatch(['type' => 'increment']);
 
 ## Input/Output Hooks
 
-### useInput
+### onInput
 
 Handle keyboard input.
 
 ```php
-use function Tui\Hooks\useInput;
-
-useInput(function($key, $keyInfo) {
+$this->hooks()->onInput(function($key, $keyInfo) {
     // $key is the character pressed
-    // $keyInfo is a TuiKey object with modifiers
+    // $keyInfo is a \Xocdr\Tui\Ext\Key object with modifiers
 
     if ($keyInfo->upArrow) {
         // Handle up arrow
@@ -126,10 +142,10 @@ useInput(function($key, $keyInfo) {
 });
 
 // With options
-useInput($handler, ['isActive' => $isFocused]);
+$this->hooks()->onInput($handler, ['isActive' => $isFocused]);
 ```
 
-**TuiKey Properties:**
+**Key Properties:**
 
 | Property | Description |
 |----------|-------------|
@@ -147,27 +163,23 @@ useInput($handler, ['isActive' => $isFocused]);
 | `meta` | Meta/Cmd modifier |
 | `shift` | Shift modifier |
 
-### useApp
+### app
 
 Access application control functions.
 
 ```php
-use function Tui\Hooks\useApp;
-
-['exit' => $exit] = useApp();
+['exit' => $exit] = $this->hooks()->app();
 
 // Exit the application
 $exit(0);  // With exit code
 ```
 
-### useStdout
+### stdout
 
 Get terminal dimensions and write access.
 
 ```php
-use function Tui\Hooks\useStdout;
-
-$stdout = useStdout();
+$stdout = $this->hooks()->stdout();
 
 $columns = $stdout['columns'];  // Terminal width
 $rows = $stdout['rows'];        // Terminal height
@@ -178,14 +190,12 @@ $stdout['write']('Direct output');
 
 ## Focus Hooks
 
-### useFocus
+### focus
 
 Track focus state of a component.
 
 ```php
-use function Tui\Hooks\useFocus;
-
-['isFocused' => $isFocused, 'focus' => $focus] = useFocus([
+['isFocused' => $isFocused, 'focus' => $focus] = $this->hooks()->focus([
     'autoFocus' => true,  // Focus on mount
     'isActive' => true,   // Is focusable
 ]);
@@ -195,14 +205,12 @@ if ($isFocused) {
 }
 ```
 
-### useFocusManager
+### focusManager
 
 Navigate focus between components.
 
 ```php
-use function Tui\Hooks\useFocusManager;
-
-$focusManager = useFocusManager();
+$focusManager = $this->hooks()->focusManager();
 
 $focusManager['focusNext']();      // Focus next element
 $focusManager['focusPrevious']();  // Focus previous element
@@ -212,37 +220,31 @@ $focusManager['focusPrevious']();  // Focus previous element
 
 ## Utility Hooks
 
-### useContext
+### context
 
 Access shared context values (dependency injection).
 
 ```php
-use function Tui\Hooks\useContext;
-
-$service = useContext(MyService::class);
+$service = $this->hooks()->context(MyService::class);
 ```
 
-### useToggle
+### toggle
 
 Boolean state with convenient toggle function.
 
 ```php
-use function Tui\Hooks\useToggle;
-
-[$isOpen, $toggle, $setOpen] = useToggle(false);
+[$isOpen, $toggle, $setOpen] = $this->hooks()->toggle(false);
 
 $toggle();      // Toggle value
 $setOpen(true); // Set directly
 ```
 
-### useCounter
+### counter
 
 Numeric counter with increment/decrement.
 
 ```php
-use function Tui\Hooks\useCounter;
-
-$counter = useCounter(0);
+$counter = $this->hooks()->counter(0);
 
 $counter['count'];       // Current value
 $counter['increment'](); // +1
@@ -251,14 +253,12 @@ $counter['reset']();     // Back to initial
 $counter['set'](10);     // Set directly
 ```
 
-### useList
+### list
 
 Manage a list of items.
 
 ```php
-use function Tui\Hooks\useList;
-
-$list = useList(['apple', 'banana']);
+$list = $this->hooks()->list(['apple', 'banana']);
 
 $list['items'];              // Current items
 $list['add']('cherry');      // Add item
@@ -268,42 +268,36 @@ $list['clear']();            // Clear all
 $list['set'](['new list']);  // Replace all
 ```
 
-### usePrevious
+### previous
 
 Get the previous value of a variable.
 
 ```php
-use function Tui\Hooks\usePrevious;
-
-[$count, $setCount] = useState(0);
-$previousCount = usePrevious($count);
+[$count, $setCount] = $this->hooks()->state(0);
+$previousCount = $this->hooks()->previous($count);
 
 // $previousCount is null on first render, then previous value
 ```
 
-### useInterval
+### interval
 
 Run a callback at a fixed interval.
 
 ```php
-use function Tui\Hooks\useInterval;
-
-useInterval(function() {
+$this->hooks()->interval(function() {
     // Called every 1000ms
 }, 1000);
 
 // Conditional interval
-useInterval($callback, 1000, $isActive);
+$this->hooks()->interval($callback, 1000, $isActive);
 ```
 
-### useAnimation
+### animation
 
 Manage animation state with tweening.
 
 ```php
-use function Tui\Hooks\useAnimation;
-
-$animation = useAnimation(0, 100, 1000, 'out-cubic');
+$animation = $this->hooks()->animation(0, 100, 1000, 'out-cubic');
 
 $animation['value'];       // Current animated value
 $animation['isAnimating']; // Is animation running
@@ -311,14 +305,12 @@ $animation['start']();     // Start animation
 $animation['reset']();     // Reset to initial
 ```
 
-### useCanvas
+### canvas
 
 Create and manage a drawing canvas.
 
 ```php
-use function Tui\Hooks\useCanvas;
-
-['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = useCanvas(40, 12);
+['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $this->hooks()->canvas(40, 12);
 
 $canvas->line(0, 0, 79, 47);
 $canvas->circle(40, 24, 15);
@@ -328,27 +320,46 @@ $lines = $render();
 
 ---
 
-## Using the Hooks Class
+## HooksAware Interface
 
-For better testability and dependency injection, use the `Hooks` class directly:
+For components that need hooks access, implement `HooksAwareInterface` and use `HooksAwareTrait`:
 
 ```php
-use Tui\Hooks\Hooks;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
 
-$app = function() {
-    $hooks = new Hooks(Tui::getInstance());
+class Counter implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    [$count, $setCount] = $hooks->useState(0);
-    $hooks->useEffect(fn() => null, []);
+    public function render(): mixed
+    {
+        [$count, $setCount] = $this->hooks()->state(0);
 
-    // ...
-};
+        $this->hooks()->onInput(function($key, $keyInfo) use ($setCount) {
+            if ($keyInfo->upArrow) {
+                $setCount(fn($c) => $c + 1);
+            }
+            if ($keyInfo->downArrow) {
+                $setCount(fn($c) => $c - 1);
+            }
+        });
+
+        return Box::column([
+            Text::create("Count: {$count}")->bold(),
+            Text::create('↑/↓ to change')->dim(),
+        ]);
+    }
+}
 ```
 
 The `Hooks` class implements `HooksInterface` for mocking in tests.
+
+---
 
 ## See Also
 
 - [Components](components.md) - UI components
 - [Animation](animation.md) - Animation utilities
-- [Reference: Functions](../reference/functions.md) - Full function reference
+- [Reference: Classes](../reference/classes.md) - Full class reference

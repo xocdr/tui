@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Input;
+namespace Xocdr\Tui\Input;
 
 /**
  * Modifier key constants.
@@ -23,7 +23,7 @@ enum Modifier: string
     /**
      * Check if this modifier is active on a TuiKey.
      */
-    public function isActive(\TuiKey $key): bool
+    public function isActive(\Xocdr\Tui\Ext\Key $key): bool
     {
         return match ($this) {
             self::CTRL => $key->ctrl,

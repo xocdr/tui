@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui;
+namespace Xocdr\Tui;
 
 /**
  * Simple dependency injection container.

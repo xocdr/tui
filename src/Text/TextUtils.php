@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Text;
+namespace Xocdr\Tui\Text;
 
 /**
  * Text utility functions.
@@ -25,37 +25,7 @@ class TextUtils
      */
     public static function width(string $text): int
     {
-        if (function_exists('tui_string_width')) {
-            return tui_string_width($text);
-        }
-
-        // Strip ANSI escape sequences
-        $text = preg_replace('/\x1b\[[0-9;]*m/', '', $text) ?? $text;
-
-        $width = 0;
-        $chars = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY);
-        if ($chars === false) {
-            return 0;
-        }
-
-        foreach ($chars as $char) {
-            $code = mb_ord($char);
-
-            // Zero-width characters
-            if ($code === 0x200B || $code === 0xFEFF ||
-                ($code >= 0x0300 && $code <= 0x036F)) {
-                continue;
-            }
-
-            // Wide characters (CJK, etc.)
-            if (self::isWideChar($code)) {
-                $width += 2;
-            } else {
-                $width += 1;
-            }
-        }
-
-        return $width;
+        return \tui_string_width_ansi($text);
     }
 
     /**
@@ -65,7 +35,6 @@ class TextUtils
      */
     public static function wrap(string $text, int $width): array
     {
-        // Handle edge cases first
         if ($text === '') {
             return [''];
         }
@@ -74,96 +43,25 @@ class TextUtils
             return [$text];
         }
 
-        if (function_exists('tui_wrap_text')) {
-            $result = tui_wrap_text($text, $width);
-            return is_array($result) && count($result) > 0 ? $result : [$text];
-        }
-
-        $lines = [];
-        $currentLine = '';
-        $currentWidth = 0;
-        $words = preg_split('/(\s+)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
-        if ($words === false) {
-            return [$text];
-        }
-
-        foreach ($words as $word) {
-            $wordWidth = self::width($word);
-
-            if ($currentWidth + $wordWidth <= $width) {
-                $currentLine .= $word;
-                $currentWidth += $wordWidth;
-            } else {
-                if ($currentLine !== '') {
-                    $lines[] = rtrim($currentLine);
-                }
-
-                // Word is longer than width, need to break it
-                if ($wordWidth > $width) {
-                    $chars = preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-                    $currentLine = '';
-                    $currentWidth = 0;
-
-                    foreach ($chars as $char) {
-                        $charWidth = self::width($char);
-                        if ($currentWidth + $charWidth > $width) {
-                            $lines[] = $currentLine;
-                            $currentLine = $char;
-                            $currentWidth = $charWidth;
-                        } else {
-                            $currentLine .= $char;
-                            $currentWidth += $charWidth;
-                        }
-                    }
-                } else {
-                    $currentLine = ltrim($word);
-                    $currentWidth = self::width($currentLine);
-                }
-            }
-        }
-
-        if ($currentLine !== '') {
-            $lines[] = rtrim($currentLine);
-        }
-
-        return $lines;
+        $result = \tui_wrap_text($text, $width);
+        return is_array($result) && count($result) > 0 ? $result : [$text];
     }
 
     /**
      * Truncate text to the specified width.
+     *
+     * @param string $text Text to truncate
+     * @param int $width Maximum display width
+     * @param string $ellipsis Ellipsis string (default: '...')
+     * @param string $position Where to truncate: 'end', 'start', or 'middle'
      */
-    public static function truncate(string $text, int $width, string $ellipsis = '...'): string
-    {
-        if (function_exists('tui_truncate')) {
-            return tui_truncate($text, $width, $ellipsis);
-        }
-
-        $textWidth = self::width($text);
-        if ($textWidth <= $width) {
-            return $text;
-        }
-
-        $ellipsisWidth = self::width($ellipsis);
-        $targetWidth = $width - $ellipsisWidth;
-
-        if ($targetWidth <= 0) {
-            return mb_substr($ellipsis, 0, $width);
-        }
-
-        $result = '';
-        $currentWidth = 0;
-        $chars = preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-
-        foreach ($chars as $char) {
-            $charWidth = self::width($char);
-            if ($currentWidth + $charWidth > $targetWidth) {
-                break;
-            }
-            $result .= $char;
-            $currentWidth += $charWidth;
-        }
-
-        return $result . $ellipsis;
+    public static function truncate(
+        string $text,
+        int $width,
+        string $ellipsis = '...',
+        string $position = 'end'
+    ): string {
+        return \tui_truncate($text, $width, $ellipsis, $position);
     }
 
     /**
@@ -171,22 +69,7 @@ class TextUtils
      */
     public static function pad(string $text, int $width, string $align = 'left', string $char = ' '): string
     {
-        if (function_exists('tui_pad')) {
-            return tui_pad($text, $width, $align, $char);
-        }
-
-        $textWidth = self::width($text);
-        $padding = $width - $textWidth;
-
-        if ($padding <= 0) {
-            return $text;
-        }
-
-        return match ($align) {
-            'right' => str_repeat($char, $padding) . $text,
-            'center' => str_repeat($char, (int) floor($padding / 2)) . $text . str_repeat($char, (int) ceil($padding / 2)),
-            default => $text . str_repeat($char, $padding),
-        };
+        return \tui_pad($text, $width, $align, $char);
     }
 
     /**
@@ -218,47 +101,22 @@ class TextUtils
      */
     public static function stripAnsi(string $text): string
     {
-        return preg_replace('/\x1b\[[0-9;]*m/', '', $text) ?? $text;
+        return \tui_strip_ansi($text);
     }
 
     /**
-     * Check if a Unicode code point is a wide character.
+     * Slice a string by display position, preserving ANSI codes.
+     *
+     * Unlike substr/mb_substr, this operates on display columns and
+     * maintains ANSI escape sequences that apply to the sliced portion.
+     *
+     * @param string $text Text with potential ANSI codes
+     * @param int $start Start display position (0-based)
+     * @param int $end End display position (exclusive)
+     * @return string Sliced text with preserved ANSI codes
      */
-    private static function isWideChar(int $code): bool
+    public static function sliceAnsi(string $text, int $start, int $end): string
     {
-        // CJK Unified Ideographs
-        if ($code >= 0x4E00 && $code <= 0x9FFF) {
-            return true;
-        }
-        // CJK Unified Ideographs Extension A
-        if ($code >= 0x3400 && $code <= 0x4DBF) {
-            return true;
-        }
-        // CJK Unified Ideographs Extension B-F
-        if ($code >= 0x20000 && $code <= 0x2EBEF) {
-            return true;
-        }
-        // Hangul Syllables
-        if ($code >= 0xAC00 && $code <= 0xD7AF) {
-            return true;
-        }
-        // Fullwidth Forms
-        if ($code >= 0xFF00 && $code <= 0xFFEF) {
-            return true;
-        }
-        // CJK Symbols and Punctuation
-        if ($code >= 0x3000 && $code <= 0x303F) {
-            return true;
-        }
-        // Hiragana
-        if ($code >= 0x3040 && $code <= 0x309F) {
-            return true;
-        }
-        // Katakana
-        if ($code >= 0x30A0 && $code <= 0x30FF) {
-            return true;
-        }
-
-        return false;
+        return \tui_slice_ansi($text, $start, $end);
     }
 }

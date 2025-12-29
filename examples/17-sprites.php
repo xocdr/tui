@@ -17,14 +17,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Drawing\Sprite;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
-use function Tui\Hooks\useState;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Drawing\Sprite;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -47,44 +46,55 @@ $sprite = Sprite::create([
 
 $sprite->setAnimation('idle');
 
-// Show current frame
-$app = function () use ($sprite) {
-    ['exit' => $exit] = useApp();
-    [$frame, $setFrame] = useState(0);
-    [$animation, $setAnimation] = useState('idle');
+class SpritesDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit, $setFrame, $setAnimation, $sprite) {
-        if ($key->escape) {
-            $exit();
-        } elseif ($input === ' ') {
-            $sprite->advance();
-            $setFrame(fn ($f) => $f + 1);
-        } elseif ($input === 'w') {
-            $sprite->setAnimation('walk');
-            $setAnimation('walk');
-        } elseif ($input === 'i') {
-            $sprite->setAnimation('idle');
-            $setAnimation('idle');
-        }
-    });
+    public function __construct(private Sprite $sprite)
+    {
+    }
 
-    $lines = $sprite->render();
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
+        [$frame, $setFrame] = $this->hooks()->state(0);
+        [$animation, $setAnimation] = $this->hooks()->state('idle');
 
-    return Box::column([
-        Text::create('Sprite Animation Demo')->bold()->cyan(),
-        Text::create(''),
-        ...array_map(fn ($line) => Text::create($line), $lines),
-        Text::create(''),
-        Text::create("Animation: {$animation} | Frame: {$frame}")->dim(),
-        Text::create(''),
-        Text::create('Controls:')->bold(),
-        Text::create('  SPACE - Advance frame'),
-        Text::create('  W     - Walk animation'),
-        Text::create('  I     - Idle animation'),
-        Text::create(''),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+        $sprite = $this->sprite;
 
-$instance = Tui::render($app);
+        $this->hooks()->onInput(function ($input, $key) use ($exit, $setFrame, $setAnimation, $sprite) {
+            if ($key->escape) {
+                $exit();
+            } elseif ($input === ' ') {
+                $sprite->advance();
+                $setFrame(fn ($f) => $f + 1);
+            } elseif ($input === 'w') {
+                $sprite->setAnimation('walk');
+                $setAnimation('walk');
+            } elseif ($input === 'i') {
+                $sprite->setAnimation('idle');
+                $setAnimation('idle');
+            }
+        });
+
+        $lines = $sprite->render();
+
+        return Box::column([
+            Text::create('Sprite Animation Demo')->bold()->cyan(),
+            Text::create(''),
+            ...array_map(fn ($line) => Text::create($line), $lines),
+            Text::create(''),
+            Text::create("Animation: {$animation} | Frame: {$frame}")->dim(),
+            Text::create(''),
+            Text::create('Controls:')->bold(),
+            Text::create('  SPACE - Advance frame'),
+            Text::create('  W     - Walk animation'),
+            Text::create('  I     - Idle animation'),
+            Text::create(''),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new SpritesDemo($sprite));
 $instance->waitUntilExit();

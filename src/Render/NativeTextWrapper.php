@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Render;
+namespace Xocdr\Tui\Render;
 
-use Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
  * Wrapper for pre-existing TuiText instances.
@@ -15,7 +15,7 @@ use Tui\Contracts\NodeInterface;
 class NativeTextWrapper implements NodeInterface
 {
     public function __construct(
-        private \TuiText $native
+        private \Xocdr\Tui\Ext\Text $native
     ) {
     }
 
@@ -32,7 +32,7 @@ class NativeTextWrapper implements NodeInterface
         return [];
     }
 
-    public function getNative(): \TuiText
+    public function getNative(): \Xocdr\Tui\Ext\Text
     {
         return $this->native;
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
 /**
  * Base interface for all Tui components.

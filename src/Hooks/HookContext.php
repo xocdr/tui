@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Hooks;
+namespace Xocdr\Tui\Hooks;
 
-use Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\HookContextInterface;
 
 /**
  * Manages hook state for a single TUI instance.
@@ -41,13 +41,13 @@ class HookContext implements HookContextInterface
     }
 
     /**
-     * State hook - maintains state between renders.
+     * State - maintains state between renders.
      *
      * @template T
      * @param T $initial Initial value
      * @return array{0: T, 1: callable(T|callable(T): T): void}
      */
-    public function useState(mixed $initial): array
+    public function state(mixed $initial): array
     {
         $index = $this->stateIndex++;
 
@@ -71,12 +71,12 @@ class HookContext implements HookContextInterface
     }
 
     /**
-     * Effect hook - run side effects after render.
+     * OnRender - run side effects after render.
      *
      * @param callable $effect Effect function that may return a cleanup callable
      * @param array<mixed> $deps
      */
-    public function useEffect(callable $effect, array $deps = []): void
+    public function onRender(callable $effect, array $deps = []): void
     {
         $index = $this->effectIndex++;
 
@@ -99,14 +99,14 @@ class HookContext implements HookContextInterface
     }
 
     /**
-     * Memo hook - memoize expensive computations.
+     * Memo - memoize expensive computations.
      *
      * @template T
      * @param callable(): T $factory
      * @param array<mixed> $deps
      * @return T
      */
-    public function useMemo(callable $factory, array $deps = []): mixed
+    public function memo(callable $factory, array $deps = []): mixed
     {
         $index = $this->memoIndex++;
 
@@ -124,27 +124,27 @@ class HookContext implements HookContextInterface
     }
 
     /**
-     * Callback hook - memoize callbacks.
+     * Callback - memoize callbacks.
      *
      * @param callable $callback
      * @param array<mixed> $deps
      * @return callable
      */
-    public function useCallback(callable $callback, array $deps = []): callable
+    public function callback(callable $callback, array $deps = []): callable
     {
-        return $this->useMemo(fn () => $callback, $deps);
+        return $this->memo(fn () => $callback, $deps);
     }
 
     /**
-     * Ref hook - create a mutable reference.
+     * Ref - create a mutable reference.
      *
      * @template T
      * @param T $initial
      * @return object{current: T}
      */
-    public function useRef(mixed $initial): object
+    public function ref(mixed $initial): object
     {
-        [$ref] = $this->useState((object) ['current' => $initial]);
+        [$ref] = $this->state((object) ['current' => $initial]);
 
         return $ref;
     }

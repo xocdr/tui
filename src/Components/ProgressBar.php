@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
-use Tui\Animation\Gradient;
+use Xocdr\Tui\Animation\Gradient;
 
 /**
  * Progress bar component.

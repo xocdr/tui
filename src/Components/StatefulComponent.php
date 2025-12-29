@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
-use Tui\Instance;
+use Xocdr\Tui\Application;
 
 /**
  * Base class for stateful components with OOP-style state management.
  *
- * Provides React class component-like API without hooks:
+ * Provides class component-style API without hooks:
  * - State via $this->state and $this->setState()
  * - Lifecycle methods: mount(), unmount(), shouldUpdate()
  * - Event handlers as methods
@@ -27,7 +27,7 @@ use Tui\Instance;
  *         $this->setState(['count' => $this->state['count'] + 1]);
  *     }
  *
- *     public function render(): \TuiBox
+ *     public function render(): \Xocdr\Tui\Ext\Box
  *     {
  *         return Box::create()
  *             ->children([
@@ -61,9 +61,9 @@ abstract class StatefulComponent implements Component
     protected array $props = [];
 
     /**
-     * The Instance this component is attached to.
+     * The Application this component is attached to.
      */
-    private ?Instance $instance = null;
+    private ?Application $application = null;
 
     /**
      * Whether the component has been mounted.
@@ -159,11 +159,11 @@ abstract class StatefulComponent implements Component
     }
 
     /**
-     * Attach to an Instance for rendering and events.
+     * Attach to an Application for rendering and events.
      */
-    public function attachTo(Instance $instance): self
+    public function attachTo(Application $application): self
     {
-        $this->instance = $instance;
+        $this->application = $application;
 
         if (!$this->mounted) {
             $this->mounted = true;
@@ -174,7 +174,7 @@ abstract class StatefulComponent implements Component
     }
 
     /**
-     * Detach from the Instance.
+     * Detach from the Application.
      */
     public function detach(): void
     {
@@ -185,19 +185,19 @@ abstract class StatefulComponent implements Component
 
         // Clean up any timers
         foreach ($this->timerIds as $timerId) {
-            $this->instance?->removeTimer($timerId);
+            $this->application?->removeTimer($timerId);
         }
         $this->timerIds = [];
 
-        $this->instance = null;
+        $this->application = null;
     }
 
     /**
-     * Get the attached Instance.
+     * Get the attached Application.
      */
-    protected function getInstance(): ?Instance
+    protected function getApplication(): ?Application
     {
-        return $this->instance;
+        return $this->application;
     }
 
     /**
@@ -205,7 +205,7 @@ abstract class StatefulComponent implements Component
      */
     protected function rerender(): void
     {
-        $this->instance?->rerender();
+        $this->application?->rerender();
     }
 
     /**
@@ -217,11 +217,11 @@ abstract class StatefulComponent implements Component
      */
     protected function addTimer(int $intervalMs, callable $callback): int
     {
-        if ($this->instance === null) {
+        if ($this->application === null) {
             return -1;
         }
 
-        $timerId = $this->instance->addTimer($intervalMs, $callback);
+        $timerId = $this->application->addTimer($intervalMs, $callback);
         $this->timerIds[] = $timerId;
 
         return $timerId;
@@ -232,8 +232,8 @@ abstract class StatefulComponent implements Component
      */
     protected function removeTimer(int $timerId): void
     {
-        $this->instance?->removeTimer($timerId);
-        $this->timerIds = array_filter($this->timerIds, fn($id) => $id !== $timerId);
+        $this->application?->removeTimer($timerId);
+        $this->timerIds = array_filter($this->timerIds, fn ($id) => $id !== $timerId);
     }
 
     /**
@@ -282,5 +282,5 @@ abstract class StatefulComponent implements Component
      *
      * Must return a TuiBox or TuiText.
      */
-    abstract public function render(): \TuiBox|\TuiText;
+    abstract public function render(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text;
 }

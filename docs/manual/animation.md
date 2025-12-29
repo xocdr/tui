@@ -9,7 +9,7 @@ The `Easing` class provides 28 standard easing functions.
 ### Using Easing
 
 ```php
-use Tui\Animation\Easing;
+use Xocdr\Tui\Animation\Easing;
 
 // By name
 $value = Easing::ease(0.5, 'out-cubic');  // 0.875
@@ -53,8 +53,8 @@ The `Tween` class manages animated transitions between values.
 ### Creating a Tween
 
 ```php
-use Tui\Animation\Tween;
-use Tui\Animation\Easing;
+use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Animation\Easing;
 
 $tween = Tween::create(
     0,           // from
@@ -109,12 +109,12 @@ while (!$tween->isComplete()) {
 
 ## Gradients
 
-The `Gradient` class generates smooth color transitions.
+The `Gradient` class generates smooth color transitions with animation support.
 
 ### Creating Gradients
 
 ```php
-use Tui\Animation\Gradient;
+use Xocdr\Tui\Animation\Gradient;
 
 // Between two colors
 $gradient = Gradient::between('#ff0000', '#0000ff', 10);
@@ -126,6 +126,12 @@ $gradient = Gradient::create(['#ff0000', '#00ff00', '#0000ff'], 20);
 $gradient = Gradient::rainbow(10);
 $gradient = Gradient::grayscale(10);
 $gradient = Gradient::heatmap(10);
+
+// Hue rotation (full color wheel from base color)
+$gradient = Gradient::hueRotate('#3b82f6', 20);
+
+// From Tailwind palette
+$gradient = Gradient::fromPalette('blue', 100, 900, 10);
 ```
 
 ### Getting Colors
@@ -145,10 +151,48 @@ $color = $gradient->at(0.5);
 $count = $gradient->count();
 ```
 
+### Interpolation Modes
+
+```php
+// RGB interpolation (default)
+$gradient = Gradient::rainbow(20);
+
+// HSL interpolation (smoother for rainbows and hue transitions)
+$gradient = Gradient::rainbow(20)->hsl();
+```
+
+### Animation Support
+
+Gradients can be animated with circular mode and frame offsets:
+
+```php
+// Circular mode - loops back to start color
+$gradient = Gradient::create(['#f00', '#0f0', '#00f'], 30)->circular();
+
+// Animation frame offset
+$colors = Gradient::rainbow(20)
+    ->hsl()
+    ->circular()
+    ->offset($frameNumber)  // Shift colors by frame
+    ->getColors();
+
+// In an animation loop
+for ($frame = 0; $frame < 100; $frame++) {
+    $colors = Gradient::rainbow(20)
+        ->hsl()
+        ->circular()
+        ->frame($frame)
+        ->getColors();
+
+    // Render with shifted colors...
+    usleep(50000);
+}
+```
+
 ### With Progress Bar
 
 ```php
-use Tui\Components\ProgressBar;
+use Xocdr\Tui\Components\ProgressBar;
 
 $bar = ProgressBar::create()
     ->gradient(Gradient::rainbow(30))
@@ -159,8 +203,8 @@ $bar = ProgressBar::create()
 ### Gradient Animation
 
 ```php
-use Tui\Animation\Gradient;
-use Tui\Animation\Tween;
+use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Animation\Tween;
 
 $gradient = Gradient::between('#003366', '#ff6600', 100);
 $tween = Tween::create(0, 99, 2000, 'in-out-sine');
@@ -176,15 +220,18 @@ while (!$tween->isComplete()) {
 
 ---
 
-## useAnimation Hook
+## animation Hook
 
 For animations in components:
 
 ```php
-use function Tui\Hooks\useAnimation;
+use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Tui;
 
 $app = function() {
-    $animation = useAnimation(0, 100, 1000, 'out-cubic');
+    $hooks = new Hooks(Tui::getApplication());
+
+    $animation = $hooks->animation(0, 100, 1000, 'out-cubic');
 
     // $animation = [
     //     'value' => float,        // Current animated value
@@ -209,18 +256,18 @@ $app = function() {
 
 ```php
 <?php
-use Tui\Animation\Easing;
-use Tui\Animation\Gradient;
-use Tui\Animation\Tween;
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Tui;
-
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Animation\Easing;
+use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Tui;
 
 $app = function() {
-    [$frame, $setFrame] = useState(0);
+    $hooks = new Hooks(Tui::getApplication());
+
+    [$frame, $setFrame] = $hooks->state(0);
 
     // Create animations
     $xTween = Tween::create(0, 40, 2000, Easing::OUT_BOUNCE);
@@ -228,10 +275,10 @@ $app = function() {
 
     $colorGradient = Gradient::rainbow(50);
 
-    useInput(function($key) use ($setFrame) {
-        if ($key === ' ') {
+    $hooks->onInput(function($input, $key) use ($setFrame) {
+        if ($input === ' ') {
             $setFrame(fn($f) => $f + 1);
-        } elseif ($key === 'r') {
+        } elseif ($input === 'r') {
             $setFrame(0);
         }
     });
@@ -274,5 +321,5 @@ $tween->update(100);
 ## See Also
 
 - [Drawing](drawing.md) - Canvas and sprites
-- [Hooks](hooks.md) - useAnimation, useInterval hooks
+- [Hooks](hooks.md) - animation, interval hooks
 - [Reference: Classes](../reference/classes.md) - Easing, Tween, Gradient reference

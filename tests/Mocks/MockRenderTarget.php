@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Mocks;
+namespace Xocdr\Tui\Tests\Mocks;
 
-use Tui\Contracts\NodeInterface;
-use Tui\Contracts\RenderTargetInterface;
+use Xocdr\Tui\Contracts\NodeInterface;
+use Xocdr\Tui\Contracts\RenderTargetInterface;
 
 /**
  * Mock render target for testing without the C extension.

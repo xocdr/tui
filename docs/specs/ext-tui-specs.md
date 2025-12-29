@@ -19,7 +19,7 @@
 ```
 ┌────────────────────────────────────────────────────────┐
 │                    PHP Layer                           │
-│  TuiBox │ TuiText │ TuiInstance │ TuiKey │ TuiFocusEvent│
+│ Xocdr\Tui\Ext\{Box,Text,Instance,Key,FocusEvent,...}  │
 └────┬───────────────────────────────────────────────────┘
      │
 ┌────▼────────────────────────────────────────────────────┐
@@ -42,6 +42,8 @@
 │ yoga/          │ Flexbox layout (vendored)              │
 └─────────────────────────────────────────────────────────┘
 ```
+
+**Namespace:** All PHP classes live under `Xocdr\Tui\Ext\`
 
 ---
 
@@ -66,7 +68,7 @@
 
 #### Rendering & Lifecycle
 
-**`tui_render(callable $component, array $options = []): TuiInstance`**
+**`tui_render(callable $component, array $options = []): Xocdr\Tui\Ext\Instance`**
 - Mounts and renders a component tree
 - **Options:**
   - `fullscreen` (bool, default: true) - Use alternate screen buffer
@@ -78,22 +80,22 @@
   4. Performs Yoga layout calculation
   5. Renders to terminal
   6. Starts event loop
-- **Returns:** `TuiInstance` for control
+- **Returns:** `Xocdr\Tui\Ext\Instance` for control
 
-**`tui_rerender(TuiInstance $instance): void`**
+**`tui_rerender(Xocdr\Tui\Ext\Instance $instance): void`**
 - Triggers immediate re-render
 - Calls component callback again
-- Reconciles old/new trees
+- Reconciles old/new trees using key-based algorithm
 - Marks affected cells as dirty
 - Renders only changed cells to terminal
 
-**`tui_unmount(TuiInstance $instance): void`**
+**`tui_unmount(Xocdr\Tui\Ext\Instance $instance): void`**
 - Stops the TUI
 - Restores terminal raw mode
 - Cleans up all resources
 - Exits gracefully
 
-**`tui_wait_until_exit(TuiInstance $instance): void`**
+**`tui_wait_until_exit(Xocdr\Tui\Ext\Instance $instance): void`**
 - Blocks execution until TUI exits
 - Runs the event loop
 - Processes input, resize, timer events
@@ -101,56 +103,56 @@
 
 #### Event Handling
 
-**`tui_set_input_handler(TuiInstance $instance, callable $handler): void`**
+**`tui_set_input_handler(Xocdr\Tui\Ext\Instance $instance, callable $handler): void`**
 - Registers keyboard input callback
-- Signature: `function(TuiKey $key): void`
+- Signature: `function(Xocdr\Tui\Ext\Key $key): void`
 - Called for every keyboard event
 - Can trigger `tui_rerender()` to update display
 
-**`tui_set_focus_handler(TuiInstance $instance, callable $handler): void`**
+**`tui_set_focus_handler(Xocdr\Tui\Ext\Instance $instance, callable $handler): void`**
 - Registers focus change callback
-- Signature: `function(TuiFocusEvent $event): void`
+- Signature: `function(Xocdr\Tui\Ext\FocusEvent $event): void`
 - Receives previous and current node info
 - Direction: 'next', 'prev', or 'programmatic'
 
-**`tui_set_resize_handler(TuiInstance $instance, callable $handler): void`**
+**`tui_set_resize_handler(Xocdr\Tui\Ext\Instance $instance, callable $handler): void`**
 - Registers terminal resize callback
 - Signature: `function(int $width, int $height): void`
 - Triggered on SIGWINCH
 
-**`tui_set_tick_handler(TuiInstance $instance, callable $handler): void`**
+**`tui_set_tick_handler(Xocdr\Tui\Ext\Instance $instance, callable $handler): void`**
 - Registers tick/frame callback
 - Called on each event loop iteration
 - Useful for animations
 
 #### Focus Management
 
-**`tui_focus_next(TuiInstance $instance): void`**
+**`tui_focus_next(Xocdr\Tui\Ext\Instance $instance): void`**
 - Moves focus to next focusable element
 - Traverses depth-first through tree
 - Wraps at end
 
-**`tui_focus_prev(TuiInstance $instance): void`**
+**`tui_focus_prev(Xocdr\Tui\Ext\Instance $instance): void`**
 - Moves focus to previous focusable element
 - Wraps at beginning
 
-**`tui_get_focused_node(TuiInstance $instance): ?array`**
+**`tui_get_focused_node(Xocdr\Tui\Ext\Instance $instance): ?array`**
 - Returns info about currently focused node
 - Returns null if no focus
 - Array keys: `focusable`, `focused`, `x`, `y`, `width`, `height`, `type`, `content`
 
-**`tui_get_size(TuiInstance $instance): ?array`**
+**`tui_get_size(Xocdr\Tui\Ext\Instance $instance): ?array`**
 - Returns render size
 - Keys: `width`, `height`, `columns`, `rows`
 
 #### Timers
 
-**`tui_add_timer(TuiInstance $instance, int $intervalMs, callable $handler): int`**
+**`tui_add_timer(Xocdr\Tui\Ext\Instance $instance, int $intervalMs, callable $handler): int`**
 - Creates repeating timer
 - Signature: `function(): void`
 - Returns timer ID
 
-**`tui_remove_timer(TuiInstance $instance, int $timerId): void`**
+**`tui_remove_timer(Xocdr\Tui\Ext\Instance $instance, int $timerId): void`**
 - Cancels timer
 - Safe to call on already-removed timers
 
@@ -379,17 +381,19 @@
 
 ## PHP Classes
 
-### TuiBox
+All classes are in the `Xocdr\Tui\Ext` namespace.
+
+### Box (Xocdr\Tui\Ext\Box)
 
 Container component with flexbox layout.
 
 **Constructor:**
 ```php
-new TuiBox(array $props = [])
+new Xocdr\Tui\Ext\Box(array $props = [])
 ```
 
 **Methods:**
-- `addChild(TuiBox|TuiText $child): self` - Fluent API
+- `addChild(Box|Text $child): self` - Fluent API
 
 **Properties:**
 
@@ -435,15 +439,15 @@ new TuiBox(array $props = [])
 | `borderColor` | string\|array\|null | null | '#rrggbb' or [r, g, b] |
 | `focusable` | bool | false | Can receive focus |
 | `focused` | bool | false | Currently focused |
-| `children` | array | [] | Child TuiBox/TuiText elements |
+| `children` | array | [] | Child Box/Text elements |
 
-### TuiText
+### Text (Xocdr\Tui\Ext\Text)
 
 Text display component with styling.
 
 **Constructor:**
 ```php
-new TuiText(string $content = '', array $props = [])
+new Xocdr\Tui\Ext\Text(string $content = '', array $props = [])
 ```
 
 **Properties:**
@@ -461,7 +465,7 @@ new TuiText(string $content = '', array $props = [])
 | `strikethrough` | bool | false | Strikethrough styling |
 | `wrap` | string\|null | null | 'none', 'char', 'word', 'word-char' |
 
-### TuiInstance
+### Instance (Xocdr\Tui\Ext\Instance)
 
 Represents running TUI application.
 
@@ -471,7 +475,7 @@ Represents running TUI application.
 - `waitUntilExit(): void` - Block until exit
 - `exit(int $code = 0): void` - Exit with code
 
-### TuiKey
+### Key (Xocdr\Tui\Ext\Key)
 
 Keyboard event object (read-only, received from input handler).
 
@@ -500,7 +504,7 @@ Keyboard event object (read-only, received from input handler).
 | `meta` | bool | Meta modifier |
 | `shift` | bool | Shift modifier |
 
-### TuiFocusEvent
+### FocusEvent (Xocdr\Tui\Ext\FocusEvent)
 
 Focus change event object.
 
@@ -795,9 +799,12 @@ Parses terminal escape sequences.
 - Results copied to `node->x`, `node->y`, `node->width`, `node->height`
 
 **Reconciler (src/node/reconciler.h):**
-- Diffs old and new trees
-- Reuses nodes when possible
-- Minimal updates to DOM
+- Diffs old and new trees using key-based algorithm
+- Supports keys for stable list item identity
+- O(n) child matching using key-to-node hash map
+- Falls back to index-based matching for non-keyed children
+- Multi-pass apply: DELETE → UPDATE → REPLACE → REORDER → CREATE
+- Preserves Yoga node identity for optimal layout caching
 
 ### 4. Rendering Pipeline (src/render/)
 
@@ -908,7 +915,7 @@ Vendored Facebook Yoga library for flexbox.
 
 2. **Call Component**
    - Invokes `$component()`
-   - Returns PHP object tree (TuiBox/TuiText)
+   - Returns PHP object tree (Box/Text)
 
 3. **Convert to Nodes**
    - `php_to_tui_node()` recursively converts
@@ -989,7 +996,7 @@ zval_ptr_dtor(&fci.function_name);
 
 ### Resource Cleanup
 
-TuiInstance has custom destructor:
+Instance has custom destructor:
 ```c
 static void tui_instance_free_object(zend_object *obj) {
     tui_instance_object *intern = tui_instance_from_obj(obj);
@@ -1106,11 +1113,56 @@ make test
 
 ## Performance Characteristics
 
-- **Layout:** O(n) Yoga flexbox algorithm
+- **Layout:** O(n) Yoga flexbox algorithm with `hasNewLayout` caching
+- **Reconciliation:** O(n) key-based child diffing
+- **Layout Copy:** Only nodes with `hasNewLayout=true` are updated
 - **Rendering:** O(cells) only dirty cells drawn
 - **Input:** O(1) event dispatch
 - **Memory:** ~1KB per node + buffer (width × height)
 - **Frame Rate:** 60fps max (16ms throttle)
+
+### Reconciler Optimization
+
+The reconciler uses a key-based algorithm for efficient list updates:
+
+1. **Key Map Construction:** O(n) hash map of `key → {node, index}` for old children
+2. **Child Matching:** New children matched to old by key, then by index
+3. **Operation Types:**
+   - `TUI_DIFF_DELETE` - Remove unmatched old nodes
+   - `TUI_DIFF_UPDATE` - Update matched nodes with same type
+   - `TUI_DIFF_REPLACE` - Replace nodes with different type
+   - `TUI_DIFF_REORDER` - Move nodes to correct position
+   - `TUI_DIFF_CREATE` - Create new nodes
+
+4. **Multi-Pass Apply:** Operations applied in specific order to maintain Yoga tree integrity:
+   - Pass 1: DELETE (remove from end to preserve indices)
+   - Pass 2: UPDATE (in-place updates)
+   - Pass 3: REPLACE (swap nodes)
+   - Pass 4: REORDER (move to correct position)
+   - Pass 5: CREATE (insert new nodes)
+
+### Layout Caching
+
+Yoga's `hasNewLayout` flag is leveraged to minimize layout copying:
+
+```c
+static int copy_layout_recursive(tui_node *node) {
+    if (YGNodeGetHasNewLayout(node->yoga_node)) {
+        // Only copy if layout changed
+        node->x = YGNodeLayoutGetLeft(node->yoga_node);
+        node->y = YGNodeLayoutGetTop(node->yoga_node);
+        node->width = YGNodeLayoutGetWidth(node->yoga_node);
+        node->height = YGNodeLayoutGetHeight(node->yoga_node);
+        YGNodeSetHasNewLayout(node->yoga_node, false);
+    }
+    // Recurse to children...
+}
+```
+
+This means:
+- Unchanged subtrees skip layout copy entirely
+- Only modified nodes incur copy overhead
+- Significant performance gain for large trees with localized updates
 
 ---
 
@@ -1120,21 +1172,24 @@ make test
 
 ```php
 <?php
+use Xocdr\Tui\Ext\Box;
+use Xocdr\Tui\Ext\Text;
+use Xocdr\Tui\Ext\Key;
 
 $counter = 0;
 
 $instance = tui_render(function() use (&$counter) {
-    return new TuiBox([
+    return new Box([
         'flexDirection' => 'column',
         'padding' => 1,
         'children' => [
-            new TuiText("Counter: $counter", ['bold' => true]),
-            new TuiText("Press q to quit, +/- to change", ['dim' => true]),
+            new Text("Counter: $counter", ['bold' => true]),
+            new Text("Press q to quit, +/- to change", ['dim' => true]),
         ],
     ]);
 });
 
-tui_set_input_handler($instance, function(TuiKey $key) use ($instance, &$counter) {
+tui_set_input_handler($instance, function(Key $key) use ($instance, &$counter) {
     if ($key->key === 'q') {
         $instance->exit();
     } elseif ($key->key === '+') {
@@ -1153,14 +1208,16 @@ tui_wait_until_exit($instance);
 
 ```php
 <?php
+use Xocdr\Tui\Ext\Box;
+use Xocdr\Tui\Ext\Text;
 
 $frame = 0;
 
 $instance = tui_render(function() use (&$frame) {
     $spinner = tui_spinner_frame('dots', $frame);
-    return new TuiBox([
+    return new Box([
         'children' => [
-            new TuiText("$spinner Loading...", ['color' => '#00ff00']),
+            new Text("$spinner Loading...", ['color' => '#00ff00']),
         ],
     ]);
 });
@@ -1177,25 +1234,29 @@ tui_wait_until_exit($instance);
 
 ```php
 <?php
+use Xocdr\Tui\Ext\Box;
+use Xocdr\Tui\Ext\Text;
+use Xocdr\Tui\Ext\Key;
+use Xocdr\Tui\Ext\FocusEvent;
 
 $instance = tui_render(function() {
-    return new TuiBox([
+    return new Box([
         'flexDirection' => 'column',
         'children' => [
-            new TuiBox(['focusable' => true, 'borderStyle' => 'single', 'children' => [
-                new TuiText('Option 1'),
+            new Box(['focusable' => true, 'borderStyle' => 'single', 'children' => [
+                new Text('Option 1'),
             ]]),
-            new TuiBox(['focusable' => true, 'borderStyle' => 'single', 'children' => [
-                new TuiText('Option 2'),
+            new Box(['focusable' => true, 'borderStyle' => 'single', 'children' => [
+                new Text('Option 2'),
             ]]),
-            new TuiBox(['focusable' => true, 'borderStyle' => 'single', 'children' => [
-                new TuiText('Option 3'),
+            new Box(['focusable' => true, 'borderStyle' => 'single', 'children' => [
+                new Text('Option 3'),
             ]]),
         ],
     ]);
 });
 
-tui_set_input_handler($instance, function(TuiKey $key) use ($instance) {
+tui_set_input_handler($instance, function(Key $key) use ($instance) {
     if ($key->tab || $key->downArrow) {
         tui_focus_next($instance);
         tui_rerender($instance);
@@ -1205,7 +1266,7 @@ tui_set_input_handler($instance, function(TuiKey $key) use ($instance) {
     }
 });
 
-tui_set_focus_handler($instance, function(TuiFocusEvent $event) {
+tui_set_focus_handler($instance, function(FocusEvent $event) {
     // Handle focus changes
 });
 

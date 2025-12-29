@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tui\Contracts;
+namespace Xocdr\Tui\Contracts;
 
 /**
  * Interface for event dispatching.

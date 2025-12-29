@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Hooks;
+namespace Xocdr\Tui\Tests\Hooks;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Hooks\HookContext;
-use Tui\Hooks\HookRegistry;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookRegistry;
 
 class HookRegistryTest extends TestCase
 {
@@ -107,13 +107,13 @@ class HookRegistryTest extends TestCase
         $context = new HookContext();
 
         // Use some state
-        $context->useState(1);
-        $context->useState(2);
+        $context->state(1);
+        $context->state(2);
 
         // withContext should reset indices
         HookRegistry::withContext($context, function () use ($context) {
-            // First useState should return the first state value
-            [$value] = $context->useState(999);
+            // First state should return the first state value
+            [$value] = $context->state(999);
             $this->assertEquals(1, $value);
         });
     }

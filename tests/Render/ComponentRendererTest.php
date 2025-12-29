@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tui\Tests\Render;
+namespace Xocdr\Tui\Tests\Render;
 
 use PHPUnit\Framework\TestCase;
-use Tui\Render\ComponentRenderer;
-use Tui\Tests\Mocks\MockBoxNode;
-use Tui\Tests\Mocks\MockRenderTarget;
-use Tui\Tests\Mocks\MockTextNode;
+use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Tests\Mocks\MockBoxNode;
+use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
+use Xocdr\Tui\Tests\Mocks\MockTextNode;
 
 class ComponentRendererTest extends TestCase
 {

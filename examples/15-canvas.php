@@ -17,13 +17,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Drawing\Canvas;
-use Tui\Tui;
-
-use function Tui\Hooks\useApp;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal.\n";
@@ -47,26 +47,36 @@ $canvas->line(0, 0, 79, 47);
 $canvas->line(79, 0, 0, 47);
 
 // Render the canvas
-$lines = $canvas->render();
+$canvasLines = $canvas->render();
 
-$app = function () use ($lines) {
-    ['exit' => $exit] = useApp();
+class CanvasDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    useInput(function ($input, $key) use ($exit) {
-        if ($key->escape) {
-            $exit();
-        }
-    });
+    public function __construct(private array $lines)
+    {
+    }
 
-    return Box::column([
-        Text::create('Canvas Demo - Braille Drawing')->bold()->cyan(),
-        Text::create(''),
-        ...array_map(fn ($line) => Text::create($line), $lines),
-        Text::create(''),
-        Text::create('40x12 terminal cells = 80x48 pixels')->dim(),
-        Text::create('Press ESC to exit.')->dim(),
-    ]);
-};
+    public function render(): mixed
+    {
+        ['exit' => $exit] = $this->hooks()->app();
 
-$instance = Tui::render($app);
+        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+            if ($key->escape) {
+                $exit();
+            }
+        });
+
+        return Box::column([
+            Text::create('Canvas Demo - Braille Drawing')->bold()->cyan(),
+            Text::create(''),
+            ...array_map(fn ($line) => Text::create($line), $this->lines),
+            Text::create(''),
+            Text::create('40x12 terminal cells = 80x48 pixels')->dim(),
+            Text::create('Press ESC to exit.')->dim(),
+        ]);
+    }
+}
+
+$instance = Tui::render(new CanvasDemo($canvasLines));
 $instance->waitUntilExit();

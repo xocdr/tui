@@ -9,18 +9,20 @@
  * - Better testability with dependency injection
  * - SOLID principles in TUI applications
  *
- * Press 'q' to exit
+ * Press 'q' or ESC to exit
  */
 
 declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Tui\Components\Box;
-use Tui\Components\Newline;
-use Tui\Components\Text;
-use Tui\Hooks\Hooks;
-use Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
     echo "Error: This example requires an interactive terminal (TTY).\n";
@@ -28,64 +30,67 @@ if (!Tui::isInteractive()) {
 }
 
 /**
- * Example using the Hooks service class for better testability.
+ * Example using HooksAwareTrait for clean dependency injection.
  *
  * This approach is recommended when:
  * - You need to test your components
  * - You want explicit dependencies
  * - You're building a larger application
  */
-$app = function () {
-    // Create a Hooks instance - in a real app, this could be injected
-    $hooks = new Hooks(Tui::getInstance());
+class HooksClassDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-    // Use hooks via the service class
-    [$count, $setCount] = $hooks->useState(0);
-    $appControls = $hooks->useApp();
+    public function render(): mixed
+    {
+        // Use hooks via the trait
+        [$count, $setCount] = $this->hooks()->state(0);
+        $appControls = $this->hooks()->app();
 
-    // Memoize expensive computation
-    $expensiveValue = $hooks->useMemo(function () use ($count) {
-        return 'Count squared: ' . ($count * $count);
-    }, [$count]);
+        // Memoize expensive computation
+        $expensiveValue = $this->hooks()->memo(function () use ($count) {
+            return 'Count squared: ' . ($count * $count);
+        }, [$count]);
 
-    // Create a memoized callback
-    $increment = $hooks->useCallback(function () use ($setCount) {
-        $setCount(fn ($n) => $n + 1);
-    }, [$setCount]);
+        // Create a memoized callback
+        $increment = $this->hooks()->callback(function () use ($setCount) {
+            $setCount(fn ($n) => $n + 1);
+        }, [$setCount]);
 
-    // Handle input
-    $hooks->useInput(function (string $input, \TuiKey $key) use ($increment, $setCount, $appControls) {
-        if ($key->upArrow) {
-            $increment();
-        } elseif ($key->downArrow) {
-            $setCount(fn ($n) => max(0, $n - 1));
-        } elseif ($input === 'q') {
-            $appControls['exit'](0);
-        }
-    });
+        // Handle input
+        $this->hooks()->onInput(function (string $input, $key) use ($increment, $setCount, $appControls) {
+            if ($key->upArrow) {
+                $increment();
+            } elseif ($key->downArrow) {
+                $setCount(fn ($n) => max(0, $n - 1));
+            } elseif ($input === 'q' || $key->escape) {
+                $appControls['exit'](0);
+            }
+        });
 
-    return Box::column([
-        Text::create('=== Hooks Class Demo ===')->bold()->cyan(),
-        Text::create('Using dependency-injected Hooks service')->dim(),
-        Newline::create(),
+        return Box::column([
+            Text::create('=== Hooks Class Demo ===')->bold()->cyan(),
+            Text::create('Using HooksAwareTrait for dependency injection')->dim(),
+            Newline::create(),
 
-        Box::create()
-            ->border('round')
-            ->padding(1)
-            ->children([
-                Box::row([
-                    Text::create('Count: '),
-                    Text::create((string)$count)->bold()->green(),
+            Box::create()
+                ->border('round')
+                ->padding(1)
+                ->children([
+                    Box::row([
+                        Text::create('Count: '),
+                        Text::create((string) $count)->bold()->green(),
+                    ]),
+                    Text::create($expensiveValue)->dim(),
                 ]),
-                Text::create($expensiveValue)->dim(),
-            ]),
-        Newline::create(),
+            Newline::create(),
 
-        Text::create('Controls:')->bold(),
-        Text::create('  Up Arrow    - Increment'),
-        Text::create('  Down Arrow  - Decrement'),
-        Text::create('  q           - Quit'),
-    ]);
-};
+            Text::create('Controls:')->bold(),
+            Text::create('  Up Arrow    - Increment'),
+            Text::create('  Down Arrow  - Decrement'),
+            Text::create('  q           - Quit'),
+        ]);
+    }
+}
 
-Tui::render($app)->waitUntilExit();
+Tui::render(new HooksClassDemo())->waitUntilExit();

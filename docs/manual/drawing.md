@@ -9,7 +9,7 @@ The Canvas class provides high-resolution drawing using Braille characters (2x4 
 ### Creating a Canvas
 
 ```php
-use Tui\Drawing\Canvas;
+use Xocdr\Tui\Drawing\Canvas;
 
 // Braille mode (2x4 pixels per cell, default)
 $canvas = Canvas::create(40, 12);  // 80x48 pixels
@@ -100,7 +100,7 @@ The Buffer class provides cell-level drawing (one character per cell).
 ### Creating a Buffer
 
 ```php
-use Tui\Drawing\Buffer;
+use Xocdr\Tui\Drawing\Buffer;
 
 $buffer = Buffer::create(80, 24);
 ```
@@ -163,7 +163,7 @@ Sprites provide animated ASCII art with frame management.
 ### Creating Sprites
 
 ```php
-use Tui\Drawing\Sprite;
+use Xocdr\Tui\Drawing\Sprite;
 
 // With multiple animations
 $sprite = Sprite::create([
@@ -224,18 +224,20 @@ $lines = $sprite->render();
 
 ---
 
-## Using useCanvas Hook
+## Using canvas Hook
 
 For animated canvases in components:
 
 ```php
-use function Tui\Hooks\useCanvas;
-use function Tui\Hooks\useInterval;
+use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Tui;
 
 $app = function() {
-    ['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = useCanvas(40, 12);
+    $hooks = new Hooks(Tui::getApplication());
 
-    useInterval(function() use ($canvas, $clear) {
+    ['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $hooks->canvas(40, 12);
+
+    $hooks->interval(function() use ($canvas, $clear) {
         $clear();
         $canvas->circle(40, 24, rand(10, 20));
     }, 100);
@@ -251,17 +253,17 @@ $app = function() {
 ## Example: Animated Scene
 
 ```php
-use Tui\Components\Box;
-use Tui\Components\Text;
-use Tui\Drawing\Canvas;
-use Tui\Drawing\Sprite;
-use Tui\Tui;
-
-use function Tui\Hooks\useState;
-use function Tui\Hooks\useInput;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Drawing\Sprite;
+use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Tui;
 
 $app = function() {
-    [$frame, $setFrame] = useState(0);
+    $hooks = new Hooks(Tui::getApplication());
+
+    [$frame, $setFrame] = $hooks->state(0);
 
     // Create canvas
     $canvas = Canvas::create(40, 12);
@@ -278,8 +280,8 @@ $app = function() {
     ], 100);
     $sprite->setFrame($frame % 2);
 
-    useInput(function($key) use ($setFrame) {
-        if ($key === ' ') {
+    $hooks->onInput(function($input, $key) use ($setFrame) {
+        if ($input === ' ') {
             $setFrame(fn($f) => $f + 1);
         }
     });
@@ -301,5 +303,5 @@ Tui::render($app)->waitUntilExit();
 ## See Also
 
 - [Animation](animation.md) - Easing and tweening
-- [Hooks](hooks.md) - useCanvas hook
+- [Hooks](hooks.md) - canvas hook
 - [Reference: Classes](../reference/classes.md) - Canvas, Buffer, Sprite reference

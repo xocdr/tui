@@ -2,16 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Tui\Components;
+namespace Xocdr\Tui\Components;
 
 /**
  * Static component - content that doesn't re-render.
  *
  * Useful for log-style output where previous content should remain.
  * Items are rendered in a column layout.
+ *
+ * Uses native \Xocdr\Tui\Ext\StaticOutput when available for better performance.
  */
 class Static_ extends AbstractContainerComponent
 {
+    /** @var callable|null */
+    private $renderCallback = null;
+
     /**
      * Create a Static component.
      *
@@ -48,11 +53,36 @@ class Static_ extends AbstractContainerComponent
     }
 
     /**
-     * Render the static content as a column TuiBox.
+     * Set a render callback for each item.
+     *
+     * Used with native StaticOutput class (ext-tui 0.1.3+).
+     *
+     * @param callable $callback Function receiving (item, index) and returning Component
      */
-    public function render(): \TuiBox
+    public function renderWith(callable $callback): self
     {
-        $box = new \TuiBox(['flexDirection' => 'column']);
+        $this->renderCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Render the static content.
+     *
+     * Uses native \Xocdr\Tui\Ext\StaticOutput if available (ext-tui 0.1.3+).
+     */
+    public function render(): \Xocdr\Tui\Ext\Box
+    {
+        // Use native StaticOutput class if available (ext-tui 0.1.3+)
+        if (class_exists(\Xocdr\Tui\Ext\StaticOutput::class) && $this->renderCallback !== null) {
+            return new \Xocdr\Tui\Ext\StaticOutput([
+                'items' => $this->children,
+                'render' => $this->renderCallback,
+            ]);
+        }
+
+        // Fallback implementation
+        $box = new \Xocdr\Tui\Ext\Box(['flexDirection' => 'column']);
         $this->renderChildrenInto($box);
 
         return $box;
