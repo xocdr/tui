@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Components;
+namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\Text;
 
 /**
- * Indeterminate/busy progress bar component.
+ * Indeterminate/busy progress bar widget.
  *
  * Displays an animated progress bar for operations with unknown duration.
  *
@@ -25,7 +28,7 @@ use Xocdr\Tui\Animation\Gradient;
  *     ->style('gradient')
  *     ->gradient(Gradient::between('dodgerblue', 'deeppink', 30));
  */
-class BusyBar implements Component
+class BusyBar extends Widget
 {
     public const STYLE_PULSE = 'pulse';
     public const STYLE_SNAKE = 'snake';
@@ -62,6 +65,7 @@ class BusyBar implements Component
     public function width(int $width): self
     {
         $this->width = max(1, $width);
+
         return $this;
     }
 
@@ -71,6 +75,7 @@ class BusyBar implements Component
     public function style(string $style): self
     {
         $this->style = $style;
+
         return $this;
     }
 
@@ -80,6 +85,7 @@ class BusyBar implements Component
     public function activeChar(string $char): self
     {
         $this->activeChar = $char;
+
         return $this;
     }
 
@@ -89,6 +95,7 @@ class BusyBar implements Component
     public function inactiveChar(string $char): self
     {
         $this->inactiveChar = $char;
+
         return $this;
     }
 
@@ -98,6 +105,7 @@ class BusyBar implements Component
     public function color(string $color): self
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -107,6 +115,7 @@ class BusyBar implements Component
     public function gradient(Gradient $gradient): self
     {
         $this->gradient = $gradient;
+
         return $this;
     }
 
@@ -116,6 +125,7 @@ class BusyBar implements Component
     public function advance(): self
     {
         $this->frame++;
+
         return $this;
     }
 
@@ -125,6 +135,7 @@ class BusyBar implements Component
     public function setFrame(int $frame): self
     {
         $this->frame = $frame;
+
         return $this;
     }
 
@@ -134,6 +145,7 @@ class BusyBar implements Component
     public function reset(): self
     {
         $this->frame = 0;
+
         return $this;
     }
 
@@ -175,6 +187,7 @@ class BusyBar implements Component
         if ($this->color !== null) {
             $text->color($this->color);
         }
+
         return $text;
     }
 
@@ -272,6 +285,7 @@ class BusyBar implements Component
                 $result .= $this->inactiveChar;
             }
         }
+
         return $result;
     }
 
@@ -283,6 +297,7 @@ class BusyBar implements Component
             $phase = ($this->frame + $i) % count($chars);
             $result .= $chars[$phase];
         }
+
         return $result;
     }
 }

@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Components;
+namespace Xocdr\Tui\Widgets;
 
+use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\TableInterface;
 use Xocdr\Tui\Style\Border;
 
 /**
- * Table component for displaying tabular data.
+ * Table widget for displaying tabular data.
  *
  * Supports automatic column width calculation, alignment,
  * borders, and header styling.
@@ -24,7 +25,7 @@ use Xocdr\Tui\Style\Border;
  *     Text::create($table->toString()),
  * ]);
  */
-class Table implements Component, TableInterface
+class Table extends Widget implements TableInterface
 {
     /** @var array<string> */
     private array $headers;
@@ -69,12 +70,14 @@ class Table implements Component, TableInterface
     public function headers(array $headers): self
     {
         $this->headers = $headers;
+
         return $this;
     }
 
     public function addRow(array $cells): self
     {
         $this->rows[] = array_map(fn ($c) => (string) $c, $cells);
+
         return $this;
     }
 
@@ -88,12 +91,14 @@ class Table implements Component, TableInterface
         foreach ($rows as $row) {
             $this->addRow($row);
         }
+
         return $this;
     }
 
     public function setAlign(int $column, bool $rightAlign): self
     {
         $this->rightAlign[$column] = $rightAlign;
+
         return $this;
     }
 
@@ -103,6 +108,7 @@ class Table implements Component, TableInterface
     public function border(string $style): self
     {
         $this->borderStyle = $style;
+
         return $this;
     }
 
@@ -112,6 +118,7 @@ class Table implements Component, TableInterface
     public function borderColor(string $color): self
     {
         $this->borderColor = $color;
+
         return $this;
     }
 
@@ -121,6 +128,7 @@ class Table implements Component, TableInterface
     public function headerColor(string $color): self
     {
         $this->headerColor = $color;
+
         return $this;
     }
 
@@ -130,6 +138,7 @@ class Table implements Component, TableInterface
     public function hideHeader(): self
     {
         $this->showHeader = false;
+
         return $this;
     }
 
@@ -150,6 +159,7 @@ class Table implements Component, TableInterface
     {
         $headerCount = count($this->headers);
         $rowCount = !empty($this->rows) ? count($this->rows[0]) : 0;
+
         return max($headerCount, $rowCount);
     }
 

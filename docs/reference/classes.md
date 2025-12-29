@@ -255,7 +255,7 @@ Text::create('content')
 ### Table
 
 ```php
-use Xocdr\Tui\Components\Table;
+use Xocdr\Tui\Widgets\Table;
 
 // Creation
 Table::create($headers)
@@ -287,7 +287,7 @@ Table::create($headers)
 ### ProgressBar
 
 ```php
-use Xocdr\Tui\Components\ProgressBar;
+use Xocdr\Tui\Widgets\ProgressBar;
 
 // Creation
 ProgressBar::create()
@@ -317,7 +317,7 @@ ProgressBar::create()
 ### BusyBar
 
 ```php
-use Xocdr\Tui\Components\BusyBar;
+use Xocdr\Tui\Widgets\BusyBar;
 
 // Creation
 BusyBar::create()
@@ -340,7 +340,7 @@ BusyBar::create()
 ### Spinner
 
 ```php
-use Xocdr\Tui\Components\Spinner;
+use Xocdr\Tui\Widgets\Spinner;
 
 // Creation
 Spinner::create($type)

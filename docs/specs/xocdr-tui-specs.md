@@ -636,7 +636,7 @@ render(): \Xocdr\Tui\Text
 Tabular data display.
 
 ```php
-use Xocdr\Tui\Components\Table;
+use Xocdr\Tui\Widgets\Table;
 
 $table = Table::create(['Name', 'Age', 'City'])
     ->addRow(['Alice', '30', 'New York'])
@@ -667,7 +667,7 @@ toString(): string
 Animated loading spinner.
 
 ```php
-use Xocdr\Tui\Components\Spinner;
+use Xocdr\Tui\Widgets\Spinner;
 
 $spinner = Spinner::create(Spinner::TYPE_DOTS)
     ->label('Loading...')
@@ -708,7 +708,7 @@ render(): \Xocdr\Tui\Text
 Progress indicator.
 
 ```php
-use Xocdr\Tui\Components\ProgressBar;
+use Xocdr\Tui\Widgets\ProgressBar;
 
 $bar = ProgressBar::create()
     ->value(0.75)      // 75%
@@ -739,7 +739,7 @@ render(): \Xocdr\Tui\Box
 Indeterminate progress bar with animation styles.
 
 ```php
-use Xocdr\Tui\Components\BusyBar;
+use Xocdr\Tui\Widgets\BusyBar;
 
 $bar = BusyBar::create()
     ->width(30)
@@ -2133,7 +2133,7 @@ require 'vendor/autoload.php';
 use Xocdr\Tui\Tui;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Components\Spinner;
+use Xocdr\Tui\Widgets\Spinner;
 use Xocdr\Tui\Hooks\Hooks;
 
 $app = function () {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Components;
+namespace Xocdr\Tui\Widgets;
 
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Contracts\HooksInterface;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 
 /**

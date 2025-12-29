@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Components;
+namespace Xocdr\Tui\Widgets;
 
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Telemetry\Metrics;
 
 /**
@@ -25,7 +27,6 @@ use Xocdr\Tui\Telemetry\Metrics;
  */
 class DebugPanel extends Widget
 {
-
     private bool $initialVisible;
 
     private string $position;

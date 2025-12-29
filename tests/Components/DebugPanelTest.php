@@ -6,9 +6,9 @@ namespace Xocdr\Tui\Tests\Components;
 
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Components\DebugPanel;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Components\Widget;
+use Xocdr\Tui\Widgets\DebugPanel;
+use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Telemetry\Metrics;
 use Xocdr\Tui\Testing\TuiTestCase;
 

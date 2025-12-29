@@ -20,7 +20,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Components\ProgressBar;
+use Xocdr\Tui\Widgets\ProgressBar;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Hooks\HooksAwareTrait;

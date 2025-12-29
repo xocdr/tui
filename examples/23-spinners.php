@@ -19,7 +19,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Components\Spinner;
+use Xocdr\Tui\Widgets\Spinner;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Hooks\HooksAwareTrait;

@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Components;
+namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\Text;
 
 /**
- * Progress bar component.
+ * Progress bar widget.
  *
  * Displays a visual progress indicator with optional percentage display,
  * custom styling, and gradient support.
@@ -18,7 +20,7 @@ use Xocdr\Tui\Animation\Gradient;
  *     ->width(40)
  *     ->showPercentage();
  */
-class ProgressBar implements Component
+class ProgressBar extends Widget
 {
     private float $value = 0.0;
 
@@ -50,6 +52,7 @@ class ProgressBar implements Component
     public function value(float $value): self
     {
         $this->value = max(0.0, min(1.0, $value));
+
         return $this;
     }
 
@@ -67,6 +70,7 @@ class ProgressBar implements Component
     public function width(int $width): self
     {
         $this->width = max(1, $width);
+
         return $this;
     }
 
@@ -76,6 +80,7 @@ class ProgressBar implements Component
     public function fillChar(string $char): self
     {
         $this->fillChar = $char;
+
         return $this;
     }
 
@@ -85,6 +90,7 @@ class ProgressBar implements Component
     public function emptyChar(string $char): self
     {
         $this->emptyChar = $char;
+
         return $this;
     }
 
@@ -94,6 +100,7 @@ class ProgressBar implements Component
     public function fillColor(string $color): self
     {
         $this->fillColor = $color;
+
         return $this;
     }
 
@@ -103,6 +110,7 @@ class ProgressBar implements Component
     public function emptyColor(string $color): self
     {
         $this->emptyColor = $color;
+
         return $this;
     }
 
@@ -112,6 +120,7 @@ class ProgressBar implements Component
     public function showPercentage(bool $show = true): self
     {
         $this->showPercentage = $show;
+
         return $this;
     }
 
@@ -121,6 +130,7 @@ class ProgressBar implements Component
     public function gradient(Gradient $gradient): self
     {
         $this->gradient = $gradient;
+
         return $this;
     }
 
@@ -130,6 +140,7 @@ class ProgressBar implements Component
     public function gradientSuccess(): self
     {
         $this->gradient = Gradient::create(['#ff0000', '#ffff00', '#00ff00'], $this->width);
+
         return $this;
     }
 
@@ -139,6 +150,7 @@ class ProgressBar implements Component
     public function gradientRainbow(): self
     {
         $this->gradient = Gradient::rainbow($this->width);
+
         return $this;
     }
 

@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Components;
+namespace Xocdr\Tui\Widgets;
+
+use Xocdr\Tui\Components\Text;
 
 /**
- * Animated spinner component.
+ * Animated spinner widget.
  *
  * Displays a spinning indicator using various Unicode character sets.
  *
@@ -18,7 +20,7 @@ namespace Xocdr\Tui\Components;
  * $spinner->advance();
  * Text::create($spinner->getFrame());
  */
-class Spinner implements Component
+class Spinner extends Widget
 {
     public const TYPE_DOTS = 'dots';
     public const TYPE_LINE = 'line';
@@ -94,6 +96,7 @@ class Spinner implements Component
     public function label(string $label): self
     {
         $this->label = $label;
+
         return $this;
     }
 
@@ -103,6 +106,7 @@ class Spinner implements Component
     public function color(string $color): self
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -116,6 +120,7 @@ class Spinner implements Component
         }
 
         $frames = self::FRAMES[$this->type] ?? self::FRAMES[self::TYPE_DOTS];
+
         return $frames[$this->frame % count($frames)];
     }
 
@@ -137,6 +142,7 @@ class Spinner implements Component
     public function advance(): self
     {
         $this->frame = ($this->frame + 1) % $this->getFrameCount();
+
         return $this;
     }
 
@@ -146,6 +152,7 @@ class Spinner implements Component
     public function setFrame(int $frame): self
     {
         $this->frame = $frame % $this->getFrameCount();
+
         return $this;
     }
 
@@ -155,6 +162,7 @@ class Spinner implements Component
     public function reset(): self
     {
         $this->frame = 0;
+
         return $this;
     }
 
@@ -203,6 +211,7 @@ class Spinner implements Component
         if ($this->label !== null) {
             $content .= ' ' . $this->label;
         }
+
         return $content;
     }
 }
