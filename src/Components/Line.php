@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
-use Xocdr\Tui\Style\Border;
+use Xocdr\Tui\Styling\Style\Border;
 
 /**
  * Line component for drawing horizontal and vertical lines.

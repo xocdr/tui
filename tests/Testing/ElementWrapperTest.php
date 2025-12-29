@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Testing\ElementWrapper;
+use Xocdr\Tui\Support\Testing\ElementWrapper;
 
 class ElementWrapperTest extends TestCase
 {

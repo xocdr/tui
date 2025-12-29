@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\TableInterface;
-use Xocdr\Tui\Style\Border;
+use Xocdr\Tui\Styling\Style\Border;
 
 /**
  * Table widget for displaying tabular data.

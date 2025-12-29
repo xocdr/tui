@@ -7,7 +7,7 @@ Complete API reference for the testing framework classes.
 Test renderer using ext-tui's native C engine.
 
 ```php
-use Xocdr\Tui\Testing\ExtTestRenderer;
+use Xocdr\Tui\Support\Testing\ExtTestRenderer;
 ```
 
 ### Constructor
@@ -65,7 +65,7 @@ new ExtTestRenderer(int $width = 80, int $height = 24)
 Pure PHP mock renderer for testing without ext-tui.
 
 ```php
-use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 ```
 
 ### Constructor
@@ -91,7 +91,7 @@ new TestRenderer(int $width = 80, int $height = 24)
 PHPUnit base class with TUI-specific assertions.
 
 ```php
-use Xocdr\Tui\Testing\TuiTestCase;
+use Xocdr\Tui\Support\Testing\TuiTestCase;
 
 class MyTest extends TuiTestCase
 {
@@ -136,7 +136,7 @@ class MyTest extends TuiTestCase
 Key constants for `sendKey()`.
 
 ```php
-use Xocdr\Tui\Testing\TestKey;
+use Xocdr\Tui\Support\Testing\TestKey;
 ```
 
 ### Constants
@@ -183,7 +183,7 @@ use Xocdr\Tui\Testing\TestKey;
 Wrapper for queried elements.
 
 ```php
-use Xocdr\Tui\Testing\ElementWrapper;
+use Xocdr\Tui\Support\Testing\ElementWrapper;
 ```
 
 ### Methods
@@ -208,7 +208,7 @@ use Xocdr\Tui\Testing\ElementWrapper;
 Snapshot testing utility.
 
 ```php
-use Xocdr\Tui\Testing\Snapshot;
+use Xocdr\Tui\Support\Testing\Snapshot;
 ```
 
 ### Constructor

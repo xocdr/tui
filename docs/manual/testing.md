@@ -21,7 +21,7 @@ All renderers accept PHP components and widgets, handling conversion to native e
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\ExtTestRenderer;
+use Xocdr\Tui\Support\Testing\ExtTestRenderer;
 
 class MyComponentTest extends TestCase
 {
@@ -43,7 +43,7 @@ Extend `TuiTestCase` for built-in assertions:
 ```php
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\TuiTestCase;
+use Xocdr\Tui\Support\Testing\TuiTestCase;
 
 class CounterTest extends TuiTestCase
 {
@@ -64,7 +64,7 @@ class CounterTest extends TuiTestCase
 Any class implementing `Component` works with the testing framework:
 
 ```php
-use Xocdr\Tui\Testing\TuiTestCase;
+use Xocdr\Tui\Support\Testing\TuiTestCase;
 
 class GreetingTest extends TuiTestCase
 {
@@ -99,7 +99,7 @@ $renderer->advanceFrame();
 ### Special Keys
 
 ```php
-use Xocdr\Tui\Testing\TestKey;
+use Xocdr\Tui\Support\Testing\TestKey;
 
 $renderer->sendKey(TestKey::TAB);
 $renderer->sendKey(TestKey::ENTER);
@@ -176,7 +176,7 @@ $this->assertTrue($renderer->containsText('expected'));
 For CI without ext-tui:
 
 ```php
-use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 
 $renderer = new TestRenderer(80, 24);
 $output = $renderer->render(fn() => Text::create('Hello'));

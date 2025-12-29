@@ -21,7 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Drawing\Buffer;
+use Xocdr\Tui\Styling\Drawing\Buffer;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 

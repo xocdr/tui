@@ -193,7 +193,7 @@ Box::create()
 For programmatic styling, use the `Style` class:
 
 ```php
-use Xocdr\Tui\Style\Style;
+use Xocdr\Tui\Styling\Style\Style;
 
 $style = Style::create()
     ->color('#ff0000')
@@ -235,7 +235,7 @@ $array = $style->toArray();
 The `Color` class provides color utilities:
 
 ```php
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 // Conversions
 $rgb = Color::hexToRgb('#ff0000');  // [r: 255, g: 0, b: 0]
@@ -268,7 +268,7 @@ static palette(string $name, int $shade = 500): string
 The `Border` class provides border style definitions:
 
 ```php
-use Xocdr\Tui\Style\Border;
+use Xocdr\Tui\Styling\Style\Border;
 
 $chars = Border::getChars(Border::ROUND);
 // ['topLeft' => '╭', 'top' => '─', 'topRight' => '╮', ...]
@@ -288,7 +288,7 @@ $chars = Border::getChars(Border::ROUND);
 ### Width Measurement
 
 ```php
-use Xocdr\Tui\Text\TextUtils;
+use Xocdr\Tui\Styling\Text\TextUtils;
 
 // Get display width (handles Unicode)
 $width = TextUtils::width('Hello 世界');  // 11
@@ -341,7 +341,7 @@ $slice = tui_slice_ansi($coloredText, 0, 10);
 The Color class integrates with the ext-tui Color enum providing 141 CSS named colors:
 
 ```php
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 // CSS color lookup
 $hex = Color::css('coral');        // '#ff7f50'

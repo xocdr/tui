@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Animation;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Gradient;
 
 class GradientTest extends TestCase
 {

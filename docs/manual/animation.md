@@ -9,7 +9,7 @@ The `Easing` class provides 28 standard easing functions.
 ### Using Easing
 
 ```php
-use Xocdr\Tui\Animation\Easing;
+use Xocdr\Tui\Styling\Animation\Easing;
 
 // By name
 $value = Easing::ease(0.5, 'out-cubic');  // 0.875
@@ -53,8 +53,8 @@ The `Tween` class manages animated transitions between values.
 ### Creating a Tween
 
 ```php
-use Xocdr\Tui\Animation\Tween;
-use Xocdr\Tui\Animation\Easing;
+use Xocdr\Tui\Styling\Animation\Tween;
+use Xocdr\Tui\Styling\Animation\Easing;
 
 $tween = Tween::create(
     0,           // from
@@ -114,7 +114,7 @@ The `Gradient` class generates smooth color transitions with animation support.
 ### Creating Gradients
 
 ```php
-use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Gradient;
 
 // Between two colors
 $gradient = Gradient::between('#ff0000', '#0000ff', 10);
@@ -203,8 +203,8 @@ $bar = ProgressBar::create()
 ### Gradient Animation
 
 ```php
-use Xocdr\Tui\Animation\Gradient;
-use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Styling\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Tween;
 
 $gradient = Gradient::between('#003366', '#ff6600', 100);
 $tween = Tween::create(0, 99, 2000, 'in-out-sine');
@@ -256,9 +256,9 @@ $app = function() {
 
 ```php
 <?php
-use Xocdr\Tui\Animation\Easing;
-use Xocdr\Tui\Animation\Gradient;
-use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Styling\Animation\Easing;
+use Xocdr\Tui\Styling\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Hooks\Hooks;

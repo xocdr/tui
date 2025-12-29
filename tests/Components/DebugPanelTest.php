@@ -9,8 +9,8 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\DebugPanel;
 use Xocdr\Tui\Widgets\Widget;
-use Xocdr\Tui\Telemetry\Metrics;
-use Xocdr\Tui\Testing\TuiTestCase;
+use Xocdr\Tui\Support\Telemetry\Metrics;
+use Xocdr\Tui\Support\Testing\TuiTestCase;
 
 /**
  * Tests for DebugPanel widget.

@@ -9,7 +9,7 @@ The Canvas class provides high-resolution drawing using Braille characters (2x4 
 ### Creating a Canvas
 
 ```php
-use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Styling\Drawing\Canvas;
 
 // Braille mode (2x4 pixels per cell, default)
 $canvas = Canvas::create(40, 12);  // 80x48 pixels
@@ -100,7 +100,7 @@ The Buffer class provides cell-level drawing (one character per cell).
 ### Creating a Buffer
 
 ```php
-use Xocdr\Tui\Drawing\Buffer;
+use Xocdr\Tui\Styling\Drawing\Buffer;
 
 $buffer = Buffer::create(80, 24);
 ```
@@ -163,7 +163,7 @@ Sprites provide animated ASCII art with frame management.
 ### Creating Sprites
 
 ```php
-use Xocdr\Tui\Drawing\Sprite;
+use Xocdr\Tui\Styling\Drawing\Sprite;
 
 // With multiple animations
 $sprite = Sprite::create([
@@ -255,8 +255,8 @@ $app = function() {
 ```php
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Drawing\Canvas;
-use Xocdr\Tui\Drawing\Sprite;
+use Xocdr\Tui\Styling\Drawing\Canvas;
+use Xocdr\Tui\Styling\Drawing\Sprite;
 use Xocdr\Tui\Hooks\Hooks;
 use Xocdr\Tui\Tui;
 

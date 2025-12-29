@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Styling;
+namespace Xocdr\Tui\Styling\Animation;
 
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 /**
  * Color gradient generator.

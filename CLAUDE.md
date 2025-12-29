@@ -214,9 +214,9 @@ The codebase follows SOLID principles:
 Use the testing utilities:
 
 ```php
-use Xocdr\Tui\Testing\MockInstance;
-use Xocdr\Tui\Testing\TestRenderer;
-use Xocdr\Tui\Testing\TuiAssertions;
+use Xocdr\Tui\Support\Testing\MockInstance;
+use Xocdr\Tui\Support\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TuiAssertions;
 use Xocdr\Tui\Tui;
 
 // Render to string (no C extension needed)

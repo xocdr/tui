@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Telemetry\Metrics;
+use Xocdr\Tui\Support\Telemetry\Metrics;
 
 /**
  * Debug panel widget showing live performance metrics.

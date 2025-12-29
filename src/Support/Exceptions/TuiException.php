@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Support;
+namespace Xocdr\Tui\Support\Exceptions;
 
 use Exception;
 

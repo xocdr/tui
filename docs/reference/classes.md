@@ -458,7 +458,7 @@ Line::vertical($length)
 ### Canvas
 
 ```php
-use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Styling\Drawing\Canvas;
 
 // Creation
 Canvas::create($width, $height, $mode)
@@ -500,7 +500,7 @@ Canvas::block($width, $height)
 ### Buffer
 
 ```php
-use Xocdr\Tui\Drawing\Buffer;
+use Xocdr\Tui\Styling\Drawing\Buffer;
 
 // Creation
 Buffer::create($width, $height)
@@ -529,7 +529,7 @@ Buffer::create($width, $height)
 ### Sprite
 
 ```php
-use Xocdr\Tui\Drawing\Sprite;
+use Xocdr\Tui\Styling\Drawing\Sprite;
 
 // Creation
 Sprite::create($animations, $default, $loop)
@@ -571,7 +571,7 @@ Sprite::fromFrames($frames, $duration, $loop)
 ### Easing
 
 ```php
-use Xocdr\Tui\Animation\Easing;
+use Xocdr\Tui\Styling\Animation\Easing;
 
 // Apply easing
 Easing::ease($t, $name)
@@ -611,7 +611,7 @@ Easing::getAvailable()
 ### Tween
 
 ```php
-use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Styling\Animation\Tween;
 
 // Creation
 Tween::create($from, $to, $duration, $easing)
@@ -635,7 +635,7 @@ Tween::create($from, $to, $duration, $easing)
 ### Gradient
 
 ```php
-use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Gradient;
 
 // Creation
 Gradient::create($stops, $steps)
@@ -669,7 +669,7 @@ Gradient::fromPalette($name, $from, $to, $steps)  // Tailwind palette
 ### Style
 
 ```php
-use Xocdr\Tui\Style\Style;
+use Xocdr\Tui\Styling\Style\Style;
 
 // Creation
 Style::create()
@@ -698,7 +698,7 @@ Style::create()
 ### Color
 
 ```php
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 // Conversions
 Color::hexToRgb($hex)
@@ -725,7 +725,7 @@ Color::resolve($color)             // Resolve CSS name, hex, or palette to hex
 ### Border
 
 ```php
-use Xocdr\Tui\Style\Border;
+use Xocdr\Tui\Styling\Style\Border;
 
 // Get border characters
 Border::getChars($style)
@@ -757,7 +757,7 @@ Border::ARROW
 ### TextUtils
 
 ```php
-use Xocdr\Tui\Text\TextUtils;
+use Xocdr\Tui\Styling\Text\TextUtils;
 
 TextUtils::width($text)                            // Uses tui_string_width_ansi()
 TextUtils::wrap($text, $width)
@@ -777,7 +777,7 @@ TextUtils::sliceAnsi($text, $start, $end)          // Uses tui_slice_ansi()
 ### EventDispatcher
 
 ```php
-use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 $dispatcher = new EventDispatcher();
 
@@ -800,9 +800,9 @@ $dispatcher->removeAll()
 ### Event Classes
 
 ```php
-use Xocdr\Tui\Events\InputEvent;
-use Xocdr\Tui\Events\FocusEvent;
-use Xocdr\Tui\Events\ResizeEvent;
+use Xocdr\Tui\Terminal\Events\InputEvent;
+use Xocdr\Tui\Terminal\Events\FocusEvent;
+use Xocdr\Tui\Terminal\Events\ResizeEvent;
 
 // InputEvent
 $event->key        // Character pressed
@@ -868,10 +868,10 @@ use Xocdr\Tui\Contracts\TableInterface;
 ## Exceptions
 
 ```php
-use Xocdr\Tui\Exceptions\TuiException;
-use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
-use Xocdr\Tui\Exceptions\RenderException;
-use Xocdr\Tui\Exceptions\ValidationException;
+use Xocdr\Tui\Support\Exceptions\TuiException;
+use Xocdr\Tui\Support\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Support\Exceptions\RenderException;
+use Xocdr\Tui\Support\Exceptions\ValidationException;
 
 // TuiException - Base exception class
 throw new TuiException('Something went wrong');
@@ -938,7 +938,7 @@ Capabilities::all()                    // Get all capabilities as array
 ### FocusManager
 
 ```php
-use Xocdr\Tui\Focus\FocusManager;
+use Xocdr\Tui\Rendering\Focus\FocusManager;
 
 $focusManager = new FocusManager($instance);
 
@@ -963,7 +963,7 @@ $focusManager->getCurrentFocusId()
 ### Inspector
 
 ```php
-use Xocdr\Tui\Debug\Inspector;
+use Xocdr\Tui\Support\Debug\Inspector;
 
 $inspector = new Inspector($app);
 
@@ -995,10 +995,10 @@ $inspector->reset()
 ## Testing
 
 ```php
-use Xocdr\Tui\Testing\MockInstance;
-use Xocdr\Tui\Testing\MockTuiKey;
-use Xocdr\Tui\Testing\TestRenderer;
-use Xocdr\Tui\Testing\TuiAssertions;
+use Xocdr\Tui\Support\Testing\MockInstance;
+use Xocdr\Tui\Support\Testing\MockTuiKey;
+use Xocdr\Tui\Support\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TuiAssertions;
 
 // TestRenderer - Render to string
 $renderer = new TestRenderer();

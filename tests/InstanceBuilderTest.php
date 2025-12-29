@@ -6,10 +6,10 @@ namespace Xocdr\Tui\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
-use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\InstanceBuilder;
-use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Rendering\Render\ComponentRenderer;
 use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
 
 class InstanceBuilderTest extends TestCase

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 /**
  * Transform component for line-by-line text transformation.

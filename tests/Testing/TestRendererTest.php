@@ -11,7 +11,7 @@ use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Static_;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 
 class TestRendererTest extends TestCase
 {

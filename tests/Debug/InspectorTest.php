@@ -8,8 +8,8 @@ use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Application;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Debug\Inspector;
-use Xocdr\Tui\Telemetry\Metrics;
+use Xocdr\Tui\Support\Debug\Inspector;
+use Xocdr\Tui\Support\Telemetry\Metrics;
 
 class InspectorTest extends TestCase
 {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Support;
+namespace Xocdr\Tui\Support\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Telemetry\Metrics;
+use Xocdr\Tui\Support\Telemetry\Metrics;
 
 /**
  * Base test case for TUI component testing.

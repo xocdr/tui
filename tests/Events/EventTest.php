@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Events;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Events\FocusEvent;
-use Xocdr\Tui\Events\ResizeEvent;
+use Xocdr\Tui\Terminal\Events\FocusEvent;
+use Xocdr\Tui\Terminal\Events\ResizeEvent;
 
 class EventTest extends TestCase
 {

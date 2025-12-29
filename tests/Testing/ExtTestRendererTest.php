@@ -7,8 +7,8 @@ namespace Xocdr\Tui\Tests\Testing;
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\ExtTestRenderer;
-use Xocdr\Tui\Testing\TestKey;
+use Xocdr\Tui\Support\Testing\ExtTestRenderer;
+use Xocdr\Tui\Support\Testing\TestKey;
 
 class ExtTestRendererTest extends TestCase
 {

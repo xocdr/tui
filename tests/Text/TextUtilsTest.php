@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Text;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Text\TextUtils;
+use Xocdr\Tui\Styling\Text\TextUtils;
 
 class TextUtilsTest extends TestCase
 {

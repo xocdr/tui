@@ -23,7 +23,7 @@ use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {

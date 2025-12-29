@@ -7,9 +7,9 @@ namespace Xocdr\Tui\Tests\Testing;
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\MockInstance;
-use Xocdr\Tui\Testing\TestRenderer;
-use Xocdr\Tui\Testing\TuiAssertions;
+use Xocdr\Tui\Support\Testing\MockInstance;
+use Xocdr\Tui\Support\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TuiAssertions;
 
 class TuiAssertionsTest extends TestCase
 {

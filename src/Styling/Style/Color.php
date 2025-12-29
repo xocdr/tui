@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Styling;
+namespace Xocdr\Tui\Styling\Style;
 
 /**
  * Color utilities.

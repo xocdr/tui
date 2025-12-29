@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
-use Xocdr\Tui\Style\Style;
+use Xocdr\Tui\Styling\Style\Style;
 
 /**
  * Flexbox container component.

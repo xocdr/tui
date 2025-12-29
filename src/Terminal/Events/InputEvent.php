@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Terminal\Events;
 
-use Xocdr\Tui\Testing\MockKey;
+use Xocdr\Tui\Support\Testing\MockKey;
 
 /**
  * Event dispatched when keyboard input is received.

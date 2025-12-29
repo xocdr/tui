@@ -150,7 +150,7 @@ interface HooksInterface
      * @param int $width Canvas width in terminal cells
      * @param int $height Canvas height in terminal cells
      * @param string $mode Canvas mode ('braille', 'block', 'ascii')
-     * @return array{canvas: \Xocdr\Tui\Drawing\Canvas, clear: callable, render: callable(): array<string>}
+     * @return array{canvas: \Xocdr\Tui\Styling\Drawing\Canvas, clear: callable, render: callable(): array<string>}
      */
     public function canvas(int $width, int $height, string $mode = 'braille'): array;
 

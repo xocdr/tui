@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Telemetry;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Telemetry\Metrics;
+use Xocdr\Tui\Support\Telemetry\Metrics;
 
 class MetricsTest extends TestCase
 {

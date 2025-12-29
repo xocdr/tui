@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Exceptions;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
-use Xocdr\Tui\Exceptions\RenderException;
-use Xocdr\Tui\Exceptions\TuiException;
-use Xocdr\Tui\Exceptions\ValidationException;
+use Xocdr\Tui\Support\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Support\Exceptions\RenderException;
+use Xocdr\Tui\Support\Exceptions\TuiException;
+use Xocdr\Tui\Support\Exceptions\ValidationException;
 
 class ExceptionsTest extends TestCase
 {

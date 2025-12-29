@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Drawing;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Styling\Drawing\Canvas;
 
 class CanvasTest extends TestCase
 {

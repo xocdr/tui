@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Animation;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Animation\Easing;
-use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Styling\Animation\Easing;
+use Xocdr\Tui\Styling\Animation\Tween;
 
 class TweenTest extends TestCase
 {

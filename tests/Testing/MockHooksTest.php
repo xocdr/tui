@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Contracts\HooksInterface;
-use Xocdr\Tui\Testing\MockHooks;
+use Xocdr\Tui\Support\Testing\MockHooks;
 
 /**
  * Tests for MockHooks test helper.

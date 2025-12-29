@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Support;
+namespace Xocdr\Tui\Support\Debug;
 
 use Xocdr\Tui\Application;
-use Xocdr\Tui\Telemetry\Metrics;
+use Xocdr\Tui\Support\Telemetry\Metrics;
 
 /**
  * Debug inspector for TUI applications.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets;
 
-use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
 

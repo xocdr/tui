@@ -8,8 +8,8 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
 use Xocdr\Tui\Contracts\RendererInterface;
-use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
-use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Support\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 
 /**
  * Main entry point for Tui applications.

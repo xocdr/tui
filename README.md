@@ -338,10 +338,10 @@ For testing or custom configurations:
 
 ```php
 use Xocdr\Tui\Application;
-use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
-use Xocdr\Tui\Render\ComponentRenderer;
-use Xocdr\Tui\Render\ExtensionRenderTarget;
+use Xocdr\Tui\Rendering\Render\ComponentRenderer;
+use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 
 $app = new Application(
     $component,
@@ -358,7 +358,7 @@ Use mock implementations:
 
 ```php
 use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
-use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Rendering\Render\ComponentRenderer;
 
 $target = new MockRenderTarget();
 $renderer = new ComponentRenderer($target);
@@ -374,7 +374,7 @@ $this->assertCount(2, $target->createdNodes);
 ### Style Builder
 
 ```php
-use Xocdr\Tui\Style\Style;
+use Xocdr\Tui\Styling\Style\Style;
 
 $style = Style::create()
     ->bold()
@@ -386,7 +386,7 @@ $style = Style::create()
 ### Color Utilities
 
 ```php
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 // Conversions
 $rgb = Color::hexToRgb('#ff0000'); // ['r' => 255, 'g' => 0, 'b' => 0]
@@ -411,7 +411,7 @@ $hex = Color::resolve('red-500');         // Tailwind palette
 ### Border Styles
 
 ```php
-use Xocdr\Tui\Style\Border;
+use Xocdr\Tui\Styling\Style\Border;
 
 Border::SINGLE;  // ┌─┐│└─┘
 Border::DOUBLE;  // ╔═╗║╚═╝

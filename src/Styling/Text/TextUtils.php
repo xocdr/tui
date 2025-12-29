@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Styling;
+namespace Xocdr\Tui\Styling\Text;
 
 /**
  * Text utility functions.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Render;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Render\ComponentRenderer;
+use Xocdr\Tui\Rendering\Render\ComponentRenderer;
 use Xocdr\Tui\Tests\Mocks\MockBoxNode;
 use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
 use Xocdr\Tui\Tests\Mocks\MockTextNode;

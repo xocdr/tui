@@ -1198,7 +1198,7 @@ $update(0, 'updated');
 Priority-based event dispatch.
 
 ```php
-use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 $dispatcher = new EventDispatcher();
 
@@ -1240,7 +1240,7 @@ public function removeAll(): void
 Keyboard input event.
 
 ```php
-use Xocdr\Tui\Events\InputEvent;
+use Xocdr\Tui\Terminal\Events\InputEvent;
 
 // Properties
 $event->key        // Character key pressed
@@ -1257,7 +1257,7 @@ $event->nativeKey  // \Xocdr\Tui\Ext\Key object with:
 Focus change event.
 
 ```php
-use Xocdr\Tui\Events\FocusEvent;
+use Xocdr\Tui\Terminal\Events\FocusEvent;
 
 $event->previousId  // Previous focused element ID
 $event->currentId   // Current focused element ID
@@ -1269,7 +1269,7 @@ $event->direction   // 'forward' or 'backward'
 Terminal resize event.
 
 ```php
-use Xocdr\Tui\Events\ResizeEvent;
+use Xocdr\Tui\Terminal\Events\ResizeEvent;
 
 $event->width   // New width
 $event->height  // New height
@@ -1286,7 +1286,7 @@ $event->deltaY  // Height change
 High-resolution pixel-based drawing using Unicode characters.
 
 ```php
-use Xocdr\Tui\Drawing\Canvas;
+use Xocdr\Tui\Styling\Drawing\Canvas;
 
 // Create braille canvas (2x4 pixels per cell)
 $canvas = Canvas::braille(80, 24);
@@ -1356,7 +1356,7 @@ render(): array<string>
 Cell-level drawing with characters and colors.
 
 ```php
-use Xocdr\Tui\Drawing\Buffer;
+use Xocdr\Tui\Styling\Drawing\Buffer;
 
 $buffer = Buffer::create(80, 24);
 
@@ -1397,7 +1397,7 @@ render(): array<string>
 Animated sprite system.
 
 ```php
-use Xocdr\Tui\Drawing\Sprite;
+use Xocdr\Tui\Styling\Drawing\Sprite;
 
 // Create from frames
 $sprite = Sprite::fromFrames([
@@ -1475,7 +1475,7 @@ getFrameCount(): int
 27 standard easing functions for smooth animations.
 
 ```php
-use Xocdr\Tui\Animation\Easing;
+use Xocdr\Tui\Styling\Animation\Easing;
 
 // Apply easing to progress (0.0 to 1.0)
 $easedValue = Easing::ease(0.5, Easing::OUT_QUAD);
@@ -1504,7 +1504,7 @@ $types = Easing::getAvailable();
 Value interpolation over time.
 
 ```php
-use Xocdr\Tui\Animation\Tween;
+use Xocdr\Tui\Styling\Animation\Tween;
 
 $tween = Tween::create(0, 100, 1000, Easing::OUT_QUAD);
 
@@ -1543,7 +1543,7 @@ retarget(float $to): self
 Color gradient generation with animation support.
 
 ```php
-use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Gradient;
 
 // Create gradient
 $gradient = Gradient::create(['#ff0000', '#00ff00', '#0000ff'], steps: 20);
@@ -1635,7 +1635,7 @@ render(): array<string>
 Fluent style builder.
 
 ```php
-use Xocdr\Tui\Style\Style;
+use Xocdr\Tui\Styling\Style\Style;
 
 $style = Style::create()
     ->color('#ff0000')
@@ -1674,7 +1674,7 @@ merge(Style $other): self
 Color utilities and conversions. Integrates with ext-tui Color enum for 141 CSS named colors.
 
 ```php
-use Xocdr\Tui\Style\Color;
+use Xocdr\Tui\Styling\Style\Color;
 
 // Conversions
 $rgb = Color::hexToRgb('#ff0000');  // [r: 255, g: 0, b: 0]
@@ -1746,7 +1746,7 @@ static resolve(string|array $color): ?string   // Resolve any color format to he
 Border style definitions.
 
 ```php
-use Xocdr\Tui\Style\Border;
+use Xocdr\Tui\Styling\Style\Border;
 
 $chars = Border::getChars(Border::ROUND);
 // ['topLeft' => '╭', 'top' => '─', 'topRight' => '╮', ...]
@@ -1790,7 +1790,7 @@ Border::hasStyle(string $style): bool
 Text manipulation functions with native function delegation for performance.
 
 ```php
-use Xocdr\Tui\Text\TextUtils;
+use Xocdr\Tui\Styling\Text\TextUtils;
 
 // Get display width (handles Unicode and ANSI)
 $width = TextUtils::width('Hello 世界');  // 11
@@ -1930,7 +1930,7 @@ static all(): array     // Get all capabilities
 Focus navigation service for managing focus between elements.
 
 ```php
-use Xocdr\Tui\Focus\FocusManager;
+use Xocdr\Tui\Rendering\Focus\FocusManager;
 
 $focusManager = new FocusManager($instance);
 
@@ -1968,7 +1968,7 @@ $instance->focus('my-element-id');
 Runtime inspection of component trees, hook states, and performance metrics.
 
 ```php
-use Xocdr\Tui\Debug\Inspector;
+use Xocdr\Tui\Support\Debug\Inspector;
 
 $app = Tui::render($component);
 $app->enableDebug();  // Enables Ctrl+Shift+D toggle
@@ -2027,7 +2027,7 @@ reset(): void
 Named keys for input handling.
 
 ```php
-use Xocdr\Tui\Input\Key;
+use Xocdr\Tui\Terminal\Input\Key;
 
 // Arrow keys
 Key::UP, Key::DOWN, Key::LEFT, Key::RIGHT
@@ -2050,7 +2050,7 @@ Key::F1, Key::F2, ... Key::F12
 Modifier key detection.
 
 ```php
-use Xocdr\Tui\Input\Modifier;
+use Xocdr\Tui\Terminal\Input\Modifier;
 
 // Check modifiers on \TuiKey
 if ($nativeKey->ctrl) { /* Ctrl pressed */ }
@@ -2210,10 +2210,10 @@ The library provides a hierarchy of exceptions for error handling.
 ### Exception Classes
 
 ```php
-use Xocdr\Tui\Exceptions\TuiException;
-use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
-use Xocdr\Tui\Exceptions\RenderException;
-use Xocdr\Tui\Exceptions\ValidationException;
+use Xocdr\Tui\Support\Exceptions\TuiException;
+use Xocdr\Tui\Support\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Support\Exceptions\RenderException;
+use Xocdr\Tui\Support\Exceptions\ValidationException;
 ```
 
 | Exception | Purpose | Methods |
@@ -2227,8 +2227,8 @@ use Xocdr\Tui\Exceptions\ValidationException;
 
 ```php
 use Xocdr\Tui\Tui;
-use Xocdr\Tui\Exceptions\ExtensionNotLoadedException;
-use Xocdr\Tui\Exceptions\RenderException;
+use Xocdr\Tui\Support\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Support\Exceptions\RenderException;
 
 // Check extension before rendering
 try {
@@ -2262,7 +2262,7 @@ The library provides utilities for testing TUI applications without the C extens
 Render components to string for assertions.
 
 ```php
-use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
 
@@ -2283,7 +2283,7 @@ $this->assertStringContainsString('World', $output);
 Full mock implementation for testing without C extension.
 
 ```php
-use Xocdr\Tui\Testing\MockInstance;
+use Xocdr\Tui\Support\Testing\MockInstance;
 
 $mock = new MockInstance();
 
@@ -2304,7 +2304,7 @@ $mock->tickTimers(500);  // Fires 5 times
 Mock keyboard input for testing.
 
 ```php
-use Xocdr\Tui\Testing\MockTuiKey;
+use Xocdr\Tui\Support\Testing\MockTuiKey;
 
 $key = new MockTuiKey('a', 'a');
 $key = MockTuiKey::fromChar('x', ['ctrl' => true]);
@@ -2316,8 +2316,8 @@ PHPUnit assertions for TUI testing.
 
 ```php
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Testing\TuiAssertions;
-use Xocdr\Tui\Testing\TestRenderer;
+use Xocdr\Tui\Support\Testing\TuiAssertions;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 
 class MyTest extends TestCase
 {

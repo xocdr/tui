@@ -10,19 +10,19 @@ use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
 use Xocdr\Tui\Contracts\RendererInterface;
-use Xocdr\Tui\Debug\Inspector;
-use Xocdr\Tui\Events\EventDispatcher;
-use Xocdr\Tui\Events\FocusEvent;
-use Xocdr\Tui\Events\InputEvent;
-use Xocdr\Tui\Events\ResizeEvent;
-use Xocdr\Tui\Focus\FocusManager;
+use Xocdr\Tui\Support\Debug\Inspector;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
+use Xocdr\Tui\Terminal\Events\FocusEvent;
+use Xocdr\Tui\Terminal\Events\InputEvent;
+use Xocdr\Tui\Terminal\Events\ResizeEvent;
+use Xocdr\Tui\Rendering\Focus\FocusManager;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Hooks\HookRegistry;
-use Xocdr\Tui\Input\Key;
-use Xocdr\Tui\Input\Modifier;
-use Xocdr\Tui\Lifecycle\ApplicationLifecycle;
-use Xocdr\Tui\Render\ComponentRenderer;
-use Xocdr\Tui\Render\ExtensionRenderTarget;
+use Xocdr\Tui\Terminal\Input\Key;
+use Xocdr\Tui\Terminal\Input\Modifier;
+use Xocdr\Tui\Rendering\Lifecycle\ApplicationLifecycle;
+use Xocdr\Tui\Rendering\Render\ComponentRenderer;
+use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 
 /**
  * Represents a running Tui application.

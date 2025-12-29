@@ -97,7 +97,7 @@ class Text implements Component
      */
     public function palette(string $name, int $shade = 500): self
     {
-        return $this->color(\Xocdr\Tui\Style\Color::palette($name, $shade));
+        return $this->color(\Xocdr\Tui\Styling\Style\Color::palette($name, $shade));
     }
 
     /**
@@ -105,7 +105,7 @@ class Text implements Component
      */
     public function bgPalette(string $name, int $shade = 500): self
     {
-        return $this->bgColor(\Xocdr\Tui\Style\Color::palette($name, $shade));
+        return $this->bgColor(\Xocdr\Tui\Styling\Style\Color::palette($name, $shade));
     }
 
     // Custom RGB/HSL colors
@@ -134,7 +134,7 @@ class Text implements Component
      */
     public function hsl(float $h, float $s, float $l): self
     {
-        return $this->color(\Xocdr\Tui\Style\Color::hslToHex($h, $s, $l));
+        return $this->color(\Xocdr\Tui\Styling\Style\Color::hslToHex($h, $s, $l));
     }
 
     /**
@@ -142,7 +142,7 @@ class Text implements Component
      */
     public function bgHsl(float $h, float $s, float $l): self
     {
-        return $this->bgColor(\Xocdr\Tui\Style\Color::hslToHex($h, $s, $l));
+        return $this->bgColor(\Xocdr\Tui\Styling\Style\Color::hslToHex($h, $s, $l));
     }
 
     // Standard ANSI colors (vibrant)

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Support;
+namespace Xocdr\Tui\Support\Testing;
 
 /**
  * Key constants for use with ExtTestRenderer::sendKey().

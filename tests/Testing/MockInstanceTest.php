@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\MockInstance;
+use Xocdr\Tui\Support\Testing\MockInstance;
 
 class MockInstanceTest extends TestCase
 {

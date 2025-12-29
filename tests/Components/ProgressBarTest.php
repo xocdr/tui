@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Animation\Gradient;
+use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Widgets\ProgressBar;
 

@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Tests\Testing;
 
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Testing\TuiTestCase;
+use Xocdr\Tui\Support\Testing\TuiTestCase;
 
 class TuiTestCaseTest extends TuiTestCase
 {

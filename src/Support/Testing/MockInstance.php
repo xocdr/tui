@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Support;
+namespace Xocdr\Tui\Support\Testing;
 
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
-use Xocdr\Tui\Events\EventDispatcher;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
 
 /**
@@ -226,7 +226,7 @@ class MockInstance implements InstanceInterface
     {
         $nativeKey = MockKey::fromChar($key, $modifiers);
 
-        $event = new \Xocdr\Tui\Events\InputEvent($key, $nativeKey);
+        $event = new \Xocdr\Tui\Terminal\Events\InputEvent($key, $nativeKey);
         $this->eventDispatcher->emit('input', $event);
     }
 
@@ -239,7 +239,7 @@ class MockInstance implements InstanceInterface
         $oldHeight = $this->size['height'];
         $this->size = ['width' => $width, 'height' => $height];
 
-        $event = new \Xocdr\Tui\Events\ResizeEvent($width, $height, $oldWidth, $oldHeight);
+        $event = new \Xocdr\Tui\Terminal\Events\ResizeEvent($width, $height, $oldWidth, $oldHeight);
         $this->eventDispatcher->emit('resize', $event);
     }
 
@@ -302,7 +302,7 @@ class MockInstance implements InstanceInterface
      */
     public function onInput(callable $handler, int $priority = 0): string
     {
-        return $this->eventDispatcher->on('input', function (\Xocdr\Tui\Events\InputEvent $event) use ($handler) {
+        return $this->eventDispatcher->on('input', function (\Xocdr\Tui\Terminal\Events\InputEvent $event) use ($handler) {
             $handler($event->key, $event->nativeKey);
         }, $priority);
     }

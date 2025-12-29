@@ -23,7 +23,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Text\TextUtils;
+use Xocdr\Tui\Styling\Text\TextUtils;
 use Xocdr\Tui\Tui;
 
 if (!Tui::isInteractive()) {
