@@ -61,6 +61,9 @@ final class Notification
      * Uses reverse video mode to briefly flash the terminal screen.
      * Useful for users who have audio disabled or prefer visual alerts.
      *
+     * Note: The fallback implementation blocks for ~100ms to create
+     * a visible flash effect. Use sparingly to avoid UI lag.
+     *
      * @return bool True if flash was triggered
      */
     public static function flash(): bool

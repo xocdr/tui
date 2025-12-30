@@ -58,6 +58,12 @@ final class Accessibility
     ];
 
     /**
+     * Valid priority values for announcements.
+     */
+    public const PRIORITY_POLITE = 'polite';
+    public const PRIORITY_ASSERTIVE = 'assertive';
+
+    /**
      * Announce a message to screen readers.
      *
      * Uses terminal accessibility features to communicate with
@@ -66,9 +72,17 @@ final class Accessibility
      * @param string $message The message to announce
      * @param string $priority 'polite' (default) or 'assertive'
      * @return bool True if announcement was sent
+     *
+     * @throws \InvalidArgumentException If priority is not 'polite' or 'assertive'
      */
-    public static function announce(string $message, string $priority = 'polite'): bool
+    public static function announce(string $message, string $priority = self::PRIORITY_POLITE): bool
     {
+        if (!in_array($priority, [self::PRIORITY_POLITE, self::PRIORITY_ASSERTIVE], true)) {
+            throw new \InvalidArgumentException(
+                "Priority must be 'polite' or 'assertive', got '{$priority}'"
+            );
+        }
+
         if (function_exists('tui_announce')) {
             return tui_announce($message, $priority);
         }

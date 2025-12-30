@@ -303,6 +303,8 @@ final class Recorder
 
     /**
      * Clean up resources.
+     *
+     * This also sets the state to stopped to prevent further operations.
      */
     public function destroy(): void
     {
@@ -310,6 +312,7 @@ final class Recorder
             tui_record_destroy($this->resource);
             $this->resource = null;
         }
+        $this->state = self::STATE_STOPPED;
     }
 
     /**

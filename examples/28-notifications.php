@@ -17,71 +17,81 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Terminal\Notification;
 use Xocdr\Tui\Tui;
 
-use function Xocdr\Tui\Hooks\useState;
-use function Xocdr\Tui\Hooks\useInput;
+class NotificationsDemo implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
 
-$component = function () {
-    [$lastAction, $setLastAction] = useState('None');
+    public function render(): mixed
+    {
+        [$lastAction, $setLastAction] = $this->hooks()->state('None');
+        $app = $this->hooks()->app();
 
-    useInput(function ($key) use ($setLastAction) {
-        switch ($key) {
-            case 'b':
-                Notification::bell();
-                $setLastAction('Bell sound played');
-                break;
-            case 'f':
-                Notification::flash();
-                $setLastAction('Screen flashed');
-                break;
-            case 'n':
-                Notification::notify('TUI Notification', 'Hello from the terminal!');
-                $setLastAction('Desktop notification sent');
-                break;
-            case 'u':
-                Notification::notify('Urgent!', 'This is urgent!', Notification::PRIORITY_URGENT);
-                $setLastAction('Urgent notification sent');
-                break;
-            case 'a':
-                Notification::alert('Full alert triggered!');
-                $setLastAction('Full alert (bell + flash + notify)');
-                break;
-        }
-    });
+        $this->hooks()->onInput(function (string $input, $key) use ($setLastAction, $app) {
+            switch ($input) {
+                case 'b':
+                    Notification::bell();
+                    $setLastAction('Bell sound played');
+                    break;
+                case 'f':
+                    Notification::flash();
+                    $setLastAction('Screen flashed');
+                    break;
+                case 'n':
+                    Notification::notify('TUI Notification', 'Hello from the terminal!');
+                    $setLastAction('Desktop notification sent');
+                    break;
+                case 'u':
+                    Notification::notify('Urgent!', 'This is urgent!', Notification::PRIORITY_URGENT);
+                    $setLastAction('Urgent notification sent');
+                    break;
+                case 'a':
+                    Notification::alert('Full alert triggered!');
+                    $setLastAction('Full alert (bell + flash + notify)');
+                    break;
+                case 'q':
+                    $app['exit'](0);
+                    break;
+            }
 
-    return Box::create()
-        ->flexDirection('column')
-        ->padding(1)
-        ->gap(1)
-        ->children([
+            if ($key->escape) {
+                $app['exit'](0);
+            }
+        });
+
+        return Box::column([
             Text::create('Terminal Notifications Demo')->bold()->underline(),
-            Text::create(''),
+            Newline::create(),
 
-            Box::create()->flexDirection('column')->children([
-                Text::create('Press a key to trigger notification:')->bold(),
-                Text::create(''),
-                Text::create('  [b] Bell - Play terminal bell sound')->dim(),
-                Text::create('  [f] Flash - Flash the screen')->dim(),
-                Text::create('  [n] Notify - Send desktop notification')->dim(),
-                Text::create('  [u] Urgent - Send urgent notification')->dim(),
-                Text::create('  [a] Alert - All of the above')->dim(),
+            Text::create('Press a key to trigger notification:')->bold(),
+            Newline::create(),
+            Text::create('  [b] Bell - Play terminal bell sound')->dim(),
+            Text::create('  [f] Flash - Flash the screen')->dim(),
+            Text::create('  [n] Notify - Send desktop notification')->dim(),
+            Text::create('  [u] Urgent - Send urgent notification')->dim(),
+            Text::create('  [a] Alert - All of the above')->dim(),
+
+            Newline::create(),
+
+            Box::row([
+                Text::create('Last action: ')->bold(),
+                Text::create($lastAction)->color(Color::Cyan),
             ]),
 
-            Text::create(''),
-
-            Box::create()->flexDirection('row')->gap(1)->children([
-                Text::create('Last action:')->bold(),
-                Text::create($lastAction)->color('cyan'),
-            ]),
-
-            Text::create(''),
+            Newline::create(),
             Text::create('Note: Desktop notifications require terminal support (iTerm2, Kitty, etc.)')->dim()->italic(),
-            Text::create(''),
-            Text::create('Press Ctrl+C to exit')->dim(),
+            Newline::create(),
+            Text::create('Press q or ESC to exit')->dim(),
         ]);
-};
+    }
+}
 
-Tui::render($component)->waitUntilExit();
+Tui::render(new NotificationsDemo())->waitUntilExit();
