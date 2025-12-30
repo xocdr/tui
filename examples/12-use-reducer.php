@@ -20,15 +20,8 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 // Define action types
 const INCREMENT = 'INCREMENT';
@@ -60,11 +53,9 @@ function counterReducer(array $state, array $action): array
     };
 }
 
-class ReducerDemo implements Component, HooksAwareInterface
+class ReducerDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         // Initial state
         $initialState = [
@@ -73,9 +64,8 @@ class ReducerDemo implements Component, HooksAwareInterface
         ];
 
         [$state, $dispatch] = $this->hooks()->reducer('counterReducer', $initialState);
-        $app = $this->hooks()->app();
 
-        $this->hooks()->onInput(function (string $input, $key) use ($dispatch, $app) {
+        $this->onKeyPress(function (string $input, $key) use ($dispatch) {
             if ($key->upArrow) {
                 $dispatch(['type' => INCREMENT]);
             } elseif ($key->downArrow) {
@@ -89,7 +79,7 @@ class ReducerDemo implements Component, HooksAwareInterface
             } elseif ($input === '0') {
                 $dispatch(['type' => SET_STEP, 'payload' => 10]);
             } elseif ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -124,4 +114,4 @@ class ReducerDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new ReducerDemo())->waitUntilExit();
+ReducerDemo::run();

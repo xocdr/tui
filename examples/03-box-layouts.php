@@ -23,27 +23,16 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class BoxLayoutsDemo implements Component, HooksAwareInterface
+class BoxLayoutsDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-
-        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+        $this->onKeyPress(function ($input, $key) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             }
         });
 
@@ -130,4 +119,4 @@ class BoxLayoutsDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new BoxLayoutsDemo())->waitUntilExit();
+BoxLayoutsDemo::run();

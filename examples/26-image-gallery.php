@@ -23,15 +23,8 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Image;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 // Sample images (in a real app, these would be actual image paths)
 $sampleImages = [
@@ -57,10 +50,8 @@ $sampleImages = [
     ],
 ];
 
-class ImageGallery implements Component, HooksAwareInterface
+class ImageGallery extends UI
 {
-    use HooksAwareTrait;
-
     /** @var array<int, array{name: string, path?: string, url?: string, description: string}> */
     private array $images;
 
@@ -69,18 +60,16 @@ class ImageGallery implements Component, HooksAwareInterface
         $this->images = $images;
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-        [$index, $setIndex] = $this->hooks()->state(0);
-        [$showInfo, $setShowInfo] = $this->hooks()->state(true);
+        [$index, $setIndex] = $this->state(0);
+        [$showInfo, $setShowInfo] = $this->state(true);
 
         $imageCount = count($this->images);
 
-        $this->hooks()->onInput(function ($input, $key) use ($exit, $index, $setIndex, $showInfo, $setShowInfo, $imageCount) {
+        $this->onKeyPress(function ($input, $key) use ($index, $setIndex, $showInfo, $setShowInfo, $imageCount) {
             if ($key->escape) {
-                $exit();
-
+                $this->exit();
                 return;
             }
 
@@ -130,13 +119,13 @@ class ImageGallery implements Component, HooksAwareInterface
             // Controls
             Text::create(''),
             Box::row([
-                Text::create('←/→')->bold(),
-                Text::create(' Navigate  '),
-                Text::create('i')->bold(),
-                Text::create(' Toggle info  '),
-                Text::create('ESC')->bold(),
-                Text::create(' Exit'),
-            ])->dim(),
+                Text::create('←/→')->bold()->dim(),
+                Text::create(' Navigate  ')->dim(),
+                Text::create('i')->bold()->dim(),
+                Text::create(' Toggle info  ')->dim(),
+                Text::create('ESC')->bold()->dim(),
+                Text::create(' Exit')->dim(),
+            ]),
         ]);
     }
 
@@ -186,5 +175,4 @@ class ImageGallery implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new ImageGallery($sampleImages));
-$instance->waitUntilExit();
+ImageGallery::run(new ImageGallery($sampleImages));

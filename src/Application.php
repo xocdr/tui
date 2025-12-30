@@ -192,8 +192,8 @@ class Application implements InstanceInterface
     /**
      * Render the component tree.
      *
-     * Hides the cursor during rendering to prevent flicker,
-     * then restores it based on the previous state.
+     * Cursor visibility is handled by ext-tui inside the sync block
+     * based on the focused node's showCursor property.
      *
      * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
      *
@@ -201,29 +201,18 @@ class Application implements InstanceInterface
      */
     private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
     {
-        // Hide cursor during render to prevent flicker
-        $wasHidden = $this->terminalManager->isCursorHidden();
-        if (!$wasHidden) {
-            $this->terminalManager->hideCursor();
+        // Run with hook context
+        // Note: Cursor visibility is now handled by ext-tui inside the sync block
+        // based on the focused node's showCursor property
+        $node = HookRegistry::withContext($this->hookContext, function () {
+            return $this->renderer->render($this->component);
+        });
+
+        if ($node === null) {
+            throw new \RuntimeException('Renderer returned null node');
         }
 
-        try {
-            // Run with hook context
-            $node = HookRegistry::withContext($this->hookContext, function () {
-                return $this->renderer->render($this->component);
-            });
-
-            if ($node === null) {
-                throw new \RuntimeException('Renderer returned null node');
-            }
-
-            return $node->getNative();
-        } finally {
-            // Restore cursor visibility
-            if (!$wasHidden) {
-                $this->terminalManager->showCursor();
-            }
-        }
+        return $node->getNative();
     }
 
     /**

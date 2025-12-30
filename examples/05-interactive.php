@@ -5,9 +5,9 @@
  * Interactive - Keyboard input handling
  *
  * Demonstrates:
- * - onInput hook for key events
- * - app hook for exiting
+ * - onKeyPress for handling keyboard events
  * - Key detection (arrows, ctrl, shift, etc.)
+ * - State management with input
  *
  * Press 'q' or ESC to exit
  */
@@ -20,35 +20,26 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class InteractiveDemo implements Component, HooksAwareInterface
+class InteractiveDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$lastKey, $setLastKey] = $this->hooks()->state('(none)');
-        [$keyCount, $setKeyCount] = $this->hooks()->state(0);
-        [$modifierState, $setModifierState] = $this->hooks()->state([
+        [$lastKey, $setLastKey] = $this->state('(none)');
+        [$keyCount, $setKeyCount] = $this->state(0);
+        [$modifierState, $setModifierState] = $this->state([
             'ctrl' => false,
             'alt' => false,
             'shift' => false,
             'meta' => false,
         ]);
-        [$keyName, $setKeyName] = $this->hooks()->state('');
-        [$rawInput, $setRawInput] = $this->hooks()->state('');
-        $app = $this->hooks()->app();
+        [$keyName, $setKeyName] = $this->state('');
+        [$rawInput, $setRawInput] = $this->state('');
 
-        $this->hooks()->onInput(function (string $input, $key) use ($setLastKey, $setKeyCount, $setModifierState, $setKeyName, $setRawInput, $app) {
+        $this->onKeyPress(function (string $input, $key) use ($setLastKey, $setKeyCount, $setModifierState, $setKeyName, $setRawInput) {
             // Store modifier states
             $setModifierState([
                 'ctrl' => $key->ctrl,
@@ -95,7 +86,7 @@ class InteractiveDemo implements Component, HooksAwareInterface
 
             // Exit on 'q' or ESC
             if ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 

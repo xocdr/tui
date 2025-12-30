@@ -5,7 +5,7 @@
  * Counter - State management with hooks
  *
  * Demonstrates:
- * - state hook for stateful components
+ * - state() for reactive state management
  * - Re-rendering on state change
  * - Functional state updates
  *
@@ -20,26 +20,16 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class CounterDemo implements Component, HooksAwareInterface
+class CounterDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
-        $app = $this->hooks()->app();
+        [$count, $setCount] = $this->state(0);
 
-        $this->hooks()->onInput(function (string $input, $key) use ($setCount, $app) {
+        $this->onKeyPress(function (string $input, $key) use ($setCount) {
             if ($key->upArrow) {
                 $setCount(fn ($n) => $n + 1);
             } elseif ($key->downArrow) {
@@ -47,7 +37,7 @@ class CounterDemo implements Component, HooksAwareInterface
             } elseif ($key->return) {
                 $setCount(0); // Reset
             } elseif ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -88,4 +78,4 @@ class CounterDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new CounterDemo())->waitUntilExit();
+CounterDemo::run();

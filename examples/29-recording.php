@@ -21,31 +21,25 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Support\Recording\Recorder;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-class RecordingDemo implements Component, HooksAwareInterface
+class RecordingDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$isRecording, $setIsRecording] = $this->hooks()->state(false);
-        [$frameCount, $setFrameCount] = $this->hooks()->state(0);
-        [$status, $setStatus] = $this->hooks()->state('Ready to record');
-        $recorderRef = $this->hooks()->ref(null);
-        $app = $this->hooks()->app();
+        [$isRecording, $setIsRecording] = $this->state(false);
+        [$frameCount, $setFrameCount] = $this->state(0);
+        [$status, $setStatus] = $this->state('Ready to record');
+        $recorderRef = $this->ref(null);
 
-        $this->hooks()->onInput(function (string $input, $key) use (
+        $this->onKeyPress(function (string $input, $key) use (
             $isRecording,
             $setIsRecording,
             $setFrameCount,
             $setStatus,
-            $recorderRef,
-            $app
+            $recorderRef
         ) {
             switch ($input) {
                 case 'r':
@@ -107,7 +101,7 @@ class RecordingDemo implements Component, HooksAwareInterface
                     if ($recorderRef->current !== null) {
                         $recorderRef->current->destroy();
                     }
-                    $app['exit'](0);
+                    $this->exit();
                     break;
             }
 
@@ -115,7 +109,7 @@ class RecordingDemo implements Component, HooksAwareInterface
                 if ($recorderRef->current !== null) {
                     $recorderRef->current->destroy();
                 }
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -154,4 +148,4 @@ class RecordingDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new RecordingDemo())->waitUntilExit();
+RecordingDemo::run();

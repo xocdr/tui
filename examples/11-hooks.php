@@ -7,14 +7,8 @@
  * This example shows every hook available in the framework,
  * organized by category with live interactive demos.
  *
- * Categories:
- * - State: state(), reducer(), ref(), previous()
- * - Utility: toggle(), counter(), list()
- * - Performance: memo(), callback()
- * - Application: app(), stdout(), focus(), context()
- * - Time: interval(), animation()
- * - Input: onInput(), clipboard()
- * - Graphics: canvas()
+ * Each demo component has its own isolated hook context,
+ * so switching tabs doesn't cause state conflicts.
  *
  * Controls:
  * - Tab       : Switch between hook demos
@@ -33,15 +27,11 @@ use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 /**
  * Individual hook demo components.
+ * Each component has its own isolated hook context.
  */
 class StateDemo implements Component, HooksAwareInterface
 {
@@ -337,11 +327,9 @@ class IntervalDemo implements Component, HooksAwareInterface
 /**
  * Main hooks showcase with tab navigation.
  */
-class HooksShowcase implements Component, HooksAwareInterface
+class HooksShowcase extends UI
 {
-    use HooksAwareTrait;
-
-    /** @var array<string, Component> */
+    /** @var array<string, Component&HooksAwareInterface> */
     private array $demos;
 
     /** @var array<string> */
@@ -362,14 +350,13 @@ class HooksShowcase implements Component, HooksAwareInterface
         $this->demoKeys = array_keys($this->demos);
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
-        [$activeIndex, $setActiveIndex] = $this->hooks()->state(0);
-        ['exit' => $exit] = $this->hooks()->app();
+        [$activeIndex, $setActiveIndex] = $this->state(0);
 
-        $this->hooks()->onInput(function ($input, $key) use ($exit, $setActiveIndex) {
+        $this->onKeyPress(function ($input, $key) use ($setActiveIndex) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             } elseif ($key->tab || $key->rightArrow) {
                 $setActiveIndex(fn ($i) => ($i + 1) % count($this->demoKeys));
             } elseif ($key->leftArrow) {
@@ -379,11 +366,6 @@ class HooksShowcase implements Component, HooksAwareInterface
 
         $activeKey = $this->demoKeys[$activeIndex];
         $activeDemo = $this->demos[$activeKey];
-
-        // Pass hooks to child demo
-        if ($activeDemo instanceof HooksAwareInterface) {
-            $activeDemo->setHooks($this->hooks());
-        }
 
         // Build tab bar
         $tabs = [];
@@ -408,7 +390,7 @@ class HooksShowcase implements Component, HooksAwareInterface
             Box::row($tabs),
             Text::create(''),
 
-            // Active demo in a box
+            // Active demo in a box - each demo has its own isolated hook context!
             Box::create()
                 ->border('round')
                 ->borderColor(Color::Cyan)
@@ -421,5 +403,4 @@ class HooksShowcase implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new HooksShowcase());
-$instance->waitUntilExit();
+HooksShowcase::run();

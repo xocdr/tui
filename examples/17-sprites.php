@@ -20,52 +20,43 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Drawing\Sprite;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
-
-// Define a simple character sprite with walking animation
-$sprite = Sprite::create([
-    'idle' => [
-        ['lines' => ['  O  ', ' /|\\ ', ' / \\ '], 'duration' => 500],
-        ['lines' => ['  O  ', ' \\|/ ', ' / \\ '], 'duration' => 500],
-    ],
-    'walk' => [
-        ['lines' => ['  O  ', ' /|  ', ' /|  '], 'duration' => 150],
-        ['lines' => ['  O  ', '  |  ', ' / \\ '], 'duration' => 150],
-        ['lines' => ['  O  ', '  |\\ ', '  |\\ '], 'duration' => 150],
-        ['lines' => ['  O  ', '  |  ', ' / \\ '], 'duration' => 150],
-    ],
-]);
-
-$sprite->setAnimation('idle');
-
-class SpritesDemo implements Component, HooksAwareInterface
+class SpritesDemo extends UI
 {
-    use HooksAwareTrait;
+    private Sprite $sprite;
 
-    public function __construct(private Sprite $sprite)
+    public function __construct()
     {
+        // Define a simple character sprite with walking animation
+        $this->sprite = Sprite::create([
+            'idle' => [
+                ['lines' => ['  O  ', ' /|\\ ', ' / \\ '], 'duration' => 500],
+                ['lines' => ['  O  ', ' \\|/ ', ' / \\ '], 'duration' => 500],
+            ],
+            'walk' => [
+                ['lines' => ['  O  ', ' /|  ', ' /|  '], 'duration' => 150],
+                ['lines' => ['  O  ', '  |  ', ' / \\ '], 'duration' => 150],
+                ['lines' => ['  O  ', '  |\\ ', '  |\\ '], 'duration' => 150],
+                ['lines' => ['  O  ', '  |  ', ' / \\ '], 'duration' => 150],
+            ],
+        ]);
+
+        $this->sprite->setAnimation('idle');
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-        [$frame, $setFrame] = $this->hooks()->state(0);
-        [$animation, $setAnimation] = $this->hooks()->state('idle');
+        [$frame, $setFrame] = $this->state(0);
+        [$animation, $setAnimation] = $this->state('idle');
 
         $sprite = $this->sprite;
 
-        $this->hooks()->onInput(function ($input, $key) use ($exit, $setFrame, $setAnimation, $sprite) {
+        $this->onKeyPress(function ($input, $key) use ($setFrame, $setAnimation, $sprite) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             } elseif ($input === ' ') {
                 $sprite->advance();
                 $setFrame(fn ($f) => $f + 1);
@@ -97,5 +88,4 @@ class SpritesDemo implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new SpritesDemo($sprite));
-$instance->waitUntilExit();
+SpritesDemo::run();

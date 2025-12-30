@@ -21,15 +21,8 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Style\Color;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 // Define custom color palettes
 Color::define('brand', '#e3855a');      // Auto-generate shades from Claude Code orange
@@ -51,23 +44,20 @@ Color::define('custom', '#ff6b6b', [
     950 => '#7f1d1d',
 ]);
 
-class ColorPaletteDemo implements Component, HooksAwareInterface
+class ColorPaletteDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         $palettes = ['slate', 'gray', 'red', 'orange', 'amber', 'yellow', 'lime', 'green',
             'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple',
             'fuchsia', 'pink', 'rose', 'brand', 'ocean', 'forest', 'custom'];
         $shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
-        [$paletteIndex, $setPaletteIndex] = $this->hooks()->state(0);
-        $app = $this->hooks()->app();
+        [$paletteIndex, $setPaletteIndex] = $this->state(0);
 
-        $this->hooks()->onInput(function (string $input, $key) use ($app, $palettes, $setPaletteIndex) {
+        $this->onKeyPress(function (string $input, $key) use ($palettes, $setPaletteIndex) {
             if ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             } elseif ($key->leftArrow) {
                 $setPaletteIndex(fn ($i) => ($i - 1 + count($palettes)) % count($palettes));
             } elseif ($key->rightArrow) {
@@ -131,4 +121,4 @@ class ColorPaletteDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new ColorPaletteDemo())->waitUntilExit();
+ColorPaletteDemo::run();

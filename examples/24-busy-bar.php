@@ -12,7 +12,7 @@
  * - Auto-animating using interval
  * - Moving gradient effect (like Claude Code/exocoder streaming indicator)
  *
- * Run in your terminal: php examples/27-busy-bar.php
+ * Run in your terminal: php examples/24-busy-bar.php
  * Press ESC to exit.
  */
 
@@ -23,17 +23,10 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color as ExtColor;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Styling\Style\Color;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 /**
  * Render an HSL-based gradient bar.
@@ -187,23 +180,20 @@ function renderPaletteBar(int $width, int $frame, string $fromPalette, int $from
     return Box::row($blocks);
 }
 
-class BusyBarDemo implements Component, HooksAwareInterface
+class BusyBarDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-        [$frame, $setFrame] = $this->hooks()->state(0);
+        [$frame, $setFrame] = $this->state(0);
 
         // Auto-animate every 50ms
-        $this->hooks()->interval(function () use ($setFrame) {
+        $this->every(50, function () use ($setFrame) {
             $setFrame(fn ($f) => $f + 1);
-        }, 50);
+        });
 
-        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+        $this->onKeyPress(function ($input, $key) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             }
         });
 
@@ -256,5 +246,4 @@ class BusyBarDemo implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new BusyBarDemo());
-$instance->waitUntilExit();
+BusyBarDemo::run();

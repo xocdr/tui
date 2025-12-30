@@ -39,6 +39,8 @@ class Box extends AbstractContainerComponent
 
     private ?string $borderTitleStyle = null;
 
+    private bool $showCursor = false;
+
     /**
      * Create a new Box instance.
      */
@@ -803,6 +805,21 @@ class Box extends AbstractContainerComponent
     }
 
     /**
+     * Show or hide the terminal cursor within this box.
+     *
+     * When enabled, the cursor will be visible and positioned within
+     * this box. Useful for text inputs and editors.
+     *
+     * @param bool $show Whether to show the cursor
+     */
+    public function showCursor(bool $show = true): self
+    {
+        $this->showCursor = $show;
+
+        return $this;
+    }
+
+    /**
      * Set a unique key for this box.
      *
      * Keys help with list reconciliation and identifying elements
@@ -881,6 +898,12 @@ class Box extends AbstractContainerComponent
         }
 
         $box = new \Xocdr\Tui\Ext\Box($style);
+
+        // Set showCursor on the native box
+        if ($this->showCursor) {
+            $box->showCursor = true;
+        }
+
         $this->renderChildrenInto($box);
 
         return $box;

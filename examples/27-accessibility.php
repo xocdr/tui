@@ -23,19 +23,15 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Terminal\Accessibility;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
 // Check accessibility features
 $features = Accessibility::getFeatures();
 
-class AccessibilityDemo implements Component, HooksAwareInterface
+class AccessibilityDemo extends UI
 {
-    use HooksAwareTrait;
-
     /** @var array{reduced_motion: bool, high_contrast: bool, screen_reader: bool} */
     private array $features;
 
@@ -47,13 +43,11 @@ class AccessibilityDemo implements Component, HooksAwareInterface
         $this->features = $features;
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
-        $app = $this->hooks()->app();
-
-        $this->hooks()->onInput(function (string $input, $key) use ($app) {
+        $this->onKeyPress(function (string $input, $key) {
             if ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -111,4 +105,4 @@ class AccessibilityDemo implements Component, HooksAwareInterface
 // Announce to screen reader when app starts
 Accessibility::announce('Accessibility demo loaded');
 
-Tui::render(new AccessibilityDemo($features))->waitUntilExit();
+AccessibilityDemo::run(new AccessibilityDemo($features));

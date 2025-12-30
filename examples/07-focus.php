@@ -19,28 +19,18 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class FocusDemo implements Component, HooksAwareInterface
+class FocusDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$focusIndex, $setFocusIndex] = $this->hooks()->state(0);
-        $app = $this->hooks()->app();
+        [$focusIndex, $setFocusIndex] = $this->state(0);
 
         $items = ['Option A', 'Option B', 'Option C', 'Option D'];
 
-        $this->hooks()->onInput(function (string $input, $key) use ($setFocusIndex, $app, $items) {
+        $this->onKeyPress(function (string $input, $key) use ($setFocusIndex, $items) {
             if ($key->tab || $key->downArrow) {
                 $setFocusIndex(fn ($i) => ($i + 1) % count($items));
             } elseif ($key->upArrow || ($key->shift && $key->tab)) {
@@ -48,7 +38,7 @@ class FocusDemo implements Component, HooksAwareInterface
             } elseif ($key->return) {
                 // Selected the focused item
             } elseif ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -112,4 +102,4 @@ class FocusDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new FocusDemo())->waitUntilExit();
+FocusDemo::run();

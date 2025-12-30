@@ -24,35 +24,25 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Style\Color as ColorUtil;
 use Xocdr\Tui\Styling\Text\TextUtils;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 // Define custom colors for the demo
 ColorUtil::defineColor('brand', 'blue', 600);
 ColorUtil::defineColor('accent', 'emerald', 500);
 ColorUtil::defineColor('warning', 'orange', 500);
 
-class TextStylingDemo implements Component, HooksAwareInterface
+class TextStylingDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-        [$section, $setSection] = $this->hooks()->state(0);
+        [$section, $setSection] = $this->state(0);
 
-        $this->hooks()->onInput(function ($input, $key) use ($exit, $setSection) {
+        $this->onKeyPress(function ($input, $key) use ($setSection) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             }
             if ($input === 'n' || $key->rightArrow) {
                 $setSection(fn ($s) => ($s + 1) % 4);
@@ -284,4 +274,4 @@ class TextStylingDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new TextStylingDemo())->waitUntilExit();
+TextStylingDemo::run();

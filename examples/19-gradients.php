@@ -22,16 +22,9 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Animation\Gradient;
-use Xocdr\Tui\Tui;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
+use Xocdr\Tui\UI;
 
 $width = 50;
 
@@ -62,10 +55,8 @@ function renderGradientBar(Gradient $gradient, int $width): Box
     return Box::row($blocks);
 }
 
-class GradientsDemo implements Component, HooksAwareInterface
+class GradientsDemo extends UI
 {
-    use HooksAwareTrait;
-
     public function __construct(
         private int $width,
         private Gradient $rainbow,
@@ -77,13 +68,11 @@ class GradientsDemo implements Component, HooksAwareInterface
     ) {
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-
-        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+        $this->onKeyPress(function ($input, $key) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             }
         });
 
@@ -117,5 +106,4 @@ class GradientsDemo implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new GradientsDemo($width, $rainbow, $heatmap, $grayscale, $custom, $palette, $builder));
-$instance->waitUntilExit();
+GradientsDemo::run(new GradientsDemo($width, $rainbow, $heatmap, $grayscale, $custom, $palette, $builder));

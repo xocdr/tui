@@ -7,7 +7,7 @@
  * Demonstrates:
  * - Using the Spinner widget for easy spinners
  * - Manual spinner patterns with arrays
- * - Auto-spinning using timers (interval)
+ * - Auto-spinning using timers (every)
  * - Progress bar animation
  * - Various spinner types (dots, line, box, arrows, etc.)
  *
@@ -22,37 +22,27 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 use Xocdr\Tui\Widgets\Spinner;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class SpinnerDemo implements Component, HooksAwareInterface
+class SpinnerDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$frame, $setFrame] = $this->hooks()->state(0);
-        [$progress, $setProgress] = $this->hooks()->state(0);
-        $app = $this->hooks()->app();
+        [$frame, $setFrame] = $this->state(0);
+        [$progress, $setProgress] = $this->state(0);
 
         // Auto-advance spinner every 80ms using timer
-        $this->hooks()->interval(function () use ($setFrame, $setProgress) {
+        $this->every(80, function () use ($setFrame, $setProgress) {
             $setFrame(fn ($f) => $f + 1);
             // Also advance progress bar automatically
             $setProgress(fn ($p) => $p >= 100 ? 0 : $p + 1);
-        }, 80);
+        });
 
-        $this->hooks()->onInput(function (string $input, $key) use ($app) {
+        $this->onKeyPress(function (string $input, $key) {
             if ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -129,4 +119,4 @@ class SpinnerDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new SpinnerDemo())->waitUntilExit();
+SpinnerDemo::run();

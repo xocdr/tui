@@ -21,16 +21,9 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 use Xocdr\Tui\Widgets\Table;
-
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
 
 // Create a basic table
 $table1 = Table::create(['Name', 'Age', 'City', 'Score'])
@@ -49,10 +42,8 @@ $table2 = Table::create(['Product', 'Price', 'Stock'])
     ->setAlign(1, true)  // Right-align Price
     ->setAlign(2, true); // Right-align Stock
 
-class TableDemo implements Component, HooksAwareInterface
+class TableDemo extends UI
 {
-    use HooksAwareTrait;
-
     /**
      * @param Table $table1
      * @param Table $table2
@@ -61,13 +52,11 @@ class TableDemo implements Component, HooksAwareInterface
     {
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-
-        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+        $this->onKeyPress(function ($input, $key) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             }
         });
 
@@ -102,5 +91,4 @@ class TableDemo implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new TableDemo($table1, $table2));
-$instance->waitUntilExit();
+TableDemo::run(new TableDemo($table1, $table2));

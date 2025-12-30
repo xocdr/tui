@@ -27,20 +27,11 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class TodoApp implements Component, HooksAwareInterface
+class TodoApp extends UI
 {
-    use HooksAwareTrait;
-
     private array $unicodeIcons = [
         'pending' => '□',      // U+25A1 White Square
         'in_progress' => '◐',  // U+25D0 Circle with Left Half Black
@@ -57,22 +48,21 @@ class TodoApp implements Component, HooksAwareInterface
         'waiting' => '🟡',     // U+1F7E1 Yellow Circle (width 2)
     ];
 
-    public function render(): mixed
+    public function build(): Component
     {
-        [$todos, $setTodos] = $this->hooks()->state([
+        [$todos, $setTodos] = $this->state([
             ['text' => 'Learn PHP TUI', 'status' => 'completed'],
             ['text' => 'Build terminal apps', 'status' => 'in_progress'],
             ['text' => 'Have fun!', 'status' => 'pending'],
             ['text' => 'Fix that bug', 'status' => 'blocked'],
             ['text' => 'Review PR', 'status' => 'waiting'],
         ]);
-        [$selectedIndex, $setSelectedIndex] = $this->hooks()->state(0);
-        $app = $this->hooks()->app();
+        [$selectedIndex, $setSelectedIndex] = $this->state(0);
 
         // Status cycle order
         $statusCycle = ['pending', 'in_progress', 'completed', 'blocked', 'waiting'];
 
-        $this->hooks()->onInput(function (string $input, $key) use ($todos, $setTodos, $selectedIndex, $setSelectedIndex, $app, $statusCycle) {
+        $this->onKeyPress(function (string $input, $key) use ($todos, $setTodos, $selectedIndex, $setSelectedIndex, $statusCycle) {
             $count = count($todos);
 
             if ($key->upArrow) {
@@ -104,7 +94,7 @@ class TodoApp implements Component, HooksAwareInterface
                     $setSelectedIndex($selectedIndex - 1);
                 }
             } elseif ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -229,4 +219,4 @@ class TodoApp implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new TodoApp())->waitUntilExit();
+TodoApp::run();

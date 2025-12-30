@@ -10,7 +10,7 @@
  * - Custom styling and colors
  * - Gradient progress bars
  *
- * Run in your terminal: php examples/26-progress-bar.php
+ * Run in your terminal: php examples/23-progress-bar.php
  * Press ESC to exit.
  */
 
@@ -21,29 +21,19 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 use Xocdr\Tui\Widgets\ProgressBar;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal.\n";
-    exit(1);
-}
-
-class ProgressBarDemo implements Component, HooksAwareInterface
+class ProgressBarDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-        [$progress, $setProgress] = $this->hooks()->state(0.0);
+        [$progress, $setProgress] = $this->state(0.0);
 
-        $this->hooks()->onInput(function ($input, $key) use ($exit, $setProgress) {
+        $this->onKeyPress(function ($input, $key) use ($setProgress) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             } elseif ($input === '+' || $input === '=') {
                 $setProgress(fn ($p) => min(1.0, $p + 0.1));
             } elseif ($input === '-' || $input === '_') {
@@ -95,5 +85,4 @@ class ProgressBarDemo implements Component, HooksAwareInterface
     }
 }
 
-$instance = Tui::render(new ProgressBarDemo());
-$instance->waitUntilExit();
+ProgressBarDemo::run();

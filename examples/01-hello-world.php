@@ -5,9 +5,9 @@
  * Hello World - Basic TUI example
  *
  * Demonstrates:
- * - Creating a simple component class
- * - Using HooksAwareTrait for state management
- * - Rendering to the terminal
+ * - Extending the UI base class
+ * - Building a simple component tree
+ * - Handling keyboard input
  *
  * Run in your terminal: php examples/01-hello-world.php
  * Press ESC to exit.
@@ -20,29 +20,16 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-// Check for interactive terminal
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    echo "Please run directly in your terminal, not through a pipe or non-interactive shell.\n";
-    exit(1);
-}
-
-class HelloWorld implements Component, HooksAwareInterface
+class HelloWorld extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        ['exit' => $exit] = $this->hooks()->app();
-
-        $this->hooks()->onInput(function ($input, $key) use ($exit) {
+        $this->onKeyPress(function ($input, $key) {
             if ($key->escape) {
-                $exit();
+                $this->exit();
             }
         });
 
@@ -54,5 +41,4 @@ class HelloWorld implements Component, HooksAwareInterface
     }
 }
 
-// Render the app and wait for exit
-Tui::render(new HelloWorld())->waitUntilExit();
+HelloWorld::run();

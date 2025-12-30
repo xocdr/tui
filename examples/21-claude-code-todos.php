@@ -25,29 +25,19 @@ require __DIR__ . '/../vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class ClaudeCodeTodosDemo implements Component, HooksAwareInterface
+class ClaudeCodeTodosDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$todos, $setTodos] = $this->hooks()->state([
+        [$todos, $setTodos] = $this->state([
             ['text' => 'Fix color bleeding issue in ext-tui buffer rendering', 'status' => 'in_progress'],
             ['text' => 'Create TodoList component for tui', 'status' => 'pending'],
             ['text' => 'Verify tests pass after fixes', 'status' => 'completed'],
         ]);
-        [$selectedIndex, $setSelectedIndex] = $this->hooks()->state(0);
-        [$spinnerFrame, $setSpinnerFrame] = $this->hooks()->state(0);
-        $app = $this->hooks()->app();
+        [$selectedIndex, $setSelectedIndex] = $this->state(0);
+        [$spinnerFrame, $setSpinnerFrame] = $this->state(0);
 
         // Spinner animation frames
         $spinnerFrames = ['◐', '◓', '◑', '◒'];
@@ -63,15 +53,15 @@ class ClaudeCodeTodosDemo implements Component, HooksAwareInterface
         $statusCycle = ['pending', 'in_progress', 'completed'];
 
         // Animate spinner every 150ms (smooth but not too fast)
-        $this->hooks()->interval(function () use ($setSpinnerFrame) {
+        $this->every(150, function () use ($setSpinnerFrame) {
             $setSpinnerFrame(fn ($f) => $f + 1);
-        }, 150);
+        });
 
-        $this->hooks()->onInput(function (string $input, $key) use ($todos, $setTodos, $selectedIndex, $setSelectedIndex, $app, $statusCycle) {
+        $this->onKeyPress(function (string $input, $key) use ($todos, $setTodos, $selectedIndex, $setSelectedIndex, $statusCycle) {
             $count = count($todos);
 
             if ($key->escape || $input === 'q') {
-                $app['exit'](0);
+                $this->exit();
             } elseif ($key->upArrow) {
                 $setSelectedIndex(fn ($i) => max(0, $i - 1));
             } elseif ($key->downArrow) {
@@ -156,4 +146,4 @@ class ClaudeCodeTodosDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new ClaudeCodeTodosDemo())->waitUntilExit();
+ClaudeCodeTodosDemo::run();

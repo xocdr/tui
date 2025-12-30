@@ -5,7 +5,7 @@
  * Ref - Mutable references
  *
  * Demonstrates:
- * - ref hook for mutable values
+ * - ref() for mutable values
  * - Tracking previous values
  * - Counting without re-renders
  *
@@ -20,45 +20,34 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-if (!Tui::isInteractive()) {
-    echo "Error: This example requires an interactive terminal (TTY).\n";
-    exit(1);
-}
-
-class RefDemo implements Component, HooksAwareInterface
+class RefDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
+        [$count, $setCount] = $this->state(0);
 
         // ref doesn't trigger re-render when mutated
-        $renderCount = $this->hooks()->ref(0);
-        $previousCount = $this->hooks()->ref(null);
-
-        $app = $this->hooks()->app();
+        $renderCount = $this->ref(0);
+        $previousCount = $this->ref(null);
 
         // Track render count (ref mutation doesn't cause re-render)
         $renderCount->current++;
 
-        // Track previous value using onRender
-        $this->hooks()->onRender(function () use ($count, $previousCount) {
+        // Track previous value using effect
+        $this->effect(function () use ($count, $previousCount) {
             $previousCount->current = $count;
         }, [$count]);
 
-        $this->hooks()->onInput(function (string $input, $key) use ($setCount, $app) {
+        $this->onKeyPress(function (string $input, $key) use ($setCount) {
             if ($key->upArrow) {
                 $setCount(fn ($n) => $n + 1);
             } elseif ($key->downArrow) {
                 $setCount(fn ($n) => max(0, $n - 1));
             } elseif ($input === 'q' || $key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -89,4 +78,4 @@ class RefDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new RefDemo())->waitUntilExit();
+RefDemo::run();

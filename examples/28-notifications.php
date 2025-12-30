@@ -20,22 +20,17 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Terminal\Notification;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-class NotificationsDemo implements Component, HooksAwareInterface
+class NotificationsDemo extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$lastAction, $setLastAction] = $this->hooks()->state('None');
-        $app = $this->hooks()->app();
+        [$lastAction, $setLastAction] = $this->state('None');
 
-        $this->hooks()->onInput(function (string $input, $key) use ($setLastAction, $app) {
+        $this->onKeyPress(function (string $input, $key) use ($setLastAction) {
             switch ($input) {
                 case 'b':
                     Notification::bell();
@@ -58,12 +53,12 @@ class NotificationsDemo implements Component, HooksAwareInterface
                     $setLastAction('Full alert (bell + flash + notify)');
                     break;
                 case 'q':
-                    $app['exit'](0);
+                    $this->exit();
                     break;
             }
 
             if ($key->escape) {
-                $app['exit'](0);
+                $this->exit();
             }
         });
 
@@ -94,4 +89,4 @@ class NotificationsDemo implements Component, HooksAwareInterface
     }
 }
 
-Tui::render(new NotificationsDemo())->waitUntilExit();
+NotificationsDemo::run();
