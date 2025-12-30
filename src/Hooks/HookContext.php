@@ -161,16 +161,30 @@ class HookContext implements HookContextInterface
 
     /**
      * Run cleanup for all effects.
+     *
+     * Iterates through all effects and calls their cleanup functions.
+     * Continues cleanup even if individual cleanup functions fail.
      */
     public function cleanup(): void
     {
-        foreach ($this->effects as $effect) {
+        $errors = [];
+
+        foreach ($this->effects as $index => $effect) {
             if (isset($effect['cleanup']) && is_callable($effect['cleanup'])) {
-                ($effect['cleanup'])();
+                try {
+                    ($effect['cleanup'])();
+                } catch (\Throwable $e) {
+                    $errors[] = sprintf('Effect %d cleanup failed: %s', $index, $e->getMessage());
+                }
             }
         }
 
         $this->effects = [];
+
+        // Log any errors that occurred during cleanup
+        foreach ($errors as $error) {
+            error_log('HookContext: ' . $error);
+        }
     }
 
     /**

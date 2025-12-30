@@ -71,7 +71,12 @@ class SmoothScroller
      */
     public function __destruct()
     {
-        $this->destroy();
+        try {
+            $this->destroy();
+        } catch (\Throwable $e) {
+            // Log error but don't propagate from destructor
+            error_log('SmoothScroller resource cleanup failed: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -80,8 +85,12 @@ class SmoothScroller
     public function destroy(): void
     {
         if ($this->resource !== null && function_exists('tui_scroll_destroy')) {
-            tui_scroll_destroy($this->resource);
-            $this->resource = null;
+            try {
+                tui_scroll_destroy($this->resource);
+            } finally {
+                // Always null out the resource even if cleanup fails
+                $this->resource = null;
+            }
         }
     }
 

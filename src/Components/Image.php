@@ -58,9 +58,30 @@ class Image implements Component
      * Create an Image from a local file path.
      *
      * @param string $path Path to the image file (PNG, JPEG, etc.)
+     *
+     * @throws \InvalidArgumentException If path contains null bytes or traversal with non-existent file
      */
     public static function fromPath(string $path): self
     {
+        // Security: Prevent path traversal attacks
+        if (str_contains($path, "\0")) {
+            throw new \InvalidArgumentException('Path cannot contain null bytes');
+        }
+
+        // Check for .. traversal patterns and validate
+        $normalized = str_replace('\\', '/', $path);
+        if (preg_match('#(?:^|/)\.\.(?:/|$)#', $normalized)) {
+            // Allow if it resolves to a valid path and exists
+            $realPath = realpath($path);
+            if ($realPath === false) {
+                throw new \InvalidArgumentException(
+                    'Path contains ".." traversal and file does not exist: ' . $path
+                );
+            }
+            // Use the resolved real path instead
+            $path = $realPath;
+        }
+
         $image = new self();
         $image->path = $path;
 
@@ -366,20 +387,31 @@ class Image implements Component
      */
     public function destroy(): void
     {
+        // Resource cleanup with guaranteed null-out
         if ($this->resource !== null) {
-            if (function_exists('tui_image_delete')) {
-                tui_image_delete($this->resource);
+            try {
+                if (function_exists('tui_image_delete')) {
+                    tui_image_delete($this->resource);
+                }
+                if (function_exists('tui_image_destroy')) {
+                    tui_image_destroy($this->resource);
+                }
+            } finally {
+                $this->resource = null;
             }
-            if (function_exists('tui_image_destroy')) {
-                tui_image_destroy($this->resource);
-            }
-            $this->resource = null;
         }
 
-        // Clean up temp file
-        if ($this->tempFile !== null && file_exists($this->tempFile)) {
-            @unlink($this->tempFile);
-            $this->tempFile = null;
+        // Temp file cleanup with error handling
+        if ($this->tempFile !== null) {
+            try {
+                if (file_exists($this->tempFile)) {
+                    unlink($this->tempFile);
+                }
+            } catch (\Throwable $e) {
+                error_log('Failed to cleanup temp image file: ' . $e->getMessage());
+            } finally {
+                $this->tempFile = null;
+            }
         }
 
         $this->transmitted = false;
@@ -390,6 +422,11 @@ class Image implements Component
      */
     public function __destruct()
     {
-        $this->destroy();
+        try {
+            $this->destroy();
+        } catch (\Throwable $e) {
+            // Log error but don't propagate from destructor
+            error_log('Image resource cleanup failed: ' . $e->getMessage());
+        }
     }
 }

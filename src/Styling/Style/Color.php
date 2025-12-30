@@ -33,17 +33,29 @@ class Color
      * Convert hex color to RGB.
      *
      * @return array{r: int, g: int, b: int}
+     *
+     * @throws \InvalidArgumentException If hex format is invalid
      */
     public static function hexToRgb(string $hex): array
     {
-        // Normalize short hex to full hex first
+        // Validate and normalize hex format
         $hex = ltrim($hex, '#');
+        if (!preg_match('/^[0-9a-f]{3}$|^[0-9a-f]{6}$/i', $hex)) {
+            throw new \InvalidArgumentException("Invalid hex color: #{$hex}");
+        }
+
         if (strlen($hex) === 3) {
             $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
         }
         $hex = '#' . $hex;
 
         $result = \tui_color_from_hex($hex);
+
+        // Validate result structure
+        if (!is_array($result)) {
+            throw new \RuntimeException('tui_color_from_hex returned invalid type');
+        }
+
         return [
             'r' => $result['r'] ?? $result[0] ?? 0,
             'g' => $result['g'] ?? $result[1] ?? 0,
@@ -114,6 +126,14 @@ class Color
      */
     public static function hslToRgb(float $h, float $s, float $l): array
     {
+        // Normalize inputs to valid ranges
+        $h = fmod($h, 360);
+        if ($h < 0) {
+            $h += 360;
+        }
+        $s = max(0.0, min(1.0, $s));
+        $l = max(0.0, min(1.0, $l));
+
         if ($s === 0.0) {
             $r = $g = $b = (int) round($l * 255);
             return ['r' => $r, 'g' => $r, 'b' => $r];
@@ -503,12 +523,11 @@ class Color
 
             foreach (self::$palette[$name] as $shade => $paletteHex) {
                 $paletteRgb = self::hexToRgb($paletteHex);
-                // Euclidean distance in RGB space
-                $distance = sqrt(
-                    pow($cssRgb['r'] - $paletteRgb['r'], 2) +
-                    pow($cssRgb['g'] - $paletteRgb['g'], 2) +
-                    pow($cssRgb['b'] - $paletteRgb['b'], 2)
-                );
+                // Euclidean distance in RGB space (using integer arithmetic to avoid overflow)
+                $dr = $cssRgb['r'] - $paletteRgb['r'];
+                $dg = $cssRgb['g'] - $paletteRgb['g'];
+                $db = $cssRgb['b'] - $paletteRgb['b'];
+                $distance = sqrt($dr * $dr + $dg * $dg + $db * $db);
 
                 if ($distance < $bestDistance) {
                     $bestDistance = $distance;

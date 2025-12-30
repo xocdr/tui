@@ -68,9 +68,14 @@ class Container
 
         // Check for factory
         if (isset($this->factories[$key])) {
-            $this->instances[$key] = ($this->factories[$key])($this);
+            $instance = ($this->factories[$key])($this);
 
-            return $this->instances[$key];
+            // Only cache non-null instances to allow retry on factory failures
+            if ($instance !== null) {
+                $this->instances[$key] = $instance;
+            }
+
+            return $instance;
         }
 
         return null;

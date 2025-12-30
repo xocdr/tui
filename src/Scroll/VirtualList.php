@@ -68,7 +68,12 @@ class VirtualList
      */
     public function __destruct()
     {
-        $this->destroy();
+        try {
+            $this->destroy();
+        } catch (\Throwable $e) {
+            // Log error but don't propagate from destructor
+            error_log('VirtualList resource cleanup failed: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -77,8 +82,12 @@ class VirtualList
     public function destroy(): void
     {
         if ($this->resource !== null && function_exists('tui_virtual_destroy')) {
-            tui_virtual_destroy($this->resource);
-            $this->resource = null;
+            try {
+                tui_virtual_destroy($this->resource);
+            } finally {
+                // Always null out the resource even if cleanup fails
+                $this->resource = null;
+            }
         }
     }
 
@@ -110,9 +119,17 @@ class VirtualList
      * Scroll to a specific item index.
      *
      * @param int $index Item index to scroll to (0-based)
+     *
+     * @throws \OutOfBoundsException If index is out of bounds
      */
     public function scrollTo(int $index): void
     {
+        if ($index < 0 || ($this->itemCount > 0 && $index >= $this->itemCount)) {
+            throw new \OutOfBoundsException(
+                sprintf('Index %d is out of bounds [0, %d)', $index, $this->itemCount)
+            );
+        }
+
         if ($this->resource !== null && function_exists('tui_virtual_scroll_to')) {
             tui_virtual_scroll_to($this->resource, $index);
         }
@@ -150,9 +167,17 @@ class VirtualList
      * If already visible, does nothing.
      *
      * @param int $index Item index to make visible
+     *
+     * @throws \OutOfBoundsException If index is out of bounds
      */
     public function ensureVisible(int $index): void
     {
+        if ($index < 0 || ($this->itemCount > 0 && $index >= $this->itemCount)) {
+            throw new \OutOfBoundsException(
+                sprintf('Index %d is out of bounds [0, %d)', $index, $this->itemCount)
+            );
+        }
+
         if ($this->resource !== null && function_exists('tui_virtual_ensure_visible')) {
             tui_virtual_ensure_visible($this->resource, $index);
         }

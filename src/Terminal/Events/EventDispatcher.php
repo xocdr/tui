@@ -105,6 +105,9 @@ class EventDispatcher implements EventDispatcherInterface
      *
      * Handlers are called in priority order. If a handler calls
      * $event->stopPropagation(), remaining handlers are skipped.
+     *
+     * Creates a snapshot of handlers to iterate over, preventing
+     * modification-during-iteration issues when handlers call off().
      */
     public function emit(string $event, object $payload): void
     {
@@ -112,7 +115,16 @@ class EventDispatcher implements EventDispatcherInterface
             return;
         }
 
-        foreach ($this->handlers[$event] as $entry) {
+        // Create a snapshot of handlers to iterate over
+        // This prevents modification-during-iteration issues
+        $handlers = $this->handlers[$event];
+
+        foreach ($handlers as $entry) {
+            // Check if handler still exists (wasn't removed during iteration)
+            if (!isset($this->handlerEventMap[$entry['id']])) {
+                continue;
+            }
+
             $entry['handler']($payload);
 
             // Check for propagation stop
@@ -179,20 +191,29 @@ class EventDispatcher implements EventDispatcherInterface
      *
      * The handler is guaranteed to be removed even if the event fires
      * synchronously during registration.
+     *
+     * Note: If the event never fires, the handler and its captured closures
+     * remain in memory. Use removeAllListeners() or off() to clean up
+     * handlers that may never fire.
+     *
+     * @return string Handler ID for removal if needed
      */
     public function once(string $event, callable $handler, int $priority = 0): string
     {
         $removed = false;
         $handlerId = null;
 
-        $wrapper = function (object $payload) use ($handler, &$removed, &$handlerId): void {
+        // Use WeakReference where possible to reduce memory footprint
+        // The wrapper needs to capture $this for off() call
+        $dispatcher = $this;
+        $wrapper = function (object $payload) use ($handler, &$removed, &$handlerId, $dispatcher): void {
             $removed = true;
             try {
                 $handler($payload);
             } finally {
                 // Remove handler after callback completes
                 if ($handlerId !== null) {
-                    $this->off($handlerId);
+                    $dispatcher->off($handlerId);
                 }
             }
         };

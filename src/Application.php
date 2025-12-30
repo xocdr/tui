@@ -194,6 +194,8 @@ class Application implements InstanceInterface
      * then restores it based on the previous state.
      *
      * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
+     *
+     * @throws \RuntimeException If renderer returns null node
      */
     private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
     {
@@ -208,6 +210,10 @@ class Application implements InstanceInterface
             $node = HookRegistry::withContext($this->hookContext, function () {
                 return $this->renderer->render($this->component);
             });
+
+            if ($node === null) {
+                throw new \RuntimeException('Renderer returned null node');
+            }
 
             return $node->getNative();
         } finally {

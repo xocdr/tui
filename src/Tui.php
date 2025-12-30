@@ -208,14 +208,30 @@ class Tui
      * Get terminal dimensions.
      *
      * @return array{width: int, height: int}
+     *
+     * @throws \RuntimeException If terminal size cannot be determined
      */
     public static function getTerminalSize(): array
     {
         $size = tui_get_terminal_size();
 
+        if (!is_array($size) || !isset($size[0], $size[1])) {
+            throw new \RuntimeException('Unable to determine terminal size');
+        }
+
+        $width = (int) $size[0];
+        $height = (int) $size[1];
+
+        // Validate size is reasonable (minimum 1x1)
+        if ($width < 1 || $height < 1) {
+            throw new \RuntimeException(
+                sprintf('Invalid terminal size: %dx%d', $width, $height)
+            );
+        }
+
         return [
-            'width' => $size[0],
-            'height' => $size[1],
+            'width' => $width,
+            'height' => $height,
         ];
     }
 
@@ -246,10 +262,28 @@ class Tui
     /**
      * Wrap text to specified width.
      *
+     * @param string $text The text to wrap
+     * @param int $width Maximum width (must be >= 1)
+     * @param string $mode Wrap mode: 'word', 'char', or 'truncate'
      * @return array<string>
+     *
+     * @throws \InvalidArgumentException If width is invalid or mode is unknown
      */
     public static function wrapText(string $text, int $width, string $mode = 'word'): array
     {
+        if ($width < 1) {
+            throw new \InvalidArgumentException(
+                sprintf('Width must be at least 1, got %d', $width)
+            );
+        }
+
+        $validModes = ['word', 'char', 'truncate'];
+        if (!in_array($mode, $validModes, true)) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid wrap mode "%s", expected one of: %s', $mode, implode(', ', $validModes))
+            );
+        }
+
         return tui_wrap_text($text, $width, $mode);
     }
 

@@ -24,16 +24,29 @@ class ComponentRenderer implements RendererInterface
 
     /**
      * Render a component or callable to a node tree.
+     *
+     * @throws \RuntimeException If rendering fails
      */
     public function render(Component|callable $component): NodeInterface
     {
-        if (is_callable($component)) {
-            $result = $component();
-        } else {
-            $result = $component;
-        }
+        try {
+            if (is_callable($component)) {
+                $result = $component();
+            } else {
+                $result = $component;
+            }
 
-        return $this->toNode($result);
+            return $this->toNode($result);
+        } catch (\RuntimeException|\InvalidArgumentException $e) {
+            // Re-throw known exceptions
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(
+                'Component rendering failed: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 
     /**

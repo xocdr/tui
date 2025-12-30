@@ -43,9 +43,17 @@ class HookRegistry
     public static function getCurrent(): HookContextInterface
     {
         if (self::$currentContext === null) {
+            // Get helpful debug info
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+            $caller = $backtrace[1] ?? [];
+            $callerInfo = isset($caller['file'], $caller['line'])
+                ? sprintf(' Called from %s:%d', $caller['file'], $caller['line'])
+                : '';
+
             throw new \RuntimeException(
                 'Hooks can only be called during component rendering. ' .
-                'Make sure you are calling hooks from within a component function.'
+                'Make sure you are calling hooks from within a component function.' .
+                $callerInfo
             );
         }
 

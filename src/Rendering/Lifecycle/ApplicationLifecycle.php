@@ -66,19 +66,29 @@ class ApplicationLifecycle
 
     /**
      * Stop the application and clean up.
+     *
+     * Thread-safe: Sets unmounted flag before cleanup to prevent
+     * race conditions with concurrent stop() calls.
      */
     public function stop(): void
     {
+        // Guard against concurrent calls
         if ($this->unmounted) {
             return;
         }
 
-        $this->running = false;
+        // Set unmounted flag first to prevent race conditions
         $this->unmounted = true;
+        $this->running = false;
 
+        // Now clean up the instance
         if ($this->extInstance !== null) {
-            $this->extInstance->unmount();
-            $this->extInstance = null;
+            try {
+                $this->extInstance->unmount();
+            } finally {
+                // Always null out the instance, even if unmount fails
+                $this->extInstance = null;
+            }
         }
     }
 

@@ -34,9 +34,11 @@ class TimerManager implements TimerManagerInterface
     /**
      * Add a timer that calls the callback at the specified interval.
      *
-     * @param int $intervalMs Interval in milliseconds
+     * @param int $intervalMs Interval in milliseconds (must be >= 1)
      * @param callable(): void $callback Callback to invoke
      * @return int Timer ID for later removal
+     *
+     * @throws \InvalidArgumentException If interval is invalid
      *
      * @example
      * // Update every 100ms
@@ -47,6 +49,12 @@ class TimerManager implements TimerManagerInterface
      */
     public function addTimer(int $intervalMs, callable $callback): int
     {
+        if ($intervalMs < 1) {
+            throw new \InvalidArgumentException(
+                sprintf('Timer interval must be at least 1ms, got %d', $intervalMs)
+            );
+        }
+
         $extInstance = $this->lifecycle->getTuiInstance();
         if ($extInstance !== null) {
             return $extInstance->addTimer($intervalMs, $callback);
