@@ -9,7 +9,8 @@ Terminal UI Framework for PHP - build interactive terminal applications with a c
 Step-by-step guides for building TUI applications:
 
 - [Getting Started](manual/getting-started.md) - Installation, first app, core concepts
-- [Components](manual/components.md) - Box, Text, Table, Spinner, ProgressBar, etc.
+- [Components](manual/components.md) - Box, Text, Fragment, and other primitives
+- [Widgets](manual/widgets.md) - Creating stateful widgets with hooks
 - [Hooks](manual/hooks.md) - state, onRender, onInput, and more
 - [Styling](manual/styling.md) - Colors, text attributes, borders
 - [Drawing](manual/drawing.md) - Canvas, Buffer, Sprite for graphics

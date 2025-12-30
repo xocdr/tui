@@ -37,6 +37,8 @@ $value = Easing::linear(0.5);             // 0.5
 
 Plus `linear`.
 
+[[TODO:SCREENSHOT:easing-curves-demo]]
+
 ### Getting All Functions
 
 ```php
@@ -300,6 +302,8 @@ $app = function() {
 
 Tui::render($app)->waitUntilExit();
 ```
+
+[[TODO:SCREENSHOT:complete-animation-example]]
 
 ---
 

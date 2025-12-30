@@ -358,6 +358,8 @@ Table::create(['Name', 'Age', 'City'])
 └───────┴─────┴──────────┘
 ```
 
+[[TODO:SCREENSHOT:table-component-example]]
+
 ---
 
 ## Component Interface
@@ -371,7 +373,7 @@ interface Component
 }
 ```
 
-You can create custom components by implementing this interface:
+For simple stateless components, implement this interface directly:
 
 ```php
 class MyComponent implements Component
@@ -385,8 +387,31 @@ class MyComponent implements Component
 }
 ```
 
+For stateful components that need hooks, extend the `Widget` class instead:
+
+```php
+use Xocdr\Tui\Widgets\Widget;
+use Xocdr\Tui\Components\Component;
+
+class MyWidget extends Widget
+{
+    public function build(): Component
+    {
+        [$count, $setCount] = $this->hooks()->state(0);
+
+        return Box::column([
+            Text::create("Count: {$count}"),
+        ]);
+    }
+}
+```
+
+See [Widgets](widgets.md) for more information.
+
 ## See Also
 
+- [Widgets](widgets.md) - Creating stateful widgets
 - [Hooks](hooks.md) - State management
 - [Styling](styling.md) - Colors and text attributes
+- [Testing](testing.md) - Testing components and widgets
 - [Reference: Classes](../reference/classes.md) - Full class reference

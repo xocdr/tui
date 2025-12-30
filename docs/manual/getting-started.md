@@ -58,6 +58,8 @@ $instance = Tui::render($app);
 $instance->waitUntilExit();
 ```
 
+[[TODO:SCREENSHOT:hello-tui-first-app]]
+
 ## Understanding Components
 
 TUI uses a component-based architecture where your UI is built from composable components.
@@ -115,21 +117,18 @@ Text::create('Styled')
 
 ## Adding Interactivity
 
-Use class-based components with `HooksAwareTrait` for state and input handling:
+For stateful components with input handling, extend the `Widget` class:
 
 ```php
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Tui;
 
-class Counter implements Component, HooksAwareInterface
+class Counter extends Widget
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         // State hook
         [$count, $setCount] = $this->hooks()->state(0);
@@ -155,6 +154,8 @@ class Counter implements Component, HooksAwareInterface
 
 Tui::render(new Counter())->waitUntilExit();
 ```
+
+[[TODO:SCREENSHOT:counter-widget-demo]]
 
 ## Layout with Flexbox
 
@@ -212,14 +213,11 @@ Box::row([
 ```php
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Widgets\Widget;
 
-class QuitDemo implements Component, HooksAwareInterface
+class QuitDemo extends Widget
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         ['exit' => $exit] = $this->hooks()->app();
 
@@ -245,15 +243,12 @@ require 'vendor/autoload.php';
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Tui;
 
-class GreetingApp implements Component, HooksAwareInterface
+class GreetingApp extends Widget
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         [$name, $setName] = $this->hooks()->state('World');
         [$editing, $setEditing] = $this->hooks()->state(false);
@@ -293,10 +288,14 @@ class GreetingApp implements Component, HooksAwareInterface
 Tui::render(new GreetingApp())->waitUntilExit();
 ```
 
+[[TODO:SCREENSHOT:greeting-app-complete-example]]
+
 ## Next Steps
 
 - [Components](components.md) - All available components
+- [Widgets](widgets.md) - Creating stateful widgets with hooks
 - [Hooks](hooks.md) - State management and effects
 - [Styling](styling.md) - Colors and text attributes
 - [Drawing](drawing.md) - Canvas and shape drawing
 - [Animation](animation.md) - Easing, tweens, and gradients
+- [Testing](testing.md) - Testing components and widgets

@@ -18,6 +18,8 @@ Text::create('Hello')
     ->inverse();
 ```
 
+[[TODO:SCREENSHOT:text-styling-demo]]
+
 ### Colors
 
 #### Hex Colors
@@ -162,6 +164,8 @@ Box::create()
 | `double` | ╔═╗║╚═╝ |
 | `round` | ╭─╮│╰─╯ |
 | `bold` | ┏━┓┃┗━┛ |
+
+[[TODO:SCREENSHOT:border-styles-demo]]
 
 ### Background Color
 

@@ -91,6 +91,8 @@ $canvas->getPixelHeight(); // 48 (actual pixels)
 $canvas->getResolution();  // ['width' => 80, 'height' => 48]
 ```
 
+[[TODO:SCREENSHOT:canvas-braille-demo]]
+
 ---
 
 ## Buffer
@@ -299,6 +301,8 @@ $app = function() {
 
 Tui::render($app)->waitUntilExit();
 ```
+
+[[TODO:SCREENSHOT:animated-scene-example]]
 
 ## See Also
 

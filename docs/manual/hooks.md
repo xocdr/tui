@@ -1,21 +1,20 @@
 # Hooks
 
-Hooks provide state management and side effects in TUI components. The recommended API is through class-based components with `HooksAwareTrait`.
+Hooks provide state management and side effects in TUI components. The recommended approach is to extend the `Widget` class.
 
 ## Getting Started
 
-Components implement `HooksAwareInterface` and use `HooksAwareTrait` for hook access:
+Widgets extend the `Widget` base class and implement a `build()` method:
 
 ```php
+use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Widgets\Widget;
 
-class MyComponent implements Component, HooksAwareInterface
+class MyWidget extends Widget
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         [$count, $setCount] = $this->hooks()->state(0);
         ['exit' => $exit] = $this->hooks()->app();
@@ -33,8 +32,10 @@ class MyComponent implements Component, HooksAwareInterface
 }
 
 // Usage
-Tui::render(new MyComponent())->waitUntilExit();
+Tui::render(new MyWidget())->waitUntilExit();
 ```
+
+> **Note:** The `Widget` class handles hooks setup internally. For advanced use cases, you can also implement `HooksAwareInterface` with `HooksAwareTrait` directly on any component.
 
 ---
 
@@ -320,20 +321,19 @@ $lines = $render();
 
 ---
 
-## HooksAware Interface
+## Widget Class (Recommended)
 
-For components that need hooks access, implement `HooksAwareInterface` and use `HooksAwareTrait`:
+The simplest way to use hooks is by extending the `Widget` class:
 
 ```php
+use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Widgets\Widget;
 
-class Counter implements Component, HooksAwareInterface
+class Counter extends Widget
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
         [$count, $setCount] = $this->hooks()->state(0);
 
@@ -354,12 +354,37 @@ class Counter implements Component, HooksAwareInterface
 }
 ```
 
+See [Widgets](widgets.md) for more information on creating widgets.
+
+## HooksAware Interface (Advanced)
+
+For custom component classes that don't extend `Widget`, implement `HooksAwareInterface` and use `HooksAwareTrait`:
+
+```php
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HooksAwareTrait;
+
+class CustomComponent implements Component, HooksAwareInterface
+{
+    use HooksAwareTrait;
+
+    public function render(): mixed
+    {
+        [$value, $setValue] = $this->hooks()->state('');
+        // ...
+    }
+}
+```
+
 The `Hooks` class implements `HooksInterface` for mocking in tests.
 
 ---
 
 ## See Also
 
+- [Widgets](widgets.md) - Creating stateful widgets
 - [Components](components.md) - UI components
+- [Testing](testing.md) - Testing widgets with MockHooks
 - [Animation](animation.md) - Animation utilities
-- [Reference: Classes](../reference/classes.md) - Full class reference
+- [Reference: Hooks](../reference/hooks.md) - Full hooks API reference
