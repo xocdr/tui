@@ -38,10 +38,17 @@ class Tui
         self::ensureExtensionLoaded();
 
         $app = new Application($component, $options);
-        self::$currentApplication = $app;
-        self::$applications[$app->getId()] = $app;
 
-        $app->start();
+        try {
+            $app->start();
+            // Only register after successful start to prevent memory leaks
+            self::$currentApplication = $app;
+            self::$applications[$app->getId()] = $app;
+        } catch (\Throwable $e) {
+            // Cleanup hook context for failed application
+            Hooks\HookRegistry::removeContext($app->getId());
+            throw $e;
+        }
 
         return $app;
     }
@@ -222,10 +229,17 @@ class Tui
         $width = (int) $size[0];
         $height = (int) $size[1];
 
-        // Validate size is reasonable (minimum 1x1)
+        // Validate size is reasonable (minimum 1x1, maximum 10000x10000)
+        // Upper bound prevents integer overflow in layout calculations
+        $maxDimension = 10000;
         if ($width < 1 || $height < 1) {
             throw new \RuntimeException(
-                sprintf('Invalid terminal size: %dx%d', $width, $height)
+                sprintf('Invalid terminal size: %dx%d (minimum is 1x1)', $width, $height)
+            );
+        }
+        if ($width > $maxDimension || $height > $maxDimension) {
+            throw new \RuntimeException(
+                sprintf('Terminal size %dx%d exceeds maximum %dx%d', $width, $height, $maxDimension, $maxDimension)
             );
         }
 

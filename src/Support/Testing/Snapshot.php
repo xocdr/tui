@@ -109,15 +109,28 @@ class Snapshot
 
     /**
      * Write the snapshot file.
+     *
+     * @throws \RuntimeException If directory creation or file write fails
      */
     private function writeSnapshot(string $content): void
     {
         if (!is_dir($this->directory)) {
-            mkdir($this->directory, 0755, true);
+            if (!mkdir($this->directory, 0755, true) && !is_dir($this->directory)) {
+                throw new \RuntimeException(
+                    sprintf('Failed to create snapshot directory: %s', $this->directory)
+                );
+            }
         }
 
         $header = $this->generateHeader($content);
-        file_put_contents($this->getSnapshotPath(), $header . $content);
+        $path = $this->getSnapshotPath();
+        $result = file_put_contents($path, $header . $content);
+
+        if ($result === false) {
+            throw new \RuntimeException(
+                sprintf('Failed to write snapshot file: %s', $path)
+            );
+        }
     }
 
     /**

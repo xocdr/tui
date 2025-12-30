@@ -166,7 +166,9 @@ class Application implements InstanceInterface
         }
 
         // Create the render callback
-        $renderCallback = function () {
+        // Note: ext-tui may pass the previous render result on rerender,
+        // so we accept an optional parameter to avoid ArgumentCountError
+        $renderCallback = function (mixed $previousResult = null) {
             return $this->renderComponent();
         };
 

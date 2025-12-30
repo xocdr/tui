@@ -162,8 +162,10 @@ class SmoothScroller
             // Sync position from native
             if (function_exists('tui_scroll_get_position')) {
                 $pos = tui_scroll_get_position($this->resource);
-                $this->x = $pos['x'];
-                $this->y = $pos['y'];
+                if ($pos !== null) {
+                    $this->x = $pos['x'];
+                    $this->y = $pos['y'];
+                }
             }
 
             return $animating;
@@ -204,8 +206,10 @@ class SmoothScroller
     {
         if ($this->resource !== null && function_exists('tui_scroll_get_position')) {
             $pos = tui_scroll_get_position($this->resource);
-            $this->x = $pos['x'];
-            $this->y = $pos['y'];
+            if ($pos !== null) {
+                $this->x = $pos['x'];
+                $this->y = $pos['y'];
+            }
         }
 
         return ['x' => $this->x, 'y' => $this->y];

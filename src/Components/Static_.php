@@ -20,7 +20,7 @@ class Static_ extends AbstractContainerComponent
     /**
      * Create a Static component.
      *
-     * @param array<Component|string> $items
+     * @param array<Component|object|string> $items
      */
     public static function create(array $items = []): self
     {
@@ -33,7 +33,7 @@ class Static_ extends AbstractContainerComponent
     /**
      * Set items (alias for children).
      *
-     * @param array<Component|string> $items
+     * @param array<Component|object|string> $items
      */
     public function items(array $items): self
     {
@@ -45,7 +45,7 @@ class Static_ extends AbstractContainerComponent
     /**
      * Get items (alias for getChildren).
      *
-     * @return array<Component|string>
+     * @return array<Component|object|string>
      */
     public function getItems(): array
     {

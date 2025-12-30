@@ -108,6 +108,9 @@ class EventDispatcher implements EventDispatcherInterface
      *
      * Creates a snapshot of handlers to iterate over, preventing
      * modification-during-iteration issues when handlers call off().
+     *
+     * Handler exceptions are caught and logged, allowing remaining handlers
+     * to still execute. If all handlers fail, the last exception is thrown.
      */
     public function emit(string $event, object $payload): void
     {
@@ -119,18 +122,37 @@ class EventDispatcher implements EventDispatcherInterface
         // This prevents modification-during-iteration issues
         $handlers = $this->handlers[$event];
 
+        $lastException = null;
+
         foreach ($handlers as $entry) {
             // Check if handler still exists (wasn't removed during iteration)
             if (!isset($this->handlerEventMap[$entry['id']])) {
                 continue;
             }
 
-            $entry['handler']($payload);
+            try {
+                $entry['handler']($payload);
+            } catch (\Throwable $e) {
+                // Log error but continue with other handlers
+                error_log(sprintf(
+                    'Event handler exception for "%s": %s in %s:%d',
+                    $event,
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                ));
+                $lastException = $e;
+            }
 
             // Check for propagation stop
             if ($payload instanceof Event && $payload->isPropagationStopped()) {
                 break;
             }
+        }
+
+        // Re-throw the last exception after all handlers have run
+        if ($lastException !== null) {
+            throw $lastException;
         }
     }
 
@@ -201,18 +223,23 @@ class EventDispatcher implements EventDispatcherInterface
     public function once(string $event, callable $handler, int $priority = 0): string
     {
         $removed = false;
-        $handlerId = null;
+        $handlerId = '';
 
-        // Use WeakReference where possible to reduce memory footprint
-        // The wrapper needs to capture $this for off() call
-        $dispatcher = $this;
-        $wrapper = function (object $payload) use ($handler, &$removed, &$handlerId, $dispatcher): void {
+        // Use WeakReference to avoid circular reference memory leak
+        // Without this, $wrapper -> $this -> $handlers -> $wrapper creates a cycle
+        $dispatcherRef = \WeakReference::create($this);
+
+        $wrapper = function (object $payload) use ($handler, &$removed, &$handlerId, $dispatcherRef): void {
             $removed = true;
             try {
                 $handler($payload);
             } finally {
                 // Remove handler after callback completes
-                if ($handlerId !== null) {
+                // $handlerId is assigned by reference after this closure is created,
+                // so it will have a valid value by the time this is called
+                $dispatcher = $dispatcherRef->get();
+                // @phpstan-ignore-next-line - handlerId is assigned by reference before this closure executes
+                if ($dispatcher !== null && $handlerId !== '') {
                     $dispatcher->off($handlerId);
                 }
             }
@@ -221,7 +248,7 @@ class EventDispatcher implements EventDispatcherInterface
         $handlerId = $this->on($event, $wrapper, $priority);
 
         // Handle edge case where event fired synchronously during on()
-        if ($removed && $handlerId !== null) {
+        if ($removed) {
             $this->off($handlerId);
         }
 

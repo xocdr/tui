@@ -78,23 +78,23 @@ class HookRegistry
      */
     public static function createContext(string $instanceId): HookContextInterface
     {
+        // Check limit BEFORE creating context to avoid cleanup on exception
+        $count = count(self::$contexts) + 1;
+        if ($count > self::MAX_CONTEXTS_WARNING * 2) {
+            throw new \RuntimeException(
+                sprintf(
+                    'HookRegistry has %d contexts registered. This indicates a memory leak. ' .
+                    'Ensure Application::unmount() is called when applications are no longer needed.',
+                    $count
+                )
+            );
+        }
+
         $context = new HookContext();
         self::$contexts[$instanceId] = $context;
 
-        // Check for potential memory leak - throw exception to prevent silent accumulation
-        $count = count(self::$contexts);
+        // Issue warning at threshold (but don't throw)
         if ($count > self::MAX_CONTEXTS_WARNING) {
-            // Issue warning at threshold, throw at 2x threshold
-            if ($count > self::MAX_CONTEXTS_WARNING * 2) {
-                throw new \RuntimeException(
-                    sprintf(
-                        'HookRegistry has %d contexts registered. This indicates a memory leak. ' .
-                        'Ensure Application::unmount() is called when applications are no longer needed.',
-                        $count
-                    )
-                );
-            }
-
             // Periodic warning every 50 contexts above threshold
             if (!self::$warningIssued || ($count - self::MAX_CONTEXTS_WARNING) % 50 === 0) {
                 self::$warningIssued = true;

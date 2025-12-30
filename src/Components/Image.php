@@ -346,7 +346,14 @@ class Image implements Component
             if ($data !== null) {
                 $this->tempFile = tempnam(sys_get_temp_dir(), 'tui_image_');
                 if ($this->tempFile !== false) {
-                    file_put_contents($this->tempFile, $data);
+                    $written = file_put_contents($this->tempFile, $data);
+                    if ($written === false) {
+                        // Clean up failed temp file
+                        @unlink($this->tempFile);
+                        $this->tempFile = null;
+
+                        return;
+                    }
                     $this->resource = tui_image_load($this->tempFile);
                 }
             }

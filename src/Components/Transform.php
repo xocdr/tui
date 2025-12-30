@@ -103,10 +103,16 @@ class Transform implements Component
     /**
      * Apply alternating colors to lines.
      *
-     * @param array<string> $colors Array of hex colors to alternate
+     * @param array<string> $colors Array of hex colors to alternate (must not be empty)
+     *
+     * @throws \InvalidArgumentException If colors array is empty
      */
     public function alternate(array $colors): self
     {
+        if (empty($colors)) {
+            throw new \InvalidArgumentException('Colors array cannot be empty');
+        }
+
         $this->transformers[] = function (string $line, int $index) use ($colors): string {
             $color = $colors[$index % count($colors)];
 

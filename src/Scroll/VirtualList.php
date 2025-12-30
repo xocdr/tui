@@ -103,10 +103,14 @@ class VirtualList
     public function getVisibleRange(): array
     {
         if ($this->resource !== null && function_exists('tui_virtual_get_range')) {
-            return tui_virtual_get_range($this->resource);
+            $range = tui_virtual_get_range($this->resource);
+            if (is_array($range) && isset($range['start'], $range['end'], $range['offset'], $range['progress'])) {
+                /** @var array{start: int, end: int, offset: int, progress: float} $range */
+                return $range;
+            }
         }
 
-        // Fallback for when extension is not available
+        // Fallback for when extension is not available or returns null
         return [
             'start' => 0,
             'end' => min($this->itemCount, $this->viewportHeight),

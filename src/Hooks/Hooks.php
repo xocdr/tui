@@ -446,9 +446,10 @@ final readonly class Hooks implements HooksInterface
     {
         [$state, $setState] = $this->state($initialState);
 
-        $dispatch = function (mixed $action) use ($reducer, $state, $setState): void {
-            $newState = $reducer($state, $action);
-            $setState($newState);
+        // Use callback form of setState to always get current state
+        // Avoids stale closure capturing old $state value
+        $dispatch = function (mixed $action) use ($reducer, $setState): void {
+            $setState(fn ($currentState) => $reducer($currentState, $action));
         };
 
         return [$state, $dispatch];
