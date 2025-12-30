@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui;
 
 use Xocdr\Tui\Application\OutputManager;
+use Xocdr\Tui\Application\TerminalManager;
 use Xocdr\Tui\Application\TimerManager;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\StatefulComponent;
@@ -14,6 +15,7 @@ use Xocdr\Tui\Contracts\InputManagerInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
 use Xocdr\Tui\Contracts\OutputManagerInterface;
 use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Contracts\TerminalManagerInterface;
 use Xocdr\Tui\Contracts\TimerManagerInterface;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Hooks\HookRegistry;
@@ -68,6 +70,8 @@ class Application implements InstanceInterface
 
     private ?InputManagerInterface $inputManager = null;
 
+    private TerminalManagerInterface $terminalManager;
+
     /**
      * @param callable|Component|StatefulComponent $component
      * @param array<string, mixed> $options
@@ -91,6 +95,7 @@ class Application implements InstanceInterface
         // Initialize managers
         $this->timerManager = new TimerManager($this->lifecycle);
         $this->outputManager = new OutputManager($this->lifecycle);
+        $this->terminalManager = new TerminalManager($this->lifecycle);
 
         // Set up hook context rerender callback
         if ($this->hookContext instanceof HookContext) {
@@ -139,6 +144,19 @@ class Application implements InstanceInterface
     }
 
     /**
+     * Get the terminal manager.
+     *
+     * Provides access to terminal control features:
+     * - Window title control
+     * - Cursor shape and visibility
+     * - Terminal capability detection
+     */
+    public function getTerminalManager(): TerminalManagerInterface
+    {
+        return $this->terminalManager;
+    }
+
+    /**
      * Start the render loop.
      */
     public function start(): void
@@ -172,16 +190,32 @@ class Application implements InstanceInterface
     /**
      * Render the component tree.
      *
+     * Hides the cursor during rendering to prevent flicker,
+     * then restores it based on the previous state.
+     *
      * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
      */
     private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
     {
-        // Run with hook context
-        $node = HookRegistry::withContext($this->hookContext, function () {
-            return $this->renderer->render($this->component);
-        });
+        // Hide cursor during render to prevent flicker
+        $wasHidden = $this->terminalManager->isCursorHidden();
+        if (!$wasHidden) {
+            $this->terminalManager->hideCursor();
+        }
 
-        return $node->getNative();
+        try {
+            // Run with hook context
+            $node = HookRegistry::withContext($this->hookContext, function () {
+                return $this->renderer->render($this->component);
+            });
+
+            return $node->getNative();
+        } finally {
+            // Restore cursor visibility
+            if (!$wasHidden) {
+                $this->terminalManager->showCursor();
+            }
+        }
     }
 
     /**
@@ -519,6 +553,119 @@ class Application implements InstanceInterface
         }
 
         return null;
+    }
+
+    // =========================================================================
+    // Terminal Control (delegated to TerminalManager)
+    // =========================================================================
+
+    /**
+     * Set the terminal window/tab title.
+     *
+     * Uses OSC 2 escape sequence. The title will be displayed in the
+     * terminal window title bar and/or tab.
+     *
+     * @param string $title The title to set
+     *
+     * @example
+     * $app->setWindowTitle('My App - Running');
+     * $app->setWindowTitle('Processing: 50%');
+     */
+    public function setWindowTitle(string $title): self
+    {
+        $this->terminalManager->setTitle($title);
+
+        return $this;
+    }
+
+    /**
+     * Reset the terminal window title to empty/default.
+     */
+    public function resetWindowTitle(): self
+    {
+        $this->terminalManager->resetTitle();
+
+        return $this;
+    }
+
+    /**
+     * Set the cursor shape.
+     *
+     * @param string $shape One of: 'default', 'block', 'block_blink',
+     *                      'underline', 'underline_blink', 'bar', 'bar_blink'
+     *
+     * @example
+     * $app->setCursorShape('bar');       // I-beam for text input
+     * $app->setCursorShape('block');     // Block for normal mode
+     * $app->setCursorShape('underline'); // Underline cursor
+     */
+    public function setCursorShape(string $shape): self
+    {
+        $this->terminalManager->setCursorShape($shape);
+
+        return $this;
+    }
+
+    /**
+     * Show the cursor.
+     */
+    public function showCursor(): self
+    {
+        $this->terminalManager->showCursor();
+
+        return $this;
+    }
+
+    /**
+     * Hide the cursor.
+     */
+    public function hideCursor(): self
+    {
+        $this->terminalManager->hideCursor();
+
+        return $this;
+    }
+
+    /**
+     * Get terminal capabilities.
+     *
+     * Returns an array with detected terminal type and supported features.
+     *
+     * @return array{
+     *     terminal: string,
+     *     name: string,
+     *     version: string|null,
+     *     color_depth: int,
+     *     capabilities: array<string, bool>
+     * }|null
+     *
+     * @example
+     * $caps = $app->getCapabilities();
+     * if ($caps['capabilities']['true_color']) {
+     *     // Use 24-bit colors
+     * }
+     */
+    public function getCapabilities(): ?array
+    {
+        return $this->terminalManager->getCapabilities();
+    }
+
+    /**
+     * Check if terminal has a specific capability.
+     *
+     * @param string $name Capability name (e.g., 'true_color', 'mouse', 'hyperlinks_osc8')
+     *
+     * @example
+     * if ($app->hasCapability('true_color')) {
+     *     // Use 24-bit colors
+     * }
+     * if ($app->hasCapability('hyperlinks_osc8')) {
+     *     // Use clickable hyperlinks
+     * }
+     */
+    public function hasCapability(string $name): bool
+    {
+        return $this->terminalManager->hasCapability($name);
     }
 
     // =========================================================================
