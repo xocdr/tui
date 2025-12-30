@@ -504,23 +504,37 @@ final readonly class Hooks implements HooksInterface
     /**
      * Animation - manage animation state.
      *
+     * Respects the user's reduced motion preference. When reduced motion
+     * is enabled, animations skip to their final value immediately.
+     *
      * @param float $from Starting value
      * @param float $to Ending value
      * @param int $duration Duration in milliseconds
      * @param string $easing Easing function name
-     * @return array{value: float, isAnimating: bool, start: callable, reset: callable}
+     * @param bool|null $respectReducedMotion Whether to respect reduced motion preference (default: true)
+     * @return array{value: float, isAnimating: bool, start: callable, reset: callable, prefersReducedMotion: bool}
      */
     public function animation(
         float $from,
         float $to,
         int $duration,
-        string $easing = 'linear'
+        string $easing = 'linear',
+        ?bool $respectReducedMotion = true
     ): array {
+        // Check reduced motion preference
+        $prefersReducedMotion = $respectReducedMotion && \Xocdr\Tui\Terminal\Accessibility::prefersReducedMotion();
+
         [$tween, $setTween] = $this->state(new Tween($from, $to, $duration, $easing));
         [$isAnimating, $setIsAnimating] = $this->state(false);
         [$value, $setValue] = $this->state($from);
 
-        $start = function () use ($setIsAnimating, $tween): void {
+        $start = function () use ($setIsAnimating, $tween, $prefersReducedMotion, $to, $setValue): void {
+            if ($prefersReducedMotion) {
+                // Skip animation, jump to end value
+                $setValue($to);
+
+                return;
+            }
             $tween->reset();
             $setIsAnimating(true);
         };
@@ -548,6 +562,7 @@ final readonly class Hooks implements HooksInterface
             'isAnimating' => $isAnimating,
             'start' => $start,
             'reset' => $reset,
+            'prefersReducedMotion' => $prefersReducedMotion,
         ];
     }
 
