@@ -427,37 +427,52 @@ The package follows SOLID principles with a clean separation of concerns:
 
 ```
 src/
-├── Components/          # UI components
-│   ├── Component.php    # Base interface
-│   ├── Box.php          # Flexbox container
-│   ├── Text.php         # Styled text
+├── Application/          # Manager classes for Application
+│   ├── TimerManager.php  # Timer and interval management
+│   └── OutputManager.php # Terminal output operations
+├── Components/           # UI components
+│   ├── Component.php     # Base interface
+│   ├── Box.php           # Flexbox container
+│   ├── Text.php          # Styled text
 │   └── ...
-├── Contracts/           # Interfaces for loose coupling
+├── Contracts/            # Interfaces for loose coupling
 │   ├── NodeInterface.php
 │   ├── RenderTargetInterface.php
 │   ├── RendererInterface.php
 │   ├── EventDispatcherInterface.php
 │   ├── HookContextInterface.php
-│   └── InstanceInterface.php
-├── Events/              # Event system
-│   ├── Event.php
-│   ├── EventDispatcher.php
-│   └── InputEvent.php, FocusEvent.php, ResizeEvent.php
-├── Hooks/               # State management hooks
+│   ├── InstanceInterface.php
+│   ├── TimerManagerInterface.php
+│   ├── OutputManagerInterface.php
+│   └── InputManagerInterface.php
+├── Hooks/                # State management hooks
 │   ├── HookContext.php
 │   ├── HookRegistry.php
 │   ├── Hooks.php         # Primary hooks API
 │   └── HooksAwareTrait.php
-├── Render/              # Rendering pipeline
-│   ├── ComponentRenderer.php
-│   ├── ExtensionRenderTarget.php
-│   └── BoxNode.php, TextNode.php
-├── Style/               # Styling utilities
-├── Lifecycle/           # Application lifecycle
-├── Container.php        # DI container
-├── Application.php      # Application wrapper
-├── InstanceBuilder.php  # Fluent builder
-└── Tui.php              # Main entry point
+├── Rendering/            # Rendering subsystem
+│   ├── Lifecycle/        # Application lifecycle
+│   ├── Render/           # Component rendering
+│   └── Focus/            # Focus management
+├── Styling/              # Styling subsystem
+│   ├── Style/            # Colors, styles, borders
+│   ├── Animation/        # Easing, gradients, tweens
+│   ├── Drawing/          # Canvas, buffer, sprites
+│   └── Text/             # Text utilities
+├── Support/              # Support utilities
+│   ├── Exceptions/       # Exception classes
+│   ├── Testing/          # Mock implementations
+│   ├── Debug/            # Runtime inspection
+│   └── Telemetry/        # Performance metrics
+├── Terminal/             # Terminal subsystem
+│   ├── Input/            # Keyboard input (InputManager, Key, Modifier)
+│   ├── Events/           # Event system
+│   └── Capabilities.php  # Terminal feature detection
+├── Widgets/              # Pre-built widgets
+├── Container.php         # DI container
+├── Application.php       # Application wrapper with manager getters
+├── InstanceBuilder.php   # Fluent builder
+└── Tui.php               # Main entry point
 ```
 
 ## Development

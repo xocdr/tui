@@ -5,7 +5,7 @@ This guide will help you build your first terminal UI application with xocdr/tui
 ## Prerequisites
 
 - **PHP**: 8.4 or higher
-- **xocdr/ext-tui**: The C extension providing terminal rendering (see [ext-tui specs](https://github.com/xocdr/ext-tui/blob/main/docs/specs/ext-tui-specs.md))
+- **xocdr/ext-tui**: The C extension providing terminal rendering (see [ext-tui specs](https://github.com/xocdr/ext-tui/blob/0.2.0/docs/specs/ext-tui-specs.md))
 
 ## Installation
 

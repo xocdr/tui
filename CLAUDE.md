@@ -94,6 +94,9 @@ tui/
 │   ├── Application.php            # Application wrapper (wraps ext-tui Instance)
 │   ├── InstanceBuilder.php        # Fluent builder for Application
 │   ├── Container.php              # Simple DI container
+│   ├── Application/               # Manager classes for Application
+│   │   ├── TimerManager.php       # Timer and interval management
+│   │   └── OutputManager.php      # Terminal output operations
 │   ├── Components/
 │   │   ├── Component.php          # Base interface
 │   │   ├── AbstractContainerComponent.php  # Shared child logic
@@ -111,42 +114,78 @@ tui/
 │   │   ├── RendererInterface.php  # Component renderer abstraction
 │   │   ├── EventDispatcherInterface.php  # Event system abstraction
 │   │   ├── HookContextInterface.php  # Hook state abstraction
-│   │   └── InstanceInterface.php  # Application instance abstraction
-│   ├── Events/
-│   │   ├── Event.php              # Base event with propagation
-│   │   ├── EventDispatcher.php    # Priority-based dispatcher
-│   │   ├── InputEvent.php         # Keyboard input event
-│   │   ├── FocusEvent.php         # Focus change event
-│   │   └── ResizeEvent.php        # Terminal resize event
+│   │   ├── InstanceInterface.php  # Application instance abstraction
+│   │   ├── TimerManagerInterface.php   # Timer manager abstraction
+│   │   ├── OutputManagerInterface.php  # Output manager abstraction
+│   │   └── InputManagerInterface.php   # Input manager abstraction
 │   ├── Hooks/
 │   │   ├── Hooks.php              # Main hooks class
 │   │   ├── HooksInterface.php     # Interface for hooks
 │   │   ├── HooksAwareTrait.php    # Trait for components
 │   │   ├── HookContext.php        # Per-instance hook state
 │   │   └── HookRegistry.php       # Global context tracking
-│   ├── Lifecycle/
-│   │   └── ApplicationLifecycle.php  # App lifecycle management
-│   ├── Render/
-│   │   ├── ComponentRenderer.php  # Component to node conversion
-│   │   ├── ExtensionRenderTarget.php  # Creates nodes via ext-tui
-│   │   ├── BoxNode.php            # NodeInterface for TuiBox
-│   │   ├── TextNode.php           # NodeInterface for TuiText
-│   │   ├── NativeBoxWrapper.php   # Wraps existing TuiBox
-│   │   └── NativeTextWrapper.php  # Wraps existing TuiText
-│   ├── Exceptions/
-│   │   ├── TuiException.php       # Base exception class
-│   │   ├── ExtensionNotLoadedException.php  # Missing ext-tui
-│   │   ├── RenderException.php    # Rendering errors
-│   │   └── ValidationException.php  # Validation errors
-│   ├── Testing/
-│   │   ├── MockInstance.php       # Mock for unit testing
-│   │   ├── MockTuiKey.php         # Mock keyboard input
-│   │   ├── TestRenderer.php       # Render to string
-│   │   └── TuiAssertions.php      # PHPUnit assertions trait
-│   └── Style/
-│       ├── Style.php              # Fluent style builder
-│       ├── Color.php              # Color utilities (with palettes)
-│       └── Border.php             # Border style constants
+│   ├── Rendering/                 # Rendering subsystem
+│   │   ├── Lifecycle/
+│   │   │   └── ApplicationLifecycle.php  # App lifecycle management
+│   │   ├── Render/
+│   │   │   ├── ComponentRenderer.php  # Component to node conversion
+│   │   │   ├── ExtensionRenderTarget.php  # Creates nodes via ext-tui
+│   │   │   ├── BoxNode.php            # NodeInterface for TuiBox
+│   │   │   ├── TextNode.php           # NodeInterface for TuiText
+│   │   │   ├── NativeBoxWrapper.php   # Wraps existing TuiBox
+│   │   │   └── NativeTextWrapper.php  # Wraps existing TuiText
+│   │   └── Focus/
+│   │       └── FocusManager.php       # Focus navigation service
+│   ├── Styling/                   # Styling subsystem
+│   │   ├── Style/
+│   │   │   ├── Style.php              # Fluent style builder
+│   │   │   ├── Color.php              # Color utilities (with palettes)
+│   │   │   └── Border.php             # Border style constants
+│   │   ├── Animation/
+│   │   │   ├── Easing.php             # 27+ easing functions
+│   │   │   ├── Gradient.php           # Color gradients
+│   │   │   ├── Spinner.php            # Spinner character sets
+│   │   │   └── Tween.php              # Value interpolation
+│   │   ├── Drawing/
+│   │   │   ├── Buffer.php             # Cell-level drawing
+│   │   │   ├── Canvas.php             # Pixel-level drawing
+│   │   │   └── Sprite.php             # Animated sprites
+│   │   └── Text/
+│   │       └── TextUtils.php          # Text utilities
+│   ├── Support/                   # Support utilities
+│   │   ├── Exceptions/
+│   │   │   ├── TuiException.php       # Base exception class
+│   │   │   ├── ExtensionNotLoadedException.php  # Missing ext-tui
+│   │   │   ├── RenderException.php    # Rendering errors
+│   │   │   └── ValidationException.php  # Validation errors
+│   │   ├── Testing/
+│   │   │   ├── MockInstance.php       # Mock for unit testing
+│   │   │   ├── MockKey.php            # Mock keyboard input
+│   │   │   ├── TestRenderer.php       # Render to string
+│   │   │   └── TuiAssertions.php      # PHPUnit assertions trait
+│   │   ├── Debug/
+│   │   │   └── Inspector.php          # Runtime component inspection
+│   │   └── Telemetry/
+│   │       └── Metrics.php            # Performance metrics
+│   ├── Terminal/                  # Terminal subsystem
+│   │   ├── Input/
+│   │   │   ├── InputManager.php       # Keyboard input management
+│   │   │   ├── Key.php                # Key constants
+│   │   │   └── Modifier.php           # Modifier keys
+│   │   ├── Events/
+│   │   │   ├── Event.php              # Base event with propagation
+│   │   │   ├── EventDispatcher.php    # Priority-based dispatcher
+│   │   │   ├── InputEvent.php         # Keyboard input event
+│   │   │   ├── FocusEvent.php         # Focus change event
+│   │   │   └── ResizeEvent.php        # Terminal resize event
+│   │   └── Capabilities.php           # Terminal feature detection
+│   └── Widgets/                   # Pre-built widgets
+│       ├── Widget.php                 # Base widget class
+│       ├── Table.php                  # Tabular data
+│       ├── Spinner.php                # Animated spinner
+│       ├── ProgressBar.php            # Progress indicator
+│       ├── BusyBar.php                # Indeterminate progress
+│       └── DebugPanel.php             # Debug overlay
 ├── tests/
 │   ├── Components/
 │   │   ├── BoxTest.php
@@ -181,7 +220,10 @@ tui/
 The codebase follows SOLID principles:
 
 1. **Single Responsibility**: Each class has one job
-   - `Application` orchestrates the app
+   - `Application` orchestrates the app lifecycle
+   - `TimerManager` handles timers and intervals
+   - `OutputManager` handles terminal output
+   - `InputManager` handles keyboard input
    - `ComponentRenderer` converts components to nodes
    - `EventDispatcher` handles events
    - `HookContext` manages hook state
@@ -208,6 +250,9 @@ The codebase follows SOLID principles:
 | `EventDispatcherInterface` | Event handling |
 | `HookContextInterface` | Hook state management |
 | `InstanceInterface` | Application interface |
+| `TimerManagerInterface` | Timer and interval management |
+| `OutputManagerInterface` | Terminal output operations |
+| `InputManagerInterface` | Keyboard input handling |
 
 ### Testing Without C Extension
 

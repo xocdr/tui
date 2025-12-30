@@ -124,30 +124,20 @@ The ext-tui C extension provides classes and functions:
 
 ```
 src/
-├── Animation/              # Animation and easing utilities
-│   ├── Easing.php         # 27+ easing functions
-│   ├── Gradient.php       # Color gradients
-│   ├── Spinner.php        # Spinner character sets
-│   └── Tween.php          # Value interpolation
+├── Application/           # Manager classes for Application
+│   ├── TimerManager.php   # Timer and interval management
+│   └── OutputManager.php  # Terminal output operations
 ├── Components/            # UI components
 │   ├── Box.php            # Flexbox container (with key prop)
 │   ├── Text.php           # Styled text
-│   ├── Table.php          # Tabular data
-│   ├── Spinner.php        # Animated spinner
-│   ├── ProgressBar.php    # Progress indicator
-│   ├── BusyBar.php        # Indeterminate progress
 │   ├── Fragment.php       # Transparent wrapper
 │   ├── Spacer.php         # Layout filler
 │   ├── Static_.php        # Non-rerendering container
 │   ├── StaticOutput.php   # Alias for Static_
 │   ├── Transform.php      # Line-by-line text transformation
 │   ├── Newline.php        # Line breaks
+│   ├── Line.php           # Horizontal/vertical lines
 │   └── Component.php      # Base interface
-├── Exceptions/            # Exception hierarchy
-│   ├── TuiException.php           # Base exception
-│   ├── ExtensionNotLoadedException.php  # ext-tui not loaded
-│   ├── RenderException.php        # Rendering errors
-│   └── ValidationException.php    # Validation errors
 ├── Contracts/             # Interfaces for loose coupling
 │   ├── NodeInterface.php
 │   ├── InstanceInterface.php
@@ -155,60 +145,86 @@ src/
 │   ├── EventDispatcherInterface.php
 │   ├── HookContextInterface.php
 │   ├── HooksInterface.php
-│   ├── HooksAwareInterface.php  # For hook-enabled components
+│   ├── HooksAwareInterface.php    # For hook-enabled components
 │   ├── RenderTargetInterface.php
+│   ├── TimerManagerInterface.php  # Timer manager abstraction
+│   ├── OutputManagerInterface.php # Output manager abstraction
+│   ├── InputManagerInterface.php  # Input manager abstraction
 │   ├── BufferInterface.php
 │   ├── CanvasInterface.php
 │   ├── SpriteInterface.php
 │   └── TableInterface.php
-├── Drawing/              # Graphics primitives
-│   ├── Buffer.php        # Cell-level drawing
-│   ├── Canvas.php        # Pixel-level drawing
-│   └── Sprite.php        # Animated sprites
-├── Events/               # Event system
-│   ├── Event.php         # Base event class
-│   ├── EventDispatcher.php
-│   ├── InputEvent.php
-│   ├── FocusEvent.php
-│   └── ResizeEvent.php
-├── Hooks/                # State management hooks
+├── Hooks/                 # State management hooks
 │   ├── HookContext.php
 │   ├── HookRegistry.php
-│   ├── Hooks.php         # Primary hooks API (OOP)
+│   ├── Hooks.php          # Primary hooks API (OOP)
 │   └── HooksAwareTrait.php  # Trait for hook-enabled components
-├── Input/                # Keyboard input handling
-│   ├── Key.php          # Key constants
-│   └── Modifier.php     # Modifier keys
-├── Lifecycle/            # Application lifecycle
-│   └── ApplicationLifecycle.php
-├── Render/               # Rendering pipeline
-│   ├── ComponentRenderer.php
-│   ├── ExtensionRenderTarget.php
-│   ├── BoxNode.php
-│   ├── TextNode.php
-│   ├── NativeBoxWrapper.php
-│   └── NativeTextWrapper.php
-├── Style/                # Styling utilities
-│   ├── Style.php        # Fluent style builder
-│   ├── Color.php        # Color utilities
-│   └── Border.php       # Border styles and box-drawing characters
-├── Terminal/             # Terminal utilities
-│   └── Capabilities.php # Terminal feature detection
-├── Focus/                # Focus management
-│   └── FocusManager.php # Focus navigation service
-├── Debug/                # Debug utilities
-│   └── Inspector.php    # Runtime component tree inspection
-├── Testing/              # Testing utilities
-│   ├── MockInstance.php  # Full mock for testing without C extension
-│   ├── MockTuiKey.php    # Mock keyboard input
-│   ├── TestRenderer.php  # Render components to string
-│   └── TuiAssertions.php # PHPUnit assertions trait
-├── Text/                 # Text utilities
-│   └── TextUtils.php    # Width, wrap, truncate, pad
-├── Instance.php          # Application instance
-├── InstanceBuilder.php   # Fluent builder
-├── Container.php         # DI container
-└── Tui.php              # Static facade
+├── Rendering/             # Rendering subsystem
+│   ├── Lifecycle/
+│   │   └── ApplicationLifecycle.php  # App lifecycle management
+│   ├── Render/
+│   │   ├── ComponentRenderer.php
+│   │   ├── ExtensionRenderTarget.php
+│   │   ├── BoxNode.php
+│   │   ├── TextNode.php
+│   │   ├── NativeBoxWrapper.php
+│   │   └── NativeTextWrapper.php
+│   └── Focus/
+│       └── FocusManager.php  # Focus navigation service
+├── Styling/               # Styling subsystem
+│   ├── Style/
+│   │   ├── Style.php      # Fluent style builder
+│   │   ├── Color.php      # Color utilities
+│   │   └── Border.php     # Border styles and box-drawing characters
+│   ├── Animation/
+│   │   ├── Easing.php     # 27+ easing functions
+│   │   ├── Gradient.php   # Color gradients
+│   │   ├── Spinner.php    # Spinner character sets
+│   │   └── Tween.php      # Value interpolation
+│   ├── Drawing/
+│   │   ├── Buffer.php     # Cell-level drawing
+│   │   ├── Canvas.php     # Pixel-level drawing
+│   │   └── Sprite.php     # Animated sprites
+│   └── Text/
+│       └── TextUtils.php  # Width, wrap, truncate, pad
+├── Support/               # Support utilities
+│   ├── Exceptions/
+│   │   ├── TuiException.php           # Base exception
+│   │   ├── ExtensionNotLoadedException.php  # ext-tui not loaded
+│   │   ├── RenderException.php        # Rendering errors
+│   │   └── ValidationException.php    # Validation errors
+│   ├── Testing/
+│   │   ├── MockInstance.php   # Full mock for testing without C extension
+│   │   ├── MockKey.php        # Mock keyboard input
+│   │   ├── TestRenderer.php   # Render components to string
+│   │   └── TuiAssertions.php  # PHPUnit assertions trait
+│   ├── Debug/
+│   │   └── Inspector.php      # Runtime component tree inspection
+│   └── Telemetry/
+│       └── Metrics.php        # Performance metrics
+├── Terminal/              # Terminal subsystem
+│   ├── Input/
+│   │   ├── InputManager.php   # Keyboard input management
+│   │   ├── Key.php            # Key constants
+│   │   └── Modifier.php       # Modifier keys
+│   ├── Events/
+│   │   ├── Event.php          # Base event class
+│   │   ├── EventDispatcher.php
+│   │   ├── InputEvent.php
+│   │   ├── FocusEvent.php
+│   │   └── ResizeEvent.php
+│   └── Capabilities.php       # Terminal feature detection
+├── Widgets/               # Pre-built widgets
+│   ├── Widget.php         # Base widget class
+│   ├── Table.php          # Tabular data
+│   ├── Spinner.php        # Animated spinner
+│   ├── ProgressBar.php    # Progress indicator
+│   ├── BusyBar.php        # Indeterminate progress
+│   └── DebugPanel.php     # Debug overlay
+├── Application.php        # Application wrapper with manager getters
+├── InstanceBuilder.php    # Fluent builder
+├── Container.php          # DI container
+└── Tui.php               # Static facade
 ```
 
 ---
@@ -219,23 +235,26 @@ src/
 
 | Namespace | Purpose |
 |-----------|---------|
-| `Xocdr\Tui` | Main entry point and application instance |
-| `Xocdr\Tui\Animation` | Easing, tweening, gradients, spinners |
-| `Xocdr\Tui\Components` | UI components (Box, Text, Table, etc.) |
+| `Xocdr\Tui` | Main entry point, Application, and Container |
+| `Xocdr\Tui\Application` | Manager classes (TimerManager, OutputManager) |
+| `Xocdr\Tui\Components` | UI components (Box, Text, etc.) |
 | `Xocdr\Tui\Contracts` | Interfaces for dependency injection |
-| `Xocdr\Tui\Drawing` | Graphics (Buffer, Canvas, Sprite) |
-| `Xocdr\Tui\Events` | Event system and handlers |
-| `Xocdr\Tui\Exceptions` | Exception hierarchy |
 | `Xocdr\Tui\Hooks` | State management hooks |
-| `Xocdr\Tui\Input` | Keyboard input (Key, Modifier) |
-| `Xocdr\Tui\Lifecycle` | Application lifecycle management |
-| `Xocdr\Tui\Render` | Component-to-node rendering |
-| `Xocdr\Tui\Style` | Colors, styling, borders |
+| `Xocdr\Tui\Rendering\Lifecycle` | Application lifecycle management |
+| `Xocdr\Tui\Rendering\Render` | Component-to-node rendering |
+| `Xocdr\Tui\Rendering\Focus` | Focus management service |
+| `Xocdr\Tui\Styling\Style` | Colors, styling, borders |
+| `Xocdr\Tui\Styling\Animation` | Easing, tweening, gradients, spinners |
+| `Xocdr\Tui\Styling\Drawing` | Graphics (Buffer, Canvas, Sprite) |
+| `Xocdr\Tui\Styling\Text` | Text utilities |
+| `Xocdr\Tui\Support\Exceptions` | Exception hierarchy |
+| `Xocdr\Tui\Support\Testing` | Testing utilities (mocks, assertions) |
+| `Xocdr\Tui\Support\Debug` | Debug inspector |
+| `Xocdr\Tui\Support\Telemetry` | Performance metrics |
 | `Xocdr\Tui\Terminal` | Terminal capabilities detection |
-| `Xocdr\Tui\Focus` | Focus management service |
-| `Xocdr\Tui\Debug` | Debug inspector |
-| `Xocdr\Tui\Testing` | Testing utilities (mocks, assertions) |
-| `Xocdr\Tui\Text` | Text utilities |
+| `Xocdr\Tui\Terminal\Input` | Keyboard input (InputManager, Key, Modifier) |
+| `Xocdr\Tui\Terminal\Events` | Event system and handlers |
+| `Xocdr\Tui\Widgets` | Pre-built widgets (Table, Spinner, etc.) |
 
 ### ext-tui Extension Namespace
 
@@ -367,6 +386,11 @@ public function getSize(): ?array
 public function getEventDispatcher(): EventDispatcherInterface
 public function getHookContext(): HookContextInterface
 public function getTuiInstance(): ?\TuiInstance
+
+// Manager getters
+public function getTimerManager(): TimerManagerInterface
+public function getOutputManager(): OutputManagerInterface
+public function getInputManager(): InputManagerInterface
 ```
 
 ### InstanceBuilder (Fluent Configuration)
@@ -2115,7 +2139,10 @@ All major classes have corresponding interfaces for dependency injection and tes
 | `HookContextInterface` | `HookContext` | Hook state |
 | `HooksInterface` | `Hooks` | Hooks service |
 | `HooksAwareInterface` | `HooksAwareTrait` | Hook-enabled components |
-| `InstanceInterface` | `Instance` | Application instance |
+| `InstanceInterface` | `Application` | Application instance |
+| `TimerManagerInterface` | `TimerManager` | Timer and interval management |
+| `OutputManagerInterface` | `OutputManager` | Terminal output operations |
+| `InputManagerInterface` | `InputManager` | Keyboard input handling |
 | `BufferInterface` | `Buffer` | Drawing buffer |
 | `CanvasInterface` | `Canvas` | Pixel canvas |
 | `SpriteInterface` | `Sprite` | Sprite animation |

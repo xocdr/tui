@@ -29,7 +29,7 @@ Complete API reference:
 
 Technical specifications:
 
-- [ext-tui-specs.md](https://github.com/xocdr/ext-tui/blob/main/docs/specs/ext-tui-specs.md) - C extension specification (external)
+- [ext-tui-specs.md](https://github.com/xocdr/ext-tui/blob/0.2.0/docs/specs/ext-tui-specs.md) - C extension specification (external)
 - [xocdr-tui-specs.md](specs/xocdr-tui-specs.md) - PHP library specification
 
 ## Quick Start
