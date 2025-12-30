@@ -4,25 +4,30 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui;
 
+use Xocdr\Tui\Application\OutputManager;
+use Xocdr\Tui\Application\TimerManager;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\StatefulComponent;
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\InputManagerInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
+use Xocdr\Tui\Contracts\OutputManagerInterface;
 use Xocdr\Tui\Contracts\RendererInterface;
+use Xocdr\Tui\Contracts\TimerManagerInterface;
+use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookRegistry;
+use Xocdr\Tui\Rendering\Focus\FocusManager;
+use Xocdr\Tui\Rendering\Lifecycle\ApplicationLifecycle;
+use Xocdr\Tui\Rendering\Render\ComponentRenderer;
+use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 use Xocdr\Tui\Support\Debug\Inspector;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Terminal\Events\FocusEvent;
 use Xocdr\Tui\Terminal\Events\InputEvent;
 use Xocdr\Tui\Terminal\Events\ResizeEvent;
-use Xocdr\Tui\Rendering\Focus\FocusManager;
-use Xocdr\Tui\Hooks\HookContext;
-use Xocdr\Tui\Hooks\HookRegistry;
+use Xocdr\Tui\Terminal\Input\InputManager;
 use Xocdr\Tui\Terminal\Input\Key;
-use Xocdr\Tui\Terminal\Input\Modifier;
-use Xocdr\Tui\Rendering\Lifecycle\ApplicationLifecycle;
-use Xocdr\Tui\Rendering\Render\ComponentRenderer;
-use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 
 /**
  * Represents a running Tui application.
@@ -52,16 +57,16 @@ class Application implements InstanceInterface
 
     private int $previousHeight = 0;
 
-    /** @var array<array{interval: int, callback: callable}> Timers queued before ext-tui Instance is ready */
-    private array $pendingTimers = [];
-
-    private string $lastOutput = '';
-
     private ?FocusManager $focusManager = null;
 
-    private bool $tabNavigationEnabled = true;
-
     private ?Inspector $inspector = null;
+
+    // Managers
+    private TimerManagerInterface $timerManager;
+
+    private OutputManagerInterface $outputManager;
+
+    private ?InputManagerInterface $inputManager = null;
 
     /**
      * @param callable|Component|StatefulComponent $component
@@ -83,6 +88,10 @@ class Application implements InstanceInterface
         $this->hookContext = $hookContext ?? new HookContext();
         $this->renderer = $renderer ?? new ComponentRenderer(new ExtensionRenderTarget());
 
+        // Initialize managers
+        $this->timerManager = new TimerManager($this->lifecycle);
+        $this->outputManager = new OutputManager($this->lifecycle);
+
         // Set up hook context rerender callback
         if ($this->hookContext instanceof HookContext) {
             $this->hookContext->setRerenderCallback(fn () => $this->rerender());
@@ -95,6 +104,38 @@ class Application implements InstanceInterface
 
         // Register in hook registry
         HookRegistry::createContext($this->id);
+    }
+
+    /**
+     * Get the timer manager.
+     */
+    public function getTimerManager(): TimerManagerInterface
+    {
+        return $this->timerManager;
+    }
+
+    /**
+     * Get the output manager.
+     */
+    public function getOutputManager(): OutputManagerInterface
+    {
+        return $this->outputManager;
+    }
+
+    /**
+     * Get the input manager (lazy-initialized).
+     */
+    public function getInputManager(): InputManagerInterface
+    {
+        if ($this->inputManager === null) {
+            $this->inputManager = new InputManager($this->eventDispatcher, $this->lifecycle);
+            $this->inputManager->setFocusCallbacks(
+                fn () => $this->focusNext(),
+                fn () => $this->focusPrevious()
+            );
+        }
+
+        return $this->inputManager;
     }
 
     /**
@@ -125,24 +166,7 @@ class Application implements InstanceInterface
         $this->setupNativeHandlers($tuiInstance);
 
         // Register any timers that were queued during initial render
-        $this->flushPendingTimers();
-    }
-
-    /**
-     * Register timers that were queued before the ext-tui Instance was available.
-     */
-    private function flushPendingTimers(): void
-    {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance === null) {
-            return;
-        }
-
-        foreach ($this->pendingTimers as $timer) {
-            $extInstance->addTimer($timer['interval'], $timer['callback']);
-        }
-
-        $this->pendingTimers = [];
+        $this->timerManager->flushPendingTimers();
     }
 
     /**
@@ -208,29 +232,7 @@ class Application implements InstanceInterface
         });
 
         // Tab navigation bindings
-        $this->setupTabNavigation();
-    }
-
-    /**
-     * Set up Tab and Shift+Tab for focus navigation.
-     */
-    private function setupTabNavigation(): void
-    {
-        if (!$this->tabNavigationEnabled) {
-            return;
-        }
-
-        // Tab -> focus next
-        $this->onKey(Key::TAB, function (\Xocdr\Tui\Ext\Key $key) {
-            if (!$key->shift) {
-                $this->focusNext();
-            }
-        }, -100); // Low priority so user handlers can override
-
-        // Shift+Tab -> focus previous
-        $this->onKey([Modifier::SHIFT, Key::TAB], function (\Xocdr\Tui\Ext\Key $key) {
-            $this->focusPrevious();
-        }, -100);
+        $this->getInputManager()->setupTabNavigation();
     }
 
     /**
@@ -309,6 +311,10 @@ class Application implements InstanceInterface
         return $this->lifecycle->getTuiInstance();
     }
 
+    // =========================================================================
+    // Input Handling (delegated to InputManager)
+    // =========================================================================
+
     /**
      * Register an input event handler.
      *
@@ -316,29 +322,13 @@ class Application implements InstanceInterface
      */
     public function onInput(callable $handler, int $priority = 0): string
     {
-        $handlerId = $this->eventDispatcher->on('input', function (InputEvent $event) use ($handler) {
-            $handler($event->key, $event->nativeKey);
-        }, $priority);
-
-        // Update native handler if already running
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->setInputHandler(function (\Xocdr\Tui\Ext\Key $key) {
-                $event = new InputEvent($key->key, $key);
-                $this->eventDispatcher->emit('input', $event);
-            });
-        }
-
-        return $handlerId;
+        return $this->getInputManager()->onInput($handler, $priority);
     }
 
     /**
      * Register a handler for a specific key or key combination.
      *
-     * Provides an event-style API for
-     * registering key-specific handlers.
-     *
-     * @param Key|string|array<Key|Modifier|string> $key The key to listen for
+     * @param Key|string|array<Key|\Xocdr\Tui\Terminal\Input\Modifier|string> $key The key to listen for
      * @param callable(\Xocdr\Tui\Ext\Key): void $handler Handler to call when key is pressed
      * @param int $priority Higher priority = called first
      * @return string Handler ID for removal
@@ -358,60 +348,7 @@ class Application implements InstanceInterface
      */
     public function onKey(Key|string|array $key, callable $handler, int $priority = 0): string
     {
-        return $this->onInput(function (string $input, \Xocdr\Tui\Ext\Key $tuiKey) use ($key, $handler) {
-            if ($this->matchesKey($key, $input, $tuiKey)) {
-                $handler($tuiKey);
-            }
-        }, $priority);
-    }
-
-    /**
-     * Check if input matches the specified key pattern.
-     *
-     * @param Key|string|array<Key|Modifier|string> $pattern
-     */
-    private function matchesKey(Key|string|array $pattern, string $input, \Xocdr\Tui\Ext\Key $tuiKey): bool
-    {
-        // Array pattern: [Modifier, Key] or [Modifier, Modifier, Key]
-        if (is_array($pattern)) {
-            $modifiers = [];
-            $targetKey = null;
-
-            foreach ($pattern as $item) {
-                if ($item instanceof Modifier) {
-                    $modifiers[] = $item;
-                } elseif ($item instanceof Key) {
-                    $targetKey = $item;
-                } else {
-                    // String character as the key
-                    $targetKey = $item;
-                }
-            }
-
-            // Check all modifiers are active
-            foreach ($modifiers as $mod) {
-                if (!$mod->isActive($tuiKey)) {
-                    return false;
-                }
-            }
-
-            // Check key matches
-            if ($targetKey instanceof Key) {
-                return $targetKey->matches($tuiKey);
-            } elseif (is_string($targetKey)) {
-                return $input === $targetKey || $tuiKey->key === $targetKey;
-            }
-
-            return false;
-        }
-
-        // Single Key enum
-        if ($pattern instanceof Key) {
-            return $pattern->matches($tuiKey);
-        }
-
-        // Single character string
-        return $input === $pattern || $tuiKey->key === $pattern;
+        return $this->getInputManager()->onKey($key, $handler, $priority);
     }
 
     /**
@@ -441,6 +378,10 @@ class Application implements InstanceInterface
     {
         $this->eventDispatcher->off($handlerId);
     }
+
+    // =========================================================================
+    // Focus Management
+    // =========================================================================
 
     /**
      * Move focus to the next focusable element.
@@ -494,7 +435,7 @@ class Application implements InstanceInterface
      */
     public function enableTabNavigation(): self
     {
-        $this->tabNavigationEnabled = true;
+        $this->getInputManager()->enableTabNavigation();
 
         return $this;
     }
@@ -506,7 +447,7 @@ class Application implements InstanceInterface
      */
     public function disableTabNavigation(): self
     {
-        $this->tabNavigationEnabled = false;
+        $this->getInputManager()->disableTabNavigation();
 
         return $this;
     }
@@ -516,8 +457,12 @@ class Application implements InstanceInterface
      */
     public function isTabNavigationEnabled(): bool
     {
-        return $this->tabNavigationEnabled;
+        return $this->getInputManager()->isTabNavigationEnabled();
     }
+
+    // =========================================================================
+    // Debug Mode
+    // =========================================================================
 
     /**
      * Enable debug mode with the Inspector.
@@ -570,6 +515,10 @@ class Application implements InstanceInterface
         return null;
     }
 
+    // =========================================================================
+    // Size and Node Info
+    // =========================================================================
+
     /**
      * Get current terminal size.
      *
@@ -603,6 +552,10 @@ class Application implements InstanceInterface
         return $this->id;
     }
 
+    // =========================================================================
+    // Timer Management (delegated to TimerManager)
+    // =========================================================================
+
     /**
      * Add a timer that calls the callback at the specified interval.
      *
@@ -619,17 +572,7 @@ class Application implements InstanceInterface
      */
     public function addTimer(int $intervalMs, callable $callback): int
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            return $extInstance->addTimer($intervalMs, $callback);
-        }
-
-        // Queue the timer to be registered after Instance is available
-        // This happens when interval() is called during initial render
-        $this->pendingTimers[] = ['interval' => $intervalMs, 'callback' => $callback];
-
-        // Return a placeholder ID (pending timers will get real IDs when flushed)
-        return -1;
+        return $this->timerManager->addTimer($intervalMs, $callback);
     }
 
     /**
@@ -639,10 +582,7 @@ class Application implements InstanceInterface
      */
     public function removeTimer(int $timerId): void
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->removeTimer($timerId);
-        }
+        $this->timerManager->removeTimer($timerId);
     }
 
     /**
@@ -669,10 +609,7 @@ class Application implements InstanceInterface
      */
     public function onTick(callable $handler): void
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->setTickHandler($handler);
-        }
+        $this->timerManager->onTick($handler);
     }
 
     /**
@@ -687,7 +624,7 @@ class Application implements InstanceInterface
      */
     public function setInterval(int $intervalMs, callable $callback): int
     {
-        return $this->addTimer($intervalMs, $callback);
+        return $this->timerManager->setInterval($intervalMs, $callback);
     }
 
     /**
@@ -697,8 +634,12 @@ class Application implements InstanceInterface
      */
     public function clearInterval(int $timerId): void
     {
-        $this->removeTimer($timerId);
+        $this->timerManager->clearInterval($timerId);
     }
+
+    // =========================================================================
+    // Output Management (delegated to OutputManager)
+    // =========================================================================
 
     /**
      * Clear the terminal output.
@@ -707,11 +648,7 @@ class Application implements InstanceInterface
      */
     public function clear(): void
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->clear();
-        }
-        $this->lastOutput = '';
+        $this->outputManager->clear();
     }
 
     /**
@@ -722,12 +659,7 @@ class Application implements InstanceInterface
      */
     public function getLastOutput(): string
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'getOutput')) {
-            return $extInstance->getOutput();
-        }
-
-        return $this->lastOutput;
+        return $this->outputManager->getLastOutput();
     }
 
     /**
@@ -737,7 +669,7 @@ class Application implements InstanceInterface
      */
     public function setLastOutput(string $output): void
     {
-        $this->lastOutput = $output;
+        $this->outputManager->setLastOutput($output);
     }
 
     /**
@@ -750,12 +682,7 @@ class Application implements InstanceInterface
      */
     public function getCapturedOutput(): ?string
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'getCapturedOutput')) {
-            return $extInstance->getCapturedOutput();
-        }
-
-        return null;
+        return $this->outputManager->getCapturedOutput();
     }
 
     /**
@@ -769,11 +696,6 @@ class Application implements InstanceInterface
      */
     public function measureElement(string $id): ?array
     {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'measureElement')) {
-            return $extInstance->measureElement($id);
-        }
-
-        return null;
+        return $this->outputManager->measureElement($id);
     }
 }

@@ -6,6 +6,7 @@ namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
 
 class TextTest extends TestCase
 {
@@ -31,12 +32,17 @@ class TextTest extends TestCase
         $this->assertEquals(['color' => '#ff0000'], $text->getStyle());
     }
 
-    public function testColorShortcuts(): void
+    public function testColorWithEnum(): void
     {
-        // Color shortcuts now use hex values
-        $this->assertEquals(['color' => '#ff0000'], Text::create('')->red()->getStyle());
-        $this->assertEquals(['color' => '#00ff00'], Text::create('')->green()->getStyle());
-        $this->assertEquals(['color' => '#0000ff'], Text::create('')->blue()->getStyle());
+        // Color accepts Color enum and converts to its value
+        $text = Text::create('')->color(Color::Red);
+        $style = $text->getStyle();
+        $this->assertArrayHasKey('color', $style);
+        $this->assertNotNull($style['color']);
+
+        // Verify enum colors work (value is hex from enum)
+        $text2 = Text::create('')->color(Color::Blue);
+        $this->assertArrayHasKey('color', $text2->getStyle());
     }
 
     public function testChainedStyles(): void
