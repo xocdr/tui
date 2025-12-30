@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets;
 
-use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Styling\Animation\Gradient;
 
 /**
  * Indeterminate/busy progress bar widget.
@@ -47,7 +48,7 @@ class BusyBar extends Widget
 
     private string $inactiveChar = '░';
 
-    private ?string $color = null;
+    private Color|string|null $color = null;
 
     private ?Gradient $gradient = null;
 
@@ -101,8 +102,10 @@ class BusyBar extends Widget
 
     /**
      * Set the color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function color(string $color): self
+    public function color(Color|string|null $color): self
     {
         $this->color = $color;
 

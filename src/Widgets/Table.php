@@ -7,6 +7,7 @@ namespace Xocdr\Tui\Widgets;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\TableInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Border;
 
 /**
@@ -41,9 +42,9 @@ class Table extends Widget implements TableInterface
 
     private bool $showHeader = true;
 
-    private ?string $headerColor = null;
+    private Color|string|null $headerColor = null;
 
-    private ?string $borderColor = null;
+    private Color|string|null $borderColor = null;
 
     /**
      * @param array<string> $headers
@@ -115,8 +116,10 @@ class Table extends Widget implements TableInterface
 
     /**
      * Set the border color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function borderColor(string $color): self
+    public function borderColor(Color|string|null $color): self
     {
         $this->borderColor = $color;
 
@@ -125,8 +128,10 @@ class Table extends Widget implements TableInterface
 
     /**
      * Set the header color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function headerColor(string $color): self
+    public function headerColor(Color|string|null $color): self
     {
         $this->headerColor = $color;
 

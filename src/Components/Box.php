@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Style;
 
 /**
@@ -262,9 +263,14 @@ class Box extends AbstractContainerComponent
         return $this;
     }
 
-    public function borderColor(string $color): self
+    /**
+     * Set the border color.
+     *
+     * @param Color|string $color Color enum or hex string
+     */
+    public function borderColor(Color|string $color): self
     {
-        $this->style['borderColor'] = $color;
+        $this->style['borderColor'] = $color instanceof Color ? $color->value : $color;
         return $this;
     }
 
@@ -295,10 +301,12 @@ class Box extends AbstractContainerComponent
 
     /**
      * Set the color of the border title.
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderTitleColor(string $color): self
+    public function borderTitleColor(Color|string $color): self
     {
-        $this->borderTitleColor = $color;
+        $this->borderTitleColor = $color instanceof Color ? $color->value : $color;
 
         return $this;
     }
@@ -349,73 +357,105 @@ class Box extends AbstractContainerComponent
 
     /**
      * Set the top border color.
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderTopColor(string $color): self
+    public function borderTopColor(Color|string $color): self
     {
-        $this->style['borderTopColor'] = $color;
+        $this->style['borderTopColor'] = $color instanceof Color ? $color->value : $color;
         return $this;
     }
 
     /**
      * Set the right border color.
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderRightColor(string $color): self
+    public function borderRightColor(Color|string $color): self
     {
-        $this->style['borderRightColor'] = $color;
+        $this->style['borderRightColor'] = $color instanceof Color ? $color->value : $color;
         return $this;
     }
 
     /**
      * Set the bottom border color.
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderBottomColor(string $color): self
+    public function borderBottomColor(Color|string $color): self
     {
-        $this->style['borderBottomColor'] = $color;
+        $this->style['borderBottomColor'] = $color instanceof Color ? $color->value : $color;
         return $this;
     }
 
     /**
      * Set the left border color.
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderLeftColor(string $color): self
+    public function borderLeftColor(Color|string $color): self
     {
-        $this->style['borderLeftColor'] = $color;
+        $this->style['borderLeftColor'] = $color instanceof Color ? $color->value : $color;
         return $this;
     }
 
     /**
      * Set horizontal border colors (left and right).
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderXColor(string $color): self
+    public function borderXColor(Color|string $color): self
     {
-        $this->style['borderLeftColor'] = $color;
-        $this->style['borderRightColor'] = $color;
+        $colorValue = $color instanceof Color ? $color->value : $color;
+        $this->style['borderLeftColor'] = $colorValue;
+        $this->style['borderRightColor'] = $colorValue;
         return $this;
     }
 
     /**
      * Set vertical border colors (top and bottom).
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function borderYColor(string $color): self
+    public function borderYColor(Color|string $color): self
     {
-        $this->style['borderTopColor'] = $color;
-        $this->style['borderBottomColor'] = $color;
+        $colorValue = $color instanceof Color ? $color->value : $color;
+        $this->style['borderTopColor'] = $colorValue;
+        $this->style['borderBottomColor'] = $colorValue;
         return $this;
     }
 
     // Colors
 
-    public function color(string $color): self
+    /**
+     * Set foreground color.
+     *
+     * Accepts Color enum or hex string.
+     *
+     * @param Color|string|null $color Color enum or hex string
+     */
+    public function color(Color|string|null $color): self
     {
-        $this->textStyle ??= new Style();
-        $this->textStyle->color($color);
+        if ($color !== null) {
+            $this->textStyle ??= new Style();
+            $this->textStyle->color($color);
+        }
         return $this;
     }
 
-    public function bgColor(string $color): self
+    /**
+     * Set background color.
+     *
+     * Accepts Color enum or hex string.
+     *
+     * @param Color|string|null $color Color enum or hex string
+     */
+    public function bgColor(Color|string|null $color): self
     {
-        $this->textStyle ??= new Style();
-        $this->textStyle->bgColor($color);
+        if ($color !== null) {
+            $this->textStyle ??= new Style();
+            $this->textStyle->bgColor($color);
+        }
         return $this;
     }
 

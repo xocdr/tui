@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
+use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Styling\Style\Color as ColorUtil;
+
 /**
  * Styled text component.
  *
  * @example
- * Text::create('Hello World')->bold()->color('green')
+ * Text::create('Hello World')->bold()->color(Color::Red)
+ * Text::create('Custom')->color('#ff0000')
+ * Text::create('Palette')->palette('blue', 500)
  */
 class Text implements Component
 {
@@ -74,17 +79,42 @@ class Text implements Component
 
     // Colors
 
-    public function color(?string $color): self
+    /**
+     * Set foreground color.
+     *
+     * Accepts Color enum or hex string.
+     *
+     * @example
+     * ->color(Color::Red)
+     * ->color(Color::Coral)
+     * ->color('#ff0000')
+     *
+     * @param Color|string|null $color Color enum or hex string
+     */
+    public function color(Color|string|null $color): self
     {
         if ($color !== null) {
-            $this->style['color'] = $color;
+            $this->style['color'] = $color instanceof Color ? $color->value : $color;
         }
         return $this;
     }
 
-    public function bgColor(string $color): self
+    /**
+     * Set background color.
+     *
+     * Accepts Color enum or hex string.
+     *
+     * @example
+     * ->bgColor(Color::Black)
+     * ->bgColor('#000000')
+     *
+     * @param Color|string|null $color Color enum or hex string
+     */
+    public function bgColor(Color|string|null $color): self
     {
-        $this->style['bgColor'] = $color;
+        if ($color !== null) {
+            $this->style['bgColor'] = $color instanceof Color ? $color->value : $color;
+        }
         return $this;
     }
 
@@ -92,14 +122,17 @@ class Text implements Component
 
     /**
      * Set foreground color from palette with shade.
-     * Example: ->palette('red', 500) or ->palette('blue', 300)
+     *
+     * @example
+     * ->palette('red', 500)
+     * ->palette('blue', 300)
      *
      * @param string $name Color name (red, blue, emerald, etc.)
      * @param int $shade Shade level (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
      */
     public function palette(string $name, int $shade = 500): self
     {
-        return $this->color(\Xocdr\Tui\Styling\Style\Color::palette($name, $shade));
+        return $this->color(ColorUtil::palette($name, $shade));
     }
 
     /**
@@ -107,7 +140,7 @@ class Text implements Component
      */
     public function bgPalette(string $name, int $shade = 500): self
     {
-        return $this->bgColor(\Xocdr\Tui\Styling\Style\Color::palette($name, $shade));
+        return $this->bgColor(ColorUtil::palette($name, $shade));
     }
 
     // Custom RGB/HSL colors
@@ -130,13 +163,14 @@ class Text implements Component
 
     /**
      * Set foreground color using HSL values.
+     *
      * @param float $h Hue 0-360
      * @param float $s Saturation 0-1
      * @param float $l Lightness 0-1
      */
     public function hsl(float $h, float $s, float $l): self
     {
-        return $this->color(\Xocdr\Tui\Styling\Style\Color::hslToHex($h, $s, $l));
+        return $this->color(ColorUtil::hslToHex($h, $s, $l));
     }
 
     /**
@@ -144,263 +178,7 @@ class Text implements Component
      */
     public function bgHsl(float $h, float $s, float $l): self
     {
-        return $this->bgColor(\Xocdr\Tui\Styling\Style\Color::hslToHex($h, $s, $l));
-    }
-
-    // Standard ANSI colors (vibrant)
-
-    public function red(): self
-    {
-        return $this->color('#ff0000');
-    }
-
-    public function green(): self
-    {
-        return $this->color('#00ff00');
-    }
-
-    public function blue(): self
-    {
-        return $this->color('#0000ff');
-    }
-
-    public function yellow(): self
-    {
-        return $this->color('#ffff00');
-    }
-
-    public function cyan(): self
-    {
-        return $this->color('#00ffff');
-    }
-
-    public function magenta(): self
-    {
-        return $this->color('#ff00ff');
-    }
-
-    public function white(): self
-    {
-        return $this->color('#ffffff');
-    }
-
-    public function black(): self
-    {
-        return $this->color('#000000');
-    }
-
-    // Grays
-
-    public function gray(): self
-    {
-        return $this->color('#808080');
-    }
-
-    public function darkGray(): self
-    {
-        return $this->color('#404040');
-    }
-
-    public function lightGray(): self
-    {
-        return $this->color('#c0c0c0');
-    }
-
-    // Softer/muted colors (easier on eyes)
-
-    public function softRed(): self
-    {
-        return $this->color('#e06c75');
-    }
-
-    public function softGreen(): self
-    {
-        return $this->color('#98c379');
-    }
-
-    public function softBlue(): self
-    {
-        return $this->color('#61afef');
-    }
-
-    public function softYellow(): self
-    {
-        return $this->color('#e5c07b');
-    }
-
-    public function softCyan(): self
-    {
-        return $this->color('#56b6c2');
-    }
-
-    public function softMagenta(): self
-    {
-        return $this->color('#c678dd');
-    }
-
-    // Warm colors
-
-    public function orange(): self
-    {
-        return $this->color('#ff8800');
-    }
-
-    public function softOrange(): self
-    {
-        return $this->color('#d19a66');
-    }
-
-    public function coral(): self
-    {
-        return $this->color('#ff7f50');
-    }
-
-    public function salmon(): self
-    {
-        return $this->color('#fa8072');
-    }
-
-    public function peach(): self
-    {
-        return $this->color('#ffb07c');
-    }
-
-    // Cool colors
-
-    public function teal(): self
-    {
-        return $this->color('#008080');
-    }
-
-    public function navy(): self
-    {
-        return $this->color('#000080');
-    }
-
-    public function indigo(): self
-    {
-        return $this->color('#4b0082');
-    }
-
-    public function violet(): self
-    {
-        return $this->color('#ee82ee');
-    }
-
-    public function purple(): self
-    {
-        return $this->color('#800080');
-    }
-
-    public function lavender(): self
-    {
-        return $this->color('#b4a7d6');
-    }
-
-    // Nature colors
-
-    public function forest(): self
-    {
-        return $this->color('#228b22');
-    }
-
-    public function olive(): self
-    {
-        return $this->color('#808000');
-    }
-
-    public function lime(): self
-    {
-        return $this->color('#32cd32');
-    }
-
-    public function mint(): self
-    {
-        return $this->color('#98fb98');
-    }
-
-    public function sky(): self
-    {
-        return $this->color('#87ceeb');
-    }
-
-    public function ocean(): self
-    {
-        return $this->color('#006994');
-    }
-
-    // UI colors (common for terminals/code editors)
-
-    public function error(): self
-    {
-        return $this->color('#f44747');
-    }
-
-    public function warning(): self
-    {
-        return $this->color('#ff8c00');
-    }
-
-    public function success(): self
-    {
-        return $this->color('#4ec9b0');
-    }
-
-    public function info(): self
-    {
-        return $this->color('#3794ff');
-    }
-
-    public function muted(): self
-    {
-        return $this->color('#6a737d');
-    }
-
-    public function accent(): self
-    {
-        return $this->color('#569cd6');
-    }
-
-    public function link(): self
-    {
-        return $this->color('#4fc1ff');
-    }
-
-    // One Dark theme colors (popular code editor theme)
-
-    public function oneDarkRed(): self
-    {
-        return $this->color('#e06c75');
-    }
-
-    public function oneDarkGreen(): self
-    {
-        return $this->color('#98c379');
-    }
-
-    public function oneDarkYellow(): self
-    {
-        return $this->color('#e5c07b');
-    }
-
-    public function oneDarkBlue(): self
-    {
-        return $this->color('#61afef');
-    }
-
-    public function oneDarkMagenta(): self
-    {
-        return $this->color('#c678dd');
-    }
-
-    public function oneDarkCyan(): self
-    {
-        return $this->color('#56b6c2');
-    }
-
-    public function oneDarkOrange(): self
-    {
-        return $this->color('#d19a66');
+        return $this->bgColor(ColorUtil::hslToHex($h, $s, $l));
     }
 
     // Wrapping

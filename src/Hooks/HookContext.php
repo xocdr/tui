@@ -189,8 +189,8 @@ class HookContext implements HookContextInterface
     /**
      * Compare two dependency arrays for equality.
      *
-     * Uses value comparison (==) for each element rather than
-     * identity comparison (!==) which would always be true for arrays.
+     * Uses strict comparison (!==) for each element. Handles edge cases
+     * where array keys might differ between prev and next.
      *
      * @param array<mixed> $prev Previous dependencies
      * @param array<mixed> $next Current dependencies
@@ -203,17 +203,8 @@ class HookContext implements HookContextInterface
         }
 
         foreach ($prev as $i => $value) {
-            // Use strict comparison for scalars, loose for objects/callables
-            if (is_object($value) || is_callable($value)) {
-                // For objects and callables, use identity comparison
-                if ($value !== ($next[$i] ?? null)) {
-                    return false;
-                }
-            } else {
-                // For scalars (int, string, bool, null), use strict comparison
-                if ($value !== ($next[$i] ?? null)) {
-                    return false;
-                }
+            if ($value !== ($next[$i] ?? null)) {
+                return false;
             }
         }
 

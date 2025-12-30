@@ -49,6 +49,19 @@ class Easing
     public const IN_OUT_BOUNCE = 'in-out-bounce';
 
     /**
+     * Back easing overshoot amount.
+     * Standard value from Robert Penner's easing equations.
+     * @see https://easings.net/#easeInBack
+     */
+    private const BACK_OVERSHOOT = 1.70158;
+
+    /**
+     * Bounce easing coefficient.
+     * Standard value from Robert Penner's easing equations.
+     */
+    private const BOUNCE_COEFFICIENT = 7.5625;
+
+    /**
      * Apply an easing function by name.
      */
     public static function ease(float $t, string $easing = self::LINEAR): float
@@ -287,25 +300,43 @@ class Easing
 
     // Back (overshoots)
 
-    public static function inBack(float $t): float
+    /**
+     * Ease in with overshoot (pull back before moving forward).
+     *
+     * @param float $t Progress (0.0 to 1.0)
+     * @param float $overshoot Amount of overshoot (0.0 to 5.0, default: 1.70158)
+     */
+    public static function inBack(float $t, float $overshoot = self::BACK_OVERSHOOT): float
     {
-        $c1 = 1.70158;
-        $c3 = $c1 + 1;
-        return $c3 * $t * $t * $t - $c1 * $t * $t;
+        $overshoot = max(0.0, min(5.0, $overshoot));
+        $c3 = $overshoot + 1;
+        return $c3 * $t * $t * $t - $overshoot * $t * $t;
     }
 
-    public static function outBack(float $t): float
+    /**
+     * Ease out with overshoot (overshoot then settle).
+     *
+     * @param float $t Progress (0.0 to 1.0)
+     * @param float $overshoot Amount of overshoot (0.0 to 5.0, default: 1.70158)
+     */
+    public static function outBack(float $t, float $overshoot = self::BACK_OVERSHOOT): float
     {
-        $c1 = 1.70158;
-        $c3 = $c1 + 1;
+        $overshoot = max(0.0, min(5.0, $overshoot));
+        $c3 = $overshoot + 1;
         $t1 = $t - 1;
-        return 1 + $c3 * $t1 * $t1 * $t1 + $c1 * $t1 * $t1;
+        return 1 + $c3 * $t1 * $t1 * $t1 + $overshoot * $t1 * $t1;
     }
 
-    public static function inOutBack(float $t): float
+    /**
+     * Ease in and out with overshoot.
+     *
+     * @param float $t Progress (0.0 to 1.0)
+     * @param float $overshoot Amount of overshoot (0.0 to 5.0, default: 1.70158)
+     */
+    public static function inOutBack(float $t, float $overshoot = self::BACK_OVERSHOOT): float
     {
-        $c1 = 1.70158;
-        $c2 = $c1 * 1.525;
+        $overshoot = max(0.0, min(5.0, $overshoot));
+        $c2 = $overshoot * 1.525;
 
         return $t < 0.5
             ? (pow(2 * $t, 2) * (($c2 + 1) * 2 * $t - $c2)) / 2
@@ -316,7 +347,7 @@ class Easing
 
     public static function outBounce(float $t): float
     {
-        $n1 = 7.5625;
+        $n1 = self::BOUNCE_COEFFICIENT;
         $d1 = 2.75;
 
         if ($t < 1 / $d1) {

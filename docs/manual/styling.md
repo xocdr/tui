@@ -22,6 +22,32 @@ Text::create('Hello')
 
 ### Colors
 
+The `color()` and `bgColor()` methods accept either the `Color` enum (141 CSS colors) or hex strings.
+
+#### Using the Color Enum (Recommended)
+
+```php
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
+
+// CSS named colors via enum
+Text::create('Red text')->color(Color::Red);
+Text::create('Coral text')->color(Color::Coral);
+Text::create('Dodger blue')->color(Color::DodgerBlue);
+
+// Background colors
+Text::create('Inverted')->color(Color::White)->bgColor(Color::Navy);
+```
+
+**Available Color enum values (141 total):**
+- **Basic:** `Color::Black`, `Color::White`, `Color::Red`, `Color::Green`, `Color::Blue`, `Color::Yellow`, `Color::Cyan`, `Color::Magenta`
+- **Extended:** `Color::Coral`, `Color::Salmon`, `Color::Gold`, `Color::Orchid`, `Color::Violet`, `Color::Indigo`, `Color::Crimson`, `Color::Tomato`
+- **Blues:** `Color::AliceBlue`, `Color::Azure`, `Color::CornflowerBlue`, `Color::DodgerBlue`, `Color::Navy`, `Color::SkyBlue`, `Color::SteelBlue`
+- **Greens:** `Color::Chartreuse`, `Color::ForestGreen`, `Color::LimeGreen`, `Color::MediumSeaGreen`, `Color::Olive`, `Color::SeaGreen`
+- **Reds:** `Color::Crimson`, `Color::DarkRed`, `Color::FireBrick`, `Color::IndianRed`, `Color::Maroon`, `Color::OrangeRed`
+- **Purples:** `Color::BlueViolet`, `Color::DarkOrchid`, `Color::Fuchsia`, `Color::Lavender`, `Color::Plum`, `Color::Purple`
+- And all other standard CSS colors...
+
 #### Hex Colors
 
 ```php
@@ -44,82 +70,6 @@ Text::create('RGB')
 Text::create('HSL')
     ->hsl(180, 0.5, 0.5)
     ->bgHsl(0, 0, 0.2);
-```
-
-#### Named Colors
-
-```php
-Text::create('Named')
-    ->red()
-    ->green()
-    ->blue()
-    ->yellow()
-    ->cyan()
-    ->magenta()
-    ->white()
-    ->black()
-    ->gray()
-    ->darkGray()
-    ->lightGray();
-```
-
-#### Soft Colors
-
-```php
-Text::create('Soft')
-    ->softRed()
-    ->softGreen()
-    ->softBlue()
-    ->softYellow()
-    ->softCyan()
-    ->softMagenta();
-```
-
-#### Extended Colors
-
-```php
-Text::create('Extended')
-    ->orange()
-    ->coral()
-    ->salmon()
-    ->peach()
-    ->teal()
-    ->navy()
-    ->indigo()
-    ->violet()
-    ->purple()
-    ->lavender()
-    ->forest()
-    ->olive()
-    ->lime()
-    ->mint()
-    ->sky()
-    ->ocean();
-```
-
-#### Semantic Colors
-
-```php
-Text::create('Error message')->error();
-Text::create('Warning message')->warning();
-Text::create('Success message')->success();
-Text::create('Info message')->info();
-Text::create('Muted text')->muted();
-Text::create('Accent text')->accent();
-Text::create('Link text')->link();
-```
-
-#### One Dark Theme Colors
-
-```php
-Text::create('Theme')
-    ->oneDarkRed()
-    ->oneDarkGreen()
-    ->oneDarkYellow()
-    ->oneDarkBlue()
-    ->oneDarkMagenta()
-    ->oneDarkCyan()
-    ->oneDarkOrange();
 ```
 
 ### Palette Colors (Tailwind-style)
@@ -150,10 +100,16 @@ Text::create('Palette')
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Ext\Color;
 
 Box::create()
-    ->border('single')        // Border style
-    ->borderColor('#ffffff'); // Border color
+    ->border('single')
+    ->borderColor(Color::White);
+
+// Or with hex
+Box::create()
+    ->border('round')
+    ->borderColor('#00ff00');
 ```
 
 **Border Styles:**
@@ -170,6 +126,10 @@ Box::create()
 ### Background Color
 
 ```php
+Box::create()
+    ->bgColor(Color::DarkSlateGray);
+
+// Or with hex
 Box::create()
     ->bgColor('#333333');
 ```
@@ -234,9 +194,9 @@ $array = $style->toArray();
 
 ---
 
-## Color Class
+## Color Utility Class
 
-The `Color` class provides color utilities:
+The `Color` utility class provides color manipulation:
 
 ```php
 use Xocdr\Tui\Styling\Style\Color;
@@ -251,6 +211,16 @@ $midColor = Color::lerp('#ff0000', '#0000ff', 0.5);
 
 // Tailwind palette
 $blue500 = Color::palette('blue', 500);  // '#3b82f6'
+
+// CSS color lookup
+$hex = Color::css('coral');        // '#ff7f50'
+$hex = Color::css('dodgerblue');   // '#1e90ff'
+
+// Check if valid CSS color
+Color::isCssColor('salmon');       // true
+
+// Get all CSS color names
+$names = Color::cssNames();        // 141 colors
 ```
 
 ### Methods
@@ -263,6 +233,9 @@ static hslToRgb(float $h, float $s, float $l): array
 static hslToHex(float $h, float $s, float $l): string
 static lerp(string $colorA, string $colorB, float $t): string
 static palette(string $name, int $shade = 500): string
+static css(string $name): ?string
+static cssNames(): array
+static isCssColor(string $name): bool
 ```
 
 ---
@@ -339,37 +312,6 @@ $slice = tui_slice_ansi($coloredText, 0, 10);
 ```
 
 ---
-
-## CSS Named Colors
-
-The Color class integrates with the ext-tui Color enum providing 141 CSS named colors:
-
-```php
-use Xocdr\Tui\Styling\Style\Color;
-
-// CSS color lookup
-$hex = Color::css('coral');        // '#ff7f50'
-$hex = Color::css('dodgerblue');   // '#1e90ff'
-
-// Check if valid CSS color
-Color::isCssColor('salmon');       // true
-
-// Get all CSS color names
-$names = Color::cssNames();        // 141 colors
-
-// In Box or Text components (ext-tui native support)
-new TuiBox(['borderColor' => 'coral'])
-new TuiText('Hello', ['color' => 'dodgerblue'])
-```
-
-**Available Colors (141 total):**
-- **Basic:** black, white, gray, grey, silver, red, green, blue, yellow, cyan, magenta
-- **Extended:** coral, salmon, khaki, gold, orchid, violet, indigo, crimson, tomato
-- **Blues:** aliceblue, azure, cornflowerblue, darkblue, deepskyblue, dodgerblue, lightblue, lightskyblue, mediumblue, midnightblue, navy, powderblue, royalblue, skyblue, steelblue
-- **Greens:** chartreuse, darkgreen, darkolivegreen, darkseagreen, forestgreen, lawngreen, lightgreen, lime, limegreen, mediumseagreen, mediumspringgreen, mintcream, olive, olivedrab, palegreen, seagreen, springgreen, yellowgreen
-- **Reds:** crimson, darkred, firebrick, indianred, lightcoral, maroon, orangered, palevioletred, salmon, tomato
-- **Purples:** blueviolet, darkorchid, darkviolet, fuchsia, lavender, magenta, mediumorchid, mediumpurple, mediumvioletred, orchid, plum, purple, rebeccapurple, thistle, violet
-- **All other standard CSS colors:** aliceblue, antiquewhite, aqua, aquamarine, beige, bisque, etc.
 
 ## See Also
 

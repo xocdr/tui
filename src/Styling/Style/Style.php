@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Styling\Style;
 
+use Xocdr\Tui\Ext\Color;
+
 /**
  * Style builder for text styling.
  */
@@ -22,15 +24,29 @@ class Style
 
     // Colors
 
-    public function color(string $color): self
+    /**
+     * Set foreground color.
+     *
+     * @param Color|string|null $color Color enum or hex string
+     */
+    public function color(Color|string|null $color): self
     {
-        $this->properties['color'] = $color;
+        if ($color !== null) {
+            $this->properties['color'] = $color instanceof Color ? $color->value : $color;
+        }
         return $this;
     }
 
-    public function bgColor(string $color): self
+    /**
+     * Set background color.
+     *
+     * @param Color|string|null $color Color enum or hex string
+     */
+    public function bgColor(Color|string|null $color): self
     {
-        $this->properties['bgColor'] = $color;
+        if ($color !== null) {
+            $this->properties['bgColor'] = $color instanceof Color ? $color->value : $color;
+        }
         return $this;
     }
 

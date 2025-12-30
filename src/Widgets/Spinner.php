@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
 
 /**
  * Animated spinner widget.
@@ -51,7 +52,7 @@ class Spinner extends Widget
 
     private ?string $label = null;
 
-    private ?string $color = null;
+    private Color|string|null $color = null;
 
     public function __construct(string $type = self::TYPE_DOTS)
     {
@@ -102,8 +103,10 @@ class Spinner extends Widget
 
     /**
      * Set the spinner color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function color(string $color): self
+    public function color(Color|string|null $color): self
     {
         $this->color = $color;
 

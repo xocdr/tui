@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets;
 
-use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Styling\Animation\Gradient;
 
 /**
  * Progress bar widget.
@@ -30,9 +31,9 @@ class ProgressBar extends Widget
 
     private string $emptyChar = '░';
 
-    private ?string $fillColor = null;
+    private Color|string|null $fillColor = null;
 
-    private ?string $emptyColor = null;
+    private Color|string|null $emptyColor = null;
 
     private bool $showPercentage = false;
 
@@ -96,8 +97,10 @@ class ProgressBar extends Widget
 
     /**
      * Set the fill color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function fillColor(string $color): self
+    public function fillColor(Color|string|null $color): self
     {
         $this->fillColor = $color;
 
@@ -106,8 +109,10 @@ class ProgressBar extends Widget
 
     /**
      * Set the empty (unfilled) color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function emptyColor(string $color): self
+    public function emptyColor(Color|string|null $color): self
     {
         $this->emptyColor = $color;
 

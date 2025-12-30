@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Border;
 
 /**
@@ -33,7 +34,7 @@ class Line implements Component
 
     private string $lineStyle = 'single';
 
-    private ?string $lineColor = null;
+    private Color|string|null $lineColor = null;
 
     private bool $isDim = false;
 
@@ -41,7 +42,7 @@ class Line implements Component
 
     private string $labelPosition = 'center';
 
-    private ?string $labelColor = null;
+    private Color|string|null $labelColor = null;
 
     private ?string $startCap = null;
 
@@ -83,8 +84,10 @@ class Line implements Component
 
     /**
      * Set the line color.
+     *
+     * @param Color|string|null $color Color enum or hex string
      */
-    public function color(string $color): self
+    public function color(Color|string|null $color): self
     {
         $this->lineColor = $color;
 
@@ -125,8 +128,10 @@ class Line implements Component
 
     /**
      * Set the label color.
+     *
+     * @param Color|string $color Color enum or hex string
      */
-    public function labelColor(string $color): self
+    public function labelColor(Color|string $color): self
     {
         $this->labelColor = $color;
 
