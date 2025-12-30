@@ -11,6 +11,7 @@ use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Static_;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Test renderer that converts components to string output.
@@ -122,11 +123,22 @@ class TestRenderer
             return [''];
         }
 
+        // Handle Widgets - use build() to get the component tree
+        if ($component instanceof Widget) {
+            $built = $component->build();
+            // Widget::build() returns a Component (Box, Text, etc.)
+            return $this->renderComponent($built);
+        }
+
         if ($component instanceof Component) {
             // Generic component - try to render it
             $rendered = $component->render();
             if (is_string($rendered)) {
                 return [$rendered];
+            }
+            // If render() returns another Component, recurse into it
+            if ($rendered instanceof Component) {
+                return $this->renderComponent($rendered);
             }
 
             return [];

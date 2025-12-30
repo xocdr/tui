@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Telemetry\Metrics;
 
@@ -53,7 +54,7 @@ class DebugPanel extends Widget
         $this->refreshMs = $refreshMs;
     }
 
-    public function render(): mixed
+    public function build(): Component
     {
         $hooks = $this->hooks();
 

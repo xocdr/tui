@@ -108,7 +108,7 @@ class ProgressBarTest extends TestCase
             ->gradient($gradient)
             ->value(0.5);
 
-        $fragment = $bar->render();
+        $fragment = $bar->build();
 
         $this->assertInstanceOf(Fragment::class, $fragment);
     }
@@ -145,12 +145,12 @@ class ProgressBarTest extends TestCase
         $this->assertSame('███░░░░░░░', $string);
     }
 
-    public function testRender(): void
+    public function testBuild(): void
     {
         $bar = ProgressBar::create()
             ->value(0.5);
 
-        $fragment = $bar->render();
+        $fragment = $bar->build();
 
         $this->assertInstanceOf(Fragment::class, $fragment);
     }

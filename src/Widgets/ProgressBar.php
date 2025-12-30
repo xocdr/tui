@@ -188,9 +188,9 @@ class ProgressBar extends Widget
     }
 
     /**
-     * Render the progress bar.
+     * Build the progress bar component.
      */
-    public function render(): Fragment
+    public function build(): Fragment
     {
         $filled = (int) round($this->value * $this->width);
         $empty = $this->width - $filled;

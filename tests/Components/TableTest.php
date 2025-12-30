@@ -79,7 +79,7 @@ class TableTest extends TestCase
             ->addRow(['Alice', 100]);
 
         // Just verify it doesn't throw
-        $lines = $table->render();
+        $lines = $table->toLines();
         $this->assertNotEmpty($lines);
     }
 
@@ -89,7 +89,7 @@ class TableTest extends TestCase
             ->border('double')
             ->addRow(['1']);
 
-        $lines = $table->render();
+        $lines = $table->toLines();
 
         // Double border uses different characters
         $this->assertNotEmpty($lines);
@@ -101,20 +101,20 @@ class TableTest extends TestCase
             ->hideHeader()
             ->addRow(['Alice']);
 
-        $lines = $table->render();
+        $lines = $table->toLines();
 
         // Should have fewer lines without header
-        $withHeader = Table::create(['Name'])->addRow(['Alice'])->render();
+        $withHeader = Table::create(['Name'])->addRow(['Alice'])->toLines();
         $this->assertLessThan(count($withHeader), count($lines));
     }
 
-    public function testRender(): void
+    public function testToLines(): void
     {
         $table = Table::create(['Name', 'Age'])
             ->addRow(['Alice', 30])
             ->addRow(['Bob', 25]);
 
-        $lines = $table->render();
+        $lines = $table->toLines();
 
         // Should have: top border, header, separator, 2 data rows, bottom border
         $this->assertCount(6, $lines);
@@ -163,7 +163,7 @@ class TableTest extends TestCase
     {
         $table = Table::create(['A', 'B', 'C']);
 
-        $lines = $table->render();
+        $lines = $table->toLines();
 
         // Should still render borders and headers
         $this->assertNotEmpty($lines);

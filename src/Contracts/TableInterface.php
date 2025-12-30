@@ -36,9 +36,9 @@ interface TableInterface
     public function getHeaders(): array;
 
     /**
-     * Render the table to an array of strings.
+     * Render the table to an array of strings (lines).
      *
      * @return array<string>
      */
-    public function render(): array;
+    public function toLines(): array;
 }

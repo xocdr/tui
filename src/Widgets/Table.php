@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets;
 
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\TableInterface;
 use Xocdr\Tui\Styling\Style\Border;
@@ -189,7 +190,20 @@ class Table extends Widget implements TableInterface
         return $widths;
     }
 
-    public function render(): array
+    /**
+     * Build the table as a Text component.
+     */
+    public function build(): Component
+    {
+        return $this->toText();
+    }
+
+    /**
+     * Render the table as lines.
+     *
+     * @return array<string>
+     */
+    public function toLines(): array
     {
         $lines = [];
         $widths = $this->getColumnWidths();
@@ -220,7 +234,7 @@ class Table extends Widget implements TableInterface
      */
     public function toString(): string
     {
-        return implode("\n", $this->render());
+        return implode("\n", $this->toLines());
     }
 
     /**

@@ -108,18 +108,36 @@ abstract class TuiTestCase extends TestCase
     }
 
     /**
-     * Render a widget and return its output.
+     * Render a widget and return its component tree.
+     *
+     * For Widgets, returns the result of build() (the component tree).
+     * This is useful for testing because it gives you access to the
+     * component structure before it's converted to Ext objects.
      *
      * Handles hook index reset between renders automatically.
      *
      * @param HooksAwareInterface $widget The widget to render
-     * @return mixed The render output
+     * @return Component The component tree
      */
-    protected function renderWidget(HooksAwareInterface $widget): mixed
+    protected function renderWidget(HooksAwareInterface $widget): Component
     {
         $this->mockHooks->resetIndices();
 
-        return $widget->render();
+        // For Widgets, return the component tree (build) not the Ext object (render)
+        if ($widget instanceof Widget) {
+            return $widget->build();
+        }
+
+        // For other HooksAware components, use render
+        $result = $widget->render();
+
+        // If it's already a Component, return it directly
+        if ($result instanceof Component) {
+            return $result;
+        }
+
+        // Otherwise wrap in a Box (this shouldn't happen for proper widgets)
+        return \Xocdr\Tui\Components\Box::create();
     }
 
     /**

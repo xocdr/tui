@@ -185,9 +185,9 @@ class Spinner extends Widget
     }
 
     /**
-     * Render the spinner.
+     * Build the spinner component.
      */
-    public function render(): Text
+    public function build(): Text
     {
         $content = $this->getFrame();
         if ($this->label !== null) {

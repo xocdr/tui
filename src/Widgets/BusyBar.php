@@ -164,12 +164,12 @@ class BusyBar extends Widget
     }
 
     /**
-     * Render the busy bar.
+     * Build the busy bar component.
      *
      * For gradient/rainbow styles, returns a Fragment with colored segments.
      * For other styles, returns a Text component.
      */
-    public function render(): Component
+    public function build(): Component
     {
         return match ($this->style) {
             self::STYLE_GRADIENT => $this->renderGradient(),

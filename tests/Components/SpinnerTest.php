@@ -104,17 +104,17 @@ class SpinnerTest extends TestCase
         $spinner = Spinner::create()
             ->color('#ff0000');
 
-        // Render returns a Text component
-        $text = $spinner->render();
+        // build() returns a Text component
+        $text = $spinner->build();
 
         $this->assertInstanceOf(Text::class, $text);
     }
 
-    public function testRender(): void
+    public function testBuild(): void
     {
         $spinner = Spinner::create();
 
-        $text = $spinner->render();
+        $text = $spinner->build();
 
         $this->assertInstanceOf(Text::class, $text);
     }

@@ -18,10 +18,14 @@ use Xocdr\Tui\Hooks\HooksAwareTrait;
  * Simple/pure components should implement Component directly.
  * Stateful widgets should extend Widget.
  *
+ * Widgets have two rendering phases:
+ * - build(): Returns the component tree (Box, Text, etc.) - useful for testing
+ * - render(): Returns the final Ext object for the C extension
+ *
  * @example
  * class Counter extends Widget
  * {
- *     public function render(): mixed
+ *     public function build(): Component
  *     {
  *         [$count, $setCount] = $this->hooks()->state(0);
  *
@@ -42,12 +46,25 @@ abstract class Widget implements Component, HooksAwareInterface
     use HooksAwareTrait;
 
     /**
-     * Render the widget.
+     * Build the widget's component tree.
      *
      * Override this method to define your widget's UI.
      * Use $this->hooks() to access state, effects, input, etc.
      *
-     * @return mixed The rendered output (typically Box or Text)
+     * @return Component The component tree (typically Box or Text)
      */
-    abstract public function render(): mixed;
+    abstract public function build(): Component;
+
+    /**
+     * Render the widget to its final form.
+     *
+     * Calls build() to get the component tree, then renders it
+     * to produce the final Ext object for the C extension.
+     *
+     * @return mixed The rendered output (Ext\Box, Ext\Text, etc.)
+     */
+    public function render(): mixed
+    {
+        return $this->build()->render();
+    }
 }

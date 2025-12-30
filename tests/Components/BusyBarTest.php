@@ -94,17 +94,17 @@ class BusyBarTest extends TestCase
         $bar = BusyBar::create()->color('#ff0000');
 
         // Just verify it doesn't throw
-        $text = $bar->render();
-        $this->assertInstanceOf(Text::class, $text);
+        $component = $bar->build();
+        $this->assertInstanceOf(Text::class, $component);
     }
 
-    public function testRender(): void
+    public function testBuild(): void
     {
         $bar = BusyBar::create();
 
-        $text = $bar->render();
+        $component = $bar->build();
 
-        $this->assertInstanceOf(Text::class, $text);
+        $this->assertInstanceOf(Text::class, $component);
     }
 
     public function testToString(): void
