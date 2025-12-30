@@ -39,13 +39,19 @@ class Tui
 
         $app = new Application($component, $options);
 
+        // Register application BEFORE start() so hooks can access it during initial render.
+        // Hooks like onInput() and interval() call Tui::getApplication() during the first
+        // render cycle, which happens inside start(). If we wait until after start(),
+        // these hooks silently fail because getApplication() returns null.
+        self::$currentApplication = $app;
+        self::$applications[$app->getId()] = $app;
+
         try {
             $app->start();
-            // Only register after successful start to prevent memory leaks
-            self::$currentApplication = $app;
-            self::$applications[$app->getId()] = $app;
         } catch (\Throwable $e) {
-            // Cleanup hook context for failed application
+            // Cleanup on failure
+            self::$currentApplication = null;
+            unset(self::$applications[$app->getId()]);
             Hooks\HookRegistry::removeContext($app->getId());
             throw $e;
         }

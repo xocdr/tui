@@ -7,8 +7,12 @@ namespace Xocdr\Tui\Components;
 /**
  * Image component for displaying images in the terminal.
  *
- * Uses Kitty Graphics Protocol for terminals that support it (Kitty, WezTerm, Konsole).
- * Falls back to a placeholder box when graphics are not supported.
+ * Supports multiple graphics protocols with automatic detection:
+ * - Kitty Graphics Protocol (Kitty, WezTerm, Konsole)
+ * - iTerm2 Inline Images Protocol (iTerm2, WezTerm)
+ * - Sixel Graphics (xterm, mlterm, foot, WezTerm)
+ *
+ * Falls back to a placeholder box when no graphics protocol is supported.
  *
  * @example
  * // Load from file
@@ -23,6 +27,9 @@ namespace Xocdr\Tui\Components;
  * // Create from raw RGBA data
  * $rgba = str_repeat("\xFF\x00\x00\xFF", 4); // 2x2 red pixels
  * Image::fromData($rgba, 2, 2, 'rgba');
+ *
+ * // Check which protocol is being used
+ * $protocol = Image::getProtocol(); // 'kitty', 'iterm2', 'sixel', or 'none'
  */
 class Image implements Component
 {
@@ -173,12 +180,53 @@ class Image implements Component
     }
 
     /**
-     * Check if the terminal supports Kitty graphics protocol.
+     * Check if the terminal supports any graphics protocol.
+     *
+     * Returns true if Kitty, iTerm2, or Sixel graphics are supported.
      */
     public static function isSupported(): bool
     {
-        if (function_exists('tui_graphics_supported')) {
-            return tui_graphics_supported();
+        return self::getProtocol() !== 'none';
+    }
+
+    /**
+     * Get the detected graphics protocol.
+     *
+     * @return string 'kitty', 'iterm2', 'sixel', or 'none'
+     */
+    public static function getProtocol(): string
+    {
+        if (function_exists('tui_graphics_protocol')) {
+            return tui_graphics_protocol();
+        }
+
+        // Fallback to legacy function
+        if (function_exists('tui_graphics_supported') && tui_graphics_supported()) {
+            return 'kitty';
+        }
+
+        return 'none';
+    }
+
+    /**
+     * Check if iTerm2 inline images are supported.
+     */
+    public static function isIterm2Supported(): bool
+    {
+        if (function_exists('tui_iterm2_supported')) {
+            return tui_iterm2_supported();
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if Sixel graphics are supported.
+     */
+    public static function isSixelSupported(): bool
+    {
+        if (function_exists('tui_sixel_supported')) {
+            return tui_sixel_supported();
         }
 
         return false;
@@ -192,6 +240,7 @@ class Image implements Component
     public function getInfo(): ?array
     {
         if ($this->resource !== null && function_exists('tui_image_get_info')) {
+            /** @var array{width: int, height: int, format: string, state: string} */
             return tui_image_get_info($this->resource);
         }
 
