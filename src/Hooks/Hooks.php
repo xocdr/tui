@@ -9,7 +9,12 @@ use Xocdr\Tui\Contracts\HooksInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
 use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Styling\Drawing\Canvas;
+use Xocdr\Tui\Terminal\Clipboard;
 use Xocdr\Tui\Terminal\Events\InputEvent;
+use Xocdr\Tui\Terminal\Events\MouseEvent;
+use Xocdr\Tui\Terminal\Events\PasteEvent;
+use Xocdr\Tui\Terminal\Input\InputHistory;
+use Xocdr\Tui\Terminal\Mouse\MouseMode;
 
 /**
  * Service class for component state and lifecycle management.
@@ -152,6 +157,117 @@ final readonly class Hooks implements HooksInterface
                 $dispatcher->off($handlerId);
             };
         }, [$handler, $isActive]);
+    }
+
+    /**
+     * OnPaste - register paste event handler.
+     *
+     * Requires bracketed paste mode to be enabled.
+     * Use this to handle text pasted from the clipboard.
+     *
+     * @param callable(PasteEvent): void $handler
+     * @param array{isActive?: bool} $options
+     */
+    public function onPaste(callable $handler, array $options = []): void
+    {
+        $isActive = $options['isActive'] ?? true;
+        if (!$isActive) {
+            return;
+        }
+
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        if ($app === null) {
+            return;
+        }
+
+        $this->onRender(function () use ($handler, $app) {
+            $dispatcher = $app->getEventDispatcher();
+
+            $handlerId = $dispatcher->on('paste', function (PasteEvent $event) use ($handler) {
+                $handler($event);
+            });
+
+            return function () use ($dispatcher, $handlerId) {
+                $dispatcher->off($handlerId);
+            };
+        }, [$handler, $isActive]);
+    }
+
+    /**
+     * OnMouse - register mouse event handler.
+     *
+     * Requires mouse mode to be enabled.
+     *
+     * @param callable(MouseEvent): void $handler
+     * @param array{isActive?: bool, mode?: MouseMode} $options
+     */
+    public function onMouse(callable $handler, array $options = []): void
+    {
+        $isActive = $options['isActive'] ?? true;
+        if (!$isActive) {
+            return;
+        }
+
+        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        if ($app === null) {
+            return;
+        }
+
+        $this->onRender(function () use ($handler, $app) {
+            $dispatcher = $app->getEventDispatcher();
+
+            $handlerId = $dispatcher->on('mouse', function (MouseEvent $event) use ($handler) {
+                $handler($event);
+            });
+
+            return function () use ($dispatcher, $handlerId) {
+                $dispatcher->off($handlerId);
+            };
+        }, [$handler, $isActive]);
+    }
+
+    /**
+     * Clipboard - access clipboard functionality.
+     *
+     * Provides methods for copying, requesting, and clearing clipboard content.
+     *
+     * @return array{copy: callable(string, string=): bool, request: callable(string=): void, clear: callable(string=): void}
+     */
+    public function clipboard(): array
+    {
+        return [
+            'copy' => fn (string $text, string $target = Clipboard::TARGET_CLIPBOARD): bool => Clipboard::copy($text, $target),
+            'request' => fn (string $target = Clipboard::TARGET_CLIPBOARD): null => (Clipboard::request($target) ?? null),
+            'clear' => fn (string $target = Clipboard::TARGET_CLIPBOARD): null => (Clipboard::clear($target) ?? null),
+        ];
+    }
+
+    /**
+     * InputHistory - create an input history manager.
+     *
+     * Useful for command-line style input with up/down navigation.
+     *
+     * @param int $maxSize Maximum number of history entries
+     * @return array{history: InputHistory, add: callable(string): void, prev: callable(): ?string, next: callable(): ?string, reset: callable(): void}
+     */
+    public function inputHistory(int $maxSize = 100): array
+    {
+        $historyRef = $this->ref(null);
+
+        if ($historyRef->current === null) {
+            $historyRef->current = new InputHistory($maxSize);
+        }
+
+        /** @var InputHistory $history */
+        $history = $historyRef->current;
+
+        return [
+            'history' => $history,
+            'add' => fn (string $entry) => $history->add($entry),
+            'prev' => fn () => $history->previous(),
+            'next' => fn () => $history->next(),
+            'reset' => fn () => $history->reset(),
+        ];
     }
 
     /**

@@ -23,3 +23,4 @@ composer.lock
 
 # Working directory (temp files, results, summaries)
 .working/
+working/

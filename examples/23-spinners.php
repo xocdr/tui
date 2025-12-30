@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 use Xocdr\Tui\Widgets\Spinner;
@@ -57,7 +58,7 @@ class SpinnersDemo implements Component, HooksAwareInterface
         }
 
         return Box::column([
-            Text::create('Spinner Demo')->bold()->cyan(),
+            Text::create('Spinner Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             Text::create('Available spinner types:'),
             Text::create(''),

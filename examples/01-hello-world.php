@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -46,7 +47,7 @@ class HelloWorld implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('Hello, TUI!')->bold()->green(),
+            Text::create('Hello, TUI!')->bold()->color(Color::Green),
             Text::create('Welcome to the PHP Terminal UI library.'),
             Text::create('Press ESC to exit.')->dim(),
         ]);

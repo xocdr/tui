@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Drawing\Sprite;
 use Xocdr\Tui\Tui;
@@ -80,7 +81,7 @@ class SpritesDemo implements Component, HooksAwareInterface
         $lines = $sprite->render();
 
         return Box::column([
-            Text::create('Sprite Animation Demo')->bold()->cyan(),
+            Text::create('Sprite Animation Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             ...array_map(fn ($line) => Text::create($line), $lines),
             Text::create(''),

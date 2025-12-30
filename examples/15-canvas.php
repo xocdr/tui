@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\Tui;
@@ -68,7 +69,7 @@ class CanvasDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('Canvas Demo - Braille Drawing')->bold()->cyan(),
+            Text::create('Canvas Demo - Braille Drawing')->bold()->color(Color::Cyan),
             Text::create(''),
             ...array_map(fn ($line) => Text::create($line), $this->lines),
             Text::create(''),

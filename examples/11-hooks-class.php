@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -69,7 +70,7 @@ class HooksClassDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Hooks Class Demo ===')->bold()->cyan(),
+            Text::create('=== Hooks Class Demo ===')->bold()->color(Color::Cyan),
             Text::create('Using HooksAwareTrait for dependency injection')->dim(),
             Newline::create(),
 
@@ -79,7 +80,7 @@ class HooksClassDemo implements Component, HooksAwareInterface
                 ->children([
                     Box::row([
                         Text::create('Count: '),
-                        Text::create((string) $count)->bold()->green(),
+                        Text::create((string) $count)->bold()->color(Color::Green),
                     ]),
                     Text::create($expensiveValue)->dim(),
                 ]),

@@ -28,6 +28,7 @@ use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -112,7 +113,7 @@ class TodoApp implements Component, HooksAwareInterface
         $emojiList = $this->buildTodoList($todos, $selectedIndex, $this->emojiIcons, 'Emoji Icons');
 
         return Box::column([
-            Text::create('Todo App - Icon Comparison')->bold()->magenta(),
+            Text::create('Todo App - Icon Comparison')->bold()->color(Color::Magenta),
             Text::create('Both lists are synced - changes apply to both')->dim(),
             Newline::create(),
 
@@ -127,33 +128,33 @@ class TodoApp implements Component, HooksAwareInterface
             // Legend
             Text::create('Status Legend:')->bold(),
             Box::row([
-                Text::create('□/🔲 ')->gray(),
-                Text::create('pending  ')->gray(),
-                Text::create('◐/🔄 ')->yellow(),
-                Text::create('in_progress  ')->yellow(),
-                Text::create('▣/🟢 ')->green(),
-                Text::create('completed  ')->green(),
-                Text::create('⊘/🔴 ')->red(),
-                Text::create('blocked  ')->red(),
-                Text::create('◔/🟡 ')->cyan(),
-                Text::create('waiting')->cyan(),
+                Text::create('□/🔲 ')->color(Color::Gray),
+                Text::create('pending  ')->color(Color::Gray),
+                Text::create('◐/🔄 ')->color(Color::Yellow),
+                Text::create('in_progress  ')->color(Color::Yellow),
+                Text::create('▣/🟢 ')->color(Color::Green),
+                Text::create('completed  ')->color(Color::Green),
+                Text::create('⊘/🔴 ')->color(Color::Red),
+                Text::create('blocked  ')->color(Color::Red),
+                Text::create('◔/🟡 ')->color(Color::Cyan),
+                Text::create('waiting')->color(Color::Cyan),
             ]),
             Newline::create(),
 
             // Controls
             Text::create('Controls:')->bold(),
             Box::row([
-                Text::create('Up/Down')->cyan(),
+                Text::create('Up/Down')->color(Color::Cyan),
                 Text::create(' Navigate  '),
-                Text::create('Space')->cyan(),
+                Text::create('Space')->color(Color::Cyan),
                 Text::create(' Cycle Status  '),
             ]),
             Box::row([
-                Text::create('a')->cyan(),
+                Text::create('a')->color(Color::Cyan),
                 Text::create(' Add  '),
-                Text::create('d')->cyan(),
+                Text::create('d')->color(Color::Cyan),
                 Text::create(' Delete  '),
-                Text::create('q')->cyan(),
+                Text::create('q')->color(Color::Cyan),
                 Text::create(' Quit'),
             ]),
         ]);
@@ -182,14 +183,24 @@ class TodoApp implements Component, HooksAwareInterface
             };
 
             if ($status === 'completed') {
-                $iconText->dim()->green();
+                $iconText->dim()->color(Color::Green);
                 $contentText->dim()->strikethrough();
             } elseif ($isSelected) {
-                $prefixText->bold()->cyan();
-                $iconText->bold()->cyan();
-                $contentText->bold()->cyan();
+                $prefixText->bold()->color(Color::Cyan);
+                $iconText->bold()->color(Color::Cyan);
+                $contentText->bold()->color(Color::Cyan);
             } elseif ($color) {
-                $iconText->$color();
+                // Use Color enum for status colors
+                $colorEnum = match ($color) {
+                    'green' => Color::Green,
+                    'yellow' => Color::Yellow,
+                    'red' => Color::Red,
+                    'cyan' => Color::Cyan,
+                    default => null,
+                };
+                if ($colorEnum !== null) {
+                    $iconText->color($colorEnum);
+                }
             }
 
             $todoItems[] = Box::row([$prefixText, $iconText, $contentText]);
@@ -201,7 +212,7 @@ class TodoApp implements Component, HooksAwareInterface
 
         return Box::column([
             Box::row([
-                Text::create($title)->bold()->cyan(),
+                Text::create($title)->bold()->color(Color::Cyan),
                 Spacer::create(),
                 Text::create("[$completed/$total]")->dim(),
             ])->width(35),

@@ -22,6 +22,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Text\TextUtils;
 use Xocdr\Tui\Tui;
@@ -80,7 +81,7 @@ class TextUtilsDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('Text Utilities Demo')->bold()->cyan(),
+            Text::create('Text Utilities Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             Text::create('String Width (Unicode-aware):')->bold(),
             ...array_map(

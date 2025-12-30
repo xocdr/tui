@@ -22,6 +22,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 use Xocdr\Tui\Widgets\ProgressBar;
@@ -73,7 +74,7 @@ class ProgressBarDemo implements Component, HooksAwareInterface
             ->showPercentage();
 
         return Box::column([
-            Text::create('Progress Bar Demo')->bold()->cyan(),
+            Text::create('Progress Bar Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             Text::create('Basic:'),
             Text::create($basic->toString()),

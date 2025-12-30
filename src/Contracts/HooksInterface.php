@@ -65,6 +65,37 @@ interface HooksInterface
     public function onInput(callable $handler, array $options = []): void;
 
     /**
+     * OnPaste - register paste event handler.
+     *
+     * @param callable(\Xocdr\Tui\Terminal\Events\PasteEvent): void $handler
+     * @param array{isActive?: bool} $options
+     */
+    public function onPaste(callable $handler, array $options = []): void;
+
+    /**
+     * OnMouse - register mouse event handler.
+     *
+     * @param callable(\Xocdr\Tui\Terminal\Events\MouseEvent): void $handler
+     * @param array{isActive?: bool, mode?: \Xocdr\Tui\Terminal\Mouse\MouseMode} $options
+     */
+    public function onMouse(callable $handler, array $options = []): void;
+
+    /**
+     * Clipboard - access clipboard functionality.
+     *
+     * @return array{copy: callable(string, string=): bool, request: callable(string=): void, clear: callable(string=): void}
+     */
+    public function clipboard(): array;
+
+    /**
+     * InputHistory - create an input history manager.
+     *
+     * @param int $maxSize Maximum number of history entries
+     * @return array{history: \Xocdr\Tui\Terminal\Input\InputHistory, add: callable(string): void, prev: callable(): ?string, next: callable(): ?string, reset: callable(): void}
+     */
+    public function inputHistory(int $maxSize = 100): array;
+
+    /**
      * App - get app control functions.
      *
      * @return array{exit: callable(int=): void}

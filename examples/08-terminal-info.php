@@ -20,6 +20,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -50,7 +51,7 @@ class TerminalInfoDemo implements Component, HooksAwareInterface
         $isCI = Tui::isCI();
 
         return Box::column([
-            Text::create('=== Terminal Information ===')->bold()->cyan(),
+            Text::create('=== Terminal Information ===')->bold()->color(Color::Cyan),
             Newline::create(),
 
             Box::create()
@@ -82,7 +83,7 @@ class TerminalInfoDemo implements Component, HooksAwareInterface
                 ->borderColor('#888888')
                 ->padding(1)
                 ->children([
-                    Text::create('Stdout Hook')->bold()->cyan(),
+                    Text::create('Stdout Hook')->bold()->color(Color::Cyan),
                     Text::create("  Columns: {$stdout['columns']}"),
                     Text::create("  Rows: {$stdout['rows']}"),
                 ]),

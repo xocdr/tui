@@ -364,6 +364,77 @@ class MockHooks implements HooksInterface
         ];
     }
 
+    public function onPaste(callable $handler, array $options = []): void
+    {
+        // No-op in tests - paste events aren't simulated by default
+    }
+
+    public function onMouse(callable $handler, array $options = []): void
+    {
+        // No-op in tests - mouse events aren't simulated by default
+    }
+
+    public function clipboard(): array
+    {
+        return [
+            'copy' => fn (string $text, string $target = 'clipboard'): bool => true,
+            'request' => fn (string $target = 'clipboard'): null => null,
+            'clear' => fn (string $target = 'clipboard'): null => null,
+        ];
+    }
+
+    public function inputHistory(int $maxSize = 100): array
+    {
+        $historyRef = $this->ref([]);
+        $indexRef = $this->ref(-1);
+
+        return [
+            'history' => new class ($historyRef, $indexRef) {
+                private object $historyRef;
+                private object $indexRef;
+
+                public function __construct(object $historyRef, object $indexRef)
+                {
+                    $this->historyRef = $historyRef;
+                    $this->indexRef = $indexRef;
+                }
+
+                public function add(string $entry): void
+                {
+                    $this->historyRef->current[] = $entry;
+                    $this->indexRef->current = count($this->historyRef->current);
+                }
+
+                public function previous(): ?string
+                {
+                    if ($this->indexRef->current > 0) {
+                        $this->indexRef->current--;
+                        return $this->historyRef->current[$this->indexRef->current] ?? null;
+                    }
+                    return null;
+                }
+
+                public function next(): ?string
+                {
+                    if ($this->indexRef->current < count($this->historyRef->current) - 1) {
+                        $this->indexRef->current++;
+                        return $this->historyRef->current[$this->indexRef->current] ?? null;
+                    }
+                    return null;
+                }
+
+                public function reset(): void
+                {
+                    $this->indexRef->current = count($this->historyRef->current);
+                }
+            },
+            'add' => fn (string $entry) => null,
+            'prev' => fn () => null,
+            'next' => fn () => null,
+            'reset' => fn () => null,
+        ];
+    }
+
     /**
      * Create a mock Key object for testing.
      */

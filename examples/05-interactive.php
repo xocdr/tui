@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -68,19 +69,19 @@ class InteractiveDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Interactive Input Demo ===')->bold()->cyan(),
+            Text::create('=== Interactive Input Demo ===')->bold()->color(Color::Cyan),
             Text::create('Press any key to see its representation.'),
             Text::create('Press "q" or ESC to exit.')->dim(),
             Newline::create(),
 
             Box::row([
                 Text::create('Last key: ')->bold(),
-                Text::create($lastKey)->green(),
+                Text::create($lastKey)->color(Color::Green),
             ]),
 
             Box::row([
                 Text::create('Key count: ')->bold(),
-                Text::create((string) $keyCount)->yellow(),
+                Text::create((string) $keyCount)->color(Color::Yellow),
             ]),
             Newline::create(),
 

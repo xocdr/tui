@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Tui;
@@ -73,7 +74,7 @@ class GradientsDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('Color Gradients Demo')->bold()->cyan(),
+            Text::create('Color Gradients Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             Text::create('Rainbow Gradient:')->bold(),
             renderGradientBar($this->rainbow, $this->width),

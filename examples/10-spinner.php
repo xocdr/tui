@@ -22,6 +22,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -70,7 +71,7 @@ class SpinnerDemo implements Component, HooksAwareInterface
             $currentFrame = $frames[$autoFrame % count($frames)];
             $autoSpinnerRows[] = Box::row([
                 Text::create(str_pad($name, 8))->dim(),
-                Text::create($currentFrame)->cyan()->bold(),
+                Text::create($currentFrame)->color(Color::Cyan)->bold(),
                 Text::create(' Loading...'),
             ]);
         }
@@ -81,7 +82,7 @@ class SpinnerDemo implements Component, HooksAwareInterface
             $currentFrame = $frames[$manualFrame % count($frames)];
             $manualSpinnerRows[] = Box::row([
                 Text::create(str_pad($name, 8))->dim(),
-                Text::create($currentFrame)->magenta()->bold(),
+                Text::create($currentFrame)->color(Color::Magenta)->bold(),
                 Text::create(' Waiting...'),
             ]);
         }
@@ -93,7 +94,7 @@ class SpinnerDemo implements Component, HooksAwareInterface
         $bar = str_repeat('█', $filled) . str_repeat('░', $empty);
 
         return Box::column([
-            Text::create('=== Spinner & Progress Demo ===')->bold()->cyan(),
+            Text::create('=== Spinner & Progress Demo ===')->bold()->color(Color::Cyan),
             Text::create('Press any key to advance manual spinners, q to quit')->dim(),
             Newline::create(),
 
@@ -108,7 +109,7 @@ class SpinnerDemo implements Component, HooksAwareInterface
             Text::create('Progress Bar (auto):')->bold(),
             Box::row([
                 Text::create('['),
-                Text::create($bar)->green(),
+                Text::create($bar)->color(Color::Green),
                 Text::create('] '),
                 Text::create(str_pad((string) $progress, 3, ' ', STR_PAD_LEFT) . '%'),
             ]),

@@ -20,6 +20,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -58,7 +59,7 @@ class FocusDemo implements Component, HooksAwareInterface
 
             $text = Text::create(($isFocused ? '> ' : '  ') . $label);
             if ($isFocused) {
-                $text->bold()->cyan();
+                $text->bold()->color(Color::Cyan);
             }
 
             $menuItems[] = $text;
@@ -71,7 +72,7 @@ class FocusDemo implements Component, HooksAwareInterface
 
             $text = Text::create($label);
             if ($isFocused) {
-                $text->bold()->cyan();
+                $text->bold()->color(Color::Cyan);
             }
 
             $box = Box::create()
@@ -88,7 +89,7 @@ class FocusDemo implements Component, HooksAwareInterface
         }
 
         return Box::column([
-            Text::create('=== Focus Management Demo ===')->bold()->cyan(),
+            Text::create('=== Focus Management Demo ===')->bold()->color(Color::Cyan),
             Text::create('Navigate with Tab/Arrow keys, q to quit')->dim(),
             Newline::create(),
 
@@ -106,7 +107,7 @@ class FocusDemo implements Component, HooksAwareInterface
             Box::column($boxedItems)->gap(1),
             Newline::create(),
 
-            Text::create('Selected: ' . $items[$focusIndex])->green(),
+            Text::create('Selected: ' . $items[$focusIndex])->color(Color::Green),
         ]);
     }
 }

@@ -24,6 +24,7 @@ use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -47,33 +48,33 @@ class BoxLayoutsDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Box Layouts Demo ===')->bold()->cyan(),
+            Text::create('=== Box Layouts Demo ===')->bold()->color(Color::Cyan),
             Newline::create(),
 
             // Row layout
             Text::create('Row Layout:')->bold(),
             Box::row([
-                Text::create('[Item 1]')->green(),
-                Text::create('[Item 2]')->yellow(),
-                Text::create('[Item 3]')->red(),
+                Text::create('[Item 1]')->color(Color::Green),
+                Text::create('[Item 2]')->color(Color::Yellow),
+                Text::create('[Item 3]')->color(Color::Red),
             ]),
             Newline::create(),
 
             // Column layout
             Text::create('Column Layout:')->bold(),
             Box::column([
-                Text::create('[Item A]')->green(),
-                Text::create('[Item B]')->yellow(),
-                Text::create('[Item C]')->red(),
+                Text::create('[Item A]')->color(Color::Green),
+                Text::create('[Item B]')->color(Color::Yellow),
+                Text::create('[Item C]')->color(Color::Red),
             ]),
             Newline::create(),
 
             // With spacer
             Text::create('Row with Spacer (pushes right item):')->bold(),
             Box::row([
-                Text::create('[Left]')->green(),
+                Text::create('[Left]')->color(Color::Green),
                 Spacer::create(),
-                Text::create('[Right]')->red(),
+                Text::create('[Right]')->color(Color::Red),
             ])->width(40),
             Newline::create(),
 
@@ -102,9 +103,9 @@ class BoxLayoutsDemo implements Component, HooksAwareInterface
             // With gap
             Text::create('Row with Gap (2):')->bold(),
             Box::row([
-                Text::create('[A]')->green(),
-                Text::create('[B]')->yellow(),
-                Text::create('[C]')->red(),
+                Text::create('[A]')->color(Color::Green),
+                Text::create('[B]')->color(Color::Yellow),
+                Text::create('[C]')->color(Color::Red),
             ])->gap(2),
             Newline::create(),
 

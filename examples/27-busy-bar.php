@@ -23,6 +23,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color as ExtColor;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Style\Color;
 use Xocdr\Tui\Tui;
@@ -164,7 +165,7 @@ class BusyBarDemo implements Component, HooksAwareInterface
         $fireGradient = ['#330000', '#660000', '#cc3300', '#ff6600', '#ffcc00', '#ff6600', '#cc3300'];
 
         return Box::column([
-            Text::create('Busy Bar Demo')->bold()->cyan(),
+            Text::create('Busy Bar Demo')->bold()->color(ExtColor::Cyan),
             Text::create('Two gradient modes: HSL (color wheel) and RGB (color stops)')->dim(),
             Text::create(''),
 

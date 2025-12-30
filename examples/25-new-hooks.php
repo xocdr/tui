@@ -22,6 +22,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -69,7 +70,7 @@ class NewHooksDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('New Hooks Demo')->bold()->cyan(),
+            Text::create('New Hooks Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             Text::create('toggle:')->bold(),
             Text::create('  Status: ' . ($isOn ? 'ON' : 'OFF')),

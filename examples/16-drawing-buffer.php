@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Styling\Drawing\Buffer;
 use Xocdr\Tui\Tui;
@@ -71,7 +72,7 @@ class DrawingBufferDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('Drawing Buffer Demo')->bold()->cyan(),
+            Text::create('Drawing Buffer Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             ...array_map(fn ($line) => Text::create($line), $this->lines),
             Text::create(''),

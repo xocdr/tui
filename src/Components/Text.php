@@ -206,12 +206,22 @@ class Text implements Component
      * Requires a terminal that supports OSC 8 (iTerm2, WezTerm, GNOME Terminal, etc.)
      *
      * @param string $url The URL to link to
+     * @param string|null $id Optional ID for grouping multiple link segments
      */
-    public function hyperlink(string $url): self
+    public function hyperlink(string $url, ?string $id = null): self
     {
         $this->hyperlinkUrl = $url;
+        $this->hyperlinkId = $id;
 
         return $this;
+    }
+
+    /**
+     * Get the hyperlink ID.
+     */
+    public function getHyperlinkId(): ?string
+    {
+        return $this->hyperlinkId;
     }
 
     /**
@@ -294,7 +304,14 @@ class Text implements Component
         // Handle hyperlinks
         $content = $this->content;
         if ($this->hyperlinkUrl !== null) {
-            $style['hyperlink'] = $this->hyperlinkUrl;
+            if ($this->hyperlinkId !== null) {
+                $style['hyperlink'] = [
+                    'url' => $this->hyperlinkUrl,
+                    'id' => $this->hyperlinkId,
+                ];
+            } else {
+                $style['hyperlink'] = $this->hyperlinkUrl;
+            }
 
             // Add fallback URL if enabled
             if ($this->hyperlinkFallbackEnabled) {

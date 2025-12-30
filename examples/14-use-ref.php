@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -62,7 +63,7 @@ class RefDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Ref Demo ===')->bold()->cyan(),
+            Text::create('=== Ref Demo ===')->bold()->color(Color::Cyan),
             Text::create('Mutable references that persist across renders')->dim(),
             Newline::create(),
 
@@ -71,9 +72,9 @@ class RefDemo implements Component, HooksAwareInterface
                 ->borderColor('#888888')
                 ->padding(1)
                 ->children([
-                    Text::create('Current count: ' . $count)->green(),
+                    Text::create('Current count: ' . $count)->color(Color::Green),
                     Text::create('Previous count: ' . ($previousCount->current ?? '(none)'))->dim(),
-                    Text::create('Render count: ' . $renderCount->current)->yellow(),
+                    Text::create('Render count: ' . $renderCount->current)->color(Color::Yellow),
                 ]),
             Newline::create(),
 

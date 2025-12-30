@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -53,18 +54,18 @@ class CounterDemo implements Component, HooksAwareInterface
         // Determine color based on count
         $countText = Text::create((string) $count);
         if ($count === 0) {
-            $countText->gray();
+            $countText->color(Color::Gray);
         } elseif ($count < 5) {
-            $countText->green();
+            $countText->color(Color::Green);
         } elseif ($count < 10) {
-            $countText->yellow();
+            $countText->color(Color::Yellow);
         } else {
-            $countText->red();
+            $countText->color(Color::Red);
         }
         $countText->bold();
 
         return Box::column([
-            Text::create('=== Counter Demo ===')->bold()->cyan(),
+            Text::create('=== Counter Demo ===')->bold()->color(Color::Cyan),
             Newline::create(),
 
             Box::create()

@@ -476,6 +476,55 @@ class Box extends AbstractContainerComponent
     }
 
     /**
+     * Set the tab index for focus order.
+     *
+     * @param int $index Tab order (-1 = skip, 0+ = explicit order)
+     */
+    public function tabIndex(int $index): self
+    {
+        $this->style['tabIndex'] = $index;
+
+        return $this;
+    }
+
+    /**
+     * Assign to a focus group.
+     *
+     * Tab navigation will cycle within the group when focused.
+     *
+     * @param string $group Group name
+     */
+    public function focusGroup(string $group): self
+    {
+        $this->style['focusGroup'] = $group;
+
+        return $this;
+    }
+
+    /**
+     * Enable auto-focus on mount.
+     */
+    public function autoFocus(bool $autoFocus = true): self
+    {
+        $this->style['autoFocus'] = $autoFocus;
+
+        return $this;
+    }
+
+    /**
+     * Enable focus trap.
+     *
+     * When enabled, Tab/Shift+Tab navigation is confined to children
+     * of this container. Useful for modals and dialogs.
+     */
+    public function focusTrap(bool $trap = true): self
+    {
+        $this->style['focusTrap'] = $trap;
+
+        return $this;
+    }
+
+    /**
      * Set a unique key for this box.
      *
      * Keys help with list reconciliation and identifying elements

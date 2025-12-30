@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -44,7 +45,7 @@ class TextStylingDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Text Styling Demo ===')->bold()->cyan(),
+            Text::create('=== Text Styling Demo ===')->bold()->color(Color::Cyan),
             Newline::create(),
 
             // Text decorations
@@ -57,16 +58,16 @@ class TextStylingDemo implements Component, HooksAwareInterface
             Text::create('  Strikethrough text')->strikethrough(),
             Newline::create(),
 
-            // Color shortcuts
-            Text::create('Color Shortcuts:')->bold(),
-            Text::create('  Red text')->red(),
-            Text::create('  Green text')->green(),
-            Text::create('  Blue text')->blue(),
-            Text::create('  Yellow text')->yellow(),
-            Text::create('  Cyan text')->cyan(),
-            Text::create('  Magenta text')->magenta(),
-            Text::create('  Gray text')->gray(),
-            Text::create('  White text')->white(),
+            // Colors using Color enum
+            Text::create('Colors using Color enum:')->bold(),
+            Text::create('  Red text')->color(Color::Red),
+            Text::create('  Green text')->color(Color::Green),
+            Text::create('  Blue text')->color(Color::Blue),
+            Text::create('  Yellow text')->color(Color::Yellow),
+            Text::create('  Cyan text')->color(Color::Cyan),
+            Text::create('  Magenta text')->color(Color::Magenta),
+            Text::create('  Gray text')->color(Color::Gray),
+            Text::create('  White text')->color(Color::White),
             Newline::create(),
 
             // Custom colors
@@ -89,7 +90,7 @@ class TextStylingDemo implements Component, HooksAwareInterface
                 ->bold()
                 ->italic()
                 ->underline()
-                ->cyan(),
+                ->color(Color::Cyan),
             Newline::create(),
             Text::create('Press ESC to exit.')->dim(),
         ]);

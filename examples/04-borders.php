@@ -19,6 +19,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -42,7 +43,7 @@ class BordersDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Border Styles Demo ===')->bold()->cyan(),
+            Text::create('=== Border Styles Demo ===')->bold()->color(Color::Cyan),
             Newline::create(),
 
             // Single border
@@ -87,7 +88,7 @@ class BordersDemo implements Component, HooksAwareInterface
                 ->borderColor('#ff00ff')
                 ->padding(1)
                 ->children([
-                    Text::create('Magenta Border')->magenta(),
+                    Text::create('Magenta Border')->color(Color::Magenta),
                 ]),
             Newline::create(),
 

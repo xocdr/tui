@@ -21,6 +21,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 
@@ -93,7 +94,7 @@ class ReducerDemo implements Component, HooksAwareInterface
         });
 
         return Box::column([
-            Text::create('=== Reducer Demo ===')->bold()->cyan(),
+            Text::create('=== Reducer Demo ===')->bold()->color(Color::Cyan),
             Text::create('Redux-like state management pattern')->dim(),
             Newline::create(),
 
@@ -109,7 +110,7 @@ class ReducerDemo implements Component, HooksAwareInterface
                     ]),
                     Box::row([
                         Text::create('Step: '),
-                        Text::create((string) $state['step'])->bold()->yellow(),
+                        Text::create((string) $state['step'])->bold()->color(Color::Yellow),
                     ]),
                 ]),
             Newline::create(),

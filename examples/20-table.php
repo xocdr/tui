@@ -22,6 +22,7 @@ use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\Tui;
 use Xocdr\Tui\Widgets\Table;
@@ -62,7 +63,7 @@ class TableDemo implements Component, HooksAwareInterface
         $lines = $this->table->render();
 
         return Box::column([
-            Text::create('Table Component Demo')->bold()->cyan(),
+            Text::create('Table Component Demo')->bold()->color(Color::Cyan),
             Text::create(''),
             ...array_map(fn ($line) => Text::create($line), $lines),
             Text::create(''),
