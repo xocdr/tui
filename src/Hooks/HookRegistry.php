@@ -63,25 +63,42 @@ class HookRegistry
     /**
      * Create and register a context for an instance.
      *
-     * Warns once if too many contexts are registered, which may indicate
+     * Throws an exception if too many contexts are registered, which indicates
      * a memory leak from applications not being properly unmounted.
+     *
+     * @throws \RuntimeException If context limit is exceeded
      */
     public static function createContext(string $instanceId): HookContextInterface
     {
         $context = new HookContext();
         self::$contexts[$instanceId] = $context;
 
-        // Check for potential memory leak
-        if (!self::$warningIssued && count(self::$contexts) > self::MAX_CONTEXTS_WARNING) {
-            self::$warningIssued = true;
-            trigger_error(
-                sprintf(
-                    'HookRegistry has %d contexts registered. This may indicate a memory leak. ' .
-                    'Ensure Application::unmount() is called when applications are no longer needed.',
-                    count(self::$contexts)
-                ),
-                E_USER_WARNING
-            );
+        // Check for potential memory leak - throw exception to prevent silent accumulation
+        $count = count(self::$contexts);
+        if ($count > self::MAX_CONTEXTS_WARNING) {
+            // Issue warning at threshold, throw at 2x threshold
+            if ($count > self::MAX_CONTEXTS_WARNING * 2) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'HookRegistry has %d contexts registered. This indicates a memory leak. ' .
+                        'Ensure Application::unmount() is called when applications are no longer needed.',
+                        $count
+                    )
+                );
+            }
+
+            // Periodic warning every 50 contexts above threshold
+            if (!self::$warningIssued || ($count - self::MAX_CONTEXTS_WARNING) % 50 === 0) {
+                self::$warningIssued = true;
+                trigger_error(
+                    sprintf(
+                        'HookRegistry has %d contexts registered. This may indicate a memory leak. ' .
+                        'Ensure Application::unmount() is called when applications are no longer needed.',
+                        $count
+                    ),
+                    E_USER_WARNING
+                );
+            }
         }
 
         return $context;

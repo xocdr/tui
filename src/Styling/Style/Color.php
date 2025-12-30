@@ -259,23 +259,32 @@ class Color
      * Handles: hex codes, CSS names, Tailwind palette names with shade,
      * custom color aliases, RGB arrays, and ANSI color names.
      *
+     * Results are cached for string inputs to improve performance.
+     *
      * @param string|array{r: int, g: int, b: int} $color
      */
     public static function resolve(string|array $color): string
     {
-        // RGB array
+        // RGB array - cannot cache
         if (is_array($color)) {
             return self::rgbToHex($color['r'], $color['g'], $color['b']);
         }
 
+        // Check cache first
+        if (isset(self::$resolveCache[$color])) {
+            return self::$resolveCache[$color];
+        }
+
         // Already hex
         if (str_starts_with($color, '#')) {
+            self::$resolveCache[$color] = $color;
             return $color;
         }
 
         // Custom color alias
         $custom = self::custom($color);
         if ($custom !== null) {
+            self::$resolveCache[$color] = $custom;
             return $custom;
         }
 
@@ -284,24 +293,42 @@ class Color
             $name = strtolower($matches[1]);
             $shade = (int) $matches[2];
             if (isset(self::$palette[$name][$shade]) || isset(self::$customPalettes[$name][$shade])) {
-                return self::palette($name, $shade);
+                $result = self::palette($name, $shade);
+                self::$resolveCache[$color] = $result;
+                return $result;
             }
         }
 
         // Palette name without shade (prioritize over CSS names)
         // Uses defaultShade() which finds the closest match to CSS color if applicable
         if (in_array(strtolower($color), self::paletteNames())) {
-            return self::palette($color);
+            $result = self::palette($color);
+            self::$resolveCache[$color] = $result;
+            return $result;
         }
 
         // CSS named color (coral, salmon, etc.)
         $hex = self::css($color);
         if ($hex !== null) {
+            self::$resolveCache[$color] = $hex;
             return $hex;
         }
 
-        // Return unchanged
+        // Return unchanged (cache the fallback too)
+        self::$resolveCache[$color] = $color;
         return $color;
+    }
+
+    /**
+     * Clear the color resolution cache.
+     *
+     * Call this after defining new custom colors or palettes
+     * if you need cache invalidation.
+     */
+    public static function clearCache(): void
+    {
+        self::$resolveCache = [];
+        self::$defaultShadeCache = [];
     }
 
     /**
@@ -440,6 +467,13 @@ class Color
      * @var array<string, int>
      */
     private static array $defaultShadeCache = [];
+
+    /**
+     * Cache for resolved colors.
+     * Maps color input strings to resolved hex values.
+     * @var array<string, string>
+     */
+    private static array $resolveCache = [];
 
     /**
      * Get the default shade for a palette color name.

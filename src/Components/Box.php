@@ -421,96 +421,116 @@ class Box extends AbstractContainerComponent
 
     public function padding(int $padding): self
     {
-        $this->style['padding'] = $padding;
+        $this->style['padding'] = $this->validateSpacing($padding, 'padding');
         return $this;
     }
 
     public function paddingX(int $padding): self
     {
-        $this->style['paddingLeft'] = $padding;
-        $this->style['paddingRight'] = $padding;
+        $validated = $this->validateSpacing($padding, 'paddingX');
+        $this->style['paddingLeft'] = $validated;
+        $this->style['paddingRight'] = $validated;
         return $this;
     }
 
     public function paddingY(int $padding): self
     {
-        $this->style['paddingTop'] = $padding;
-        $this->style['paddingBottom'] = $padding;
+        $validated = $this->validateSpacing($padding, 'paddingY');
+        $this->style['paddingTop'] = $validated;
+        $this->style['paddingBottom'] = $validated;
         return $this;
     }
 
     public function paddingTop(int $padding): self
     {
-        $this->style['paddingTop'] = $padding;
+        $this->style['paddingTop'] = $this->validateSpacing($padding, 'paddingTop');
         return $this;
     }
 
     public function paddingRight(int $padding): self
     {
-        $this->style['paddingRight'] = $padding;
+        $this->style['paddingRight'] = $this->validateSpacing($padding, 'paddingRight');
         return $this;
     }
 
     public function paddingBottom(int $padding): self
     {
-        $this->style['paddingBottom'] = $padding;
+        $this->style['paddingBottom'] = $this->validateSpacing($padding, 'paddingBottom');
         return $this;
     }
 
     public function paddingLeft(int $padding): self
     {
-        $this->style['paddingLeft'] = $padding;
+        $this->style['paddingLeft'] = $this->validateSpacing($padding, 'paddingLeft');
         return $this;
     }
 
     public function margin(int $margin): self
     {
-        $this->style['margin'] = $margin;
+        $this->style['margin'] = $this->validateSpacing($margin, 'margin');
         return $this;
     }
 
     public function marginX(int $margin): self
     {
-        $this->style['marginLeft'] = $margin;
-        $this->style['marginRight'] = $margin;
+        $validated = $this->validateSpacing($margin, 'marginX');
+        $this->style['marginLeft'] = $validated;
+        $this->style['marginRight'] = $validated;
         return $this;
     }
 
     public function marginY(int $margin): self
     {
-        $this->style['marginTop'] = $margin;
-        $this->style['marginBottom'] = $margin;
+        $validated = $this->validateSpacing($margin, 'marginY');
+        $this->style['marginTop'] = $validated;
+        $this->style['marginBottom'] = $validated;
         return $this;
     }
 
     public function marginTop(int $margin): self
     {
-        $this->style['marginTop'] = $margin;
+        $this->style['marginTop'] = $this->validateSpacing($margin, 'marginTop');
         return $this;
     }
 
     public function marginRight(int $margin): self
     {
-        $this->style['marginRight'] = $margin;
+        $this->style['marginRight'] = $this->validateSpacing($margin, 'marginRight');
         return $this;
     }
 
     public function marginBottom(int $margin): self
     {
-        $this->style['marginBottom'] = $margin;
+        $this->style['marginBottom'] = $this->validateSpacing($margin, 'marginBottom');
         return $this;
     }
 
     public function marginLeft(int $margin): self
     {
-        $this->style['marginLeft'] = $margin;
+        $this->style['marginLeft'] = $this->validateSpacing($margin, 'marginLeft');
         return $this;
     }
 
     public function gap(int $gap): self
     {
-        $this->style['gap'] = $gap;
+        $this->style['gap'] = $this->validateSpacing($gap, 'gap');
         return $this;
+    }
+
+    /**
+     * Validate spacing value is non-negative.
+     *
+     * @throws \InvalidArgumentException If value is negative
+     */
+    private function validateSpacing(int $value, string $property): int
+    {
+        if ($value < 0) {
+            throw new \InvalidArgumentException(
+                sprintf('%s cannot be negative, got %d', $property, $value)
+            );
+        }
+
+        return $value;
     }
 
     // Border

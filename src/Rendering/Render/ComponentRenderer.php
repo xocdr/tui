@@ -87,27 +87,57 @@ class ComponentRenderer implements RendererInterface
     /**
      * Convert a render array to a node.
      *
+     * Validates array structure to ensure type safety.
+     *
      * @param array<string, mixed> $data
+     *
+     * @throws \InvalidArgumentException If array structure is invalid
      */
     private function arrayToNode(array $data): NodeInterface
     {
         $type = $data['type'] ?? 'box';
 
+        if (!is_string($type)) {
+            throw new \InvalidArgumentException(
+                'Render array "type" must be a string, got ' . get_debug_type($type)
+            );
+        }
+
         if ($type === 'text') {
-            /** @var string $content */
             $content = $data['content'] ?? '';
-            /** @var array<string, mixed> $textStyle */
+            if (!is_string($content)) {
+                throw new \InvalidArgumentException(
+                    'Text render array "content" must be a string, got ' . get_debug_type($content)
+                );
+            }
+
             $textStyle = $data['style'] ?? [];
+            if (!is_array($textStyle)) {
+                throw new \InvalidArgumentException(
+                    'Render array "style" must be an array, got ' . get_debug_type($textStyle)
+                );
+            }
 
             return $this->target->createText($content, $textStyle);
         }
 
         // Box type
-        /** @var array<string, mixed> $boxStyle */
         $boxStyle = $data['style'] ?? [];
+        if (!is_array($boxStyle)) {
+            throw new \InvalidArgumentException(
+                'Render array "style" must be an array, got ' . get_debug_type($boxStyle)
+            );
+        }
+
         $box = $this->target->createBox($boxStyle);
 
-        if (isset($data['children']) && is_array($data['children'])) {
+        if (isset($data['children'])) {
+            if (!is_array($data['children'])) {
+                throw new \InvalidArgumentException(
+                    'Render array "children" must be an array, got ' . get_debug_type($data['children'])
+                );
+            }
+
             foreach ($data['children'] as $child) {
                 $childNode = $this->toNode($child);
                 $box->addChild($childNode);

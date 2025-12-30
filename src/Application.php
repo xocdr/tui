@@ -449,11 +449,13 @@ class Application implements InstanceInterface
      * Focus a specific element by its ID.
      *
      * @param string $id The focusable element's ID
+     *
+     * @note This is a no-op if the application is not running.
      */
     public function focus(string $id): void
     {
         $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'focus')) {
+        if ($extInstance !== null) {
             $extInstance->focus($id);
         }
     }

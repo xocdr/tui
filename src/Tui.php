@@ -165,16 +165,35 @@ class Tui
 
     /**
      * Clear all applications (for testing).
+     *
+     * Unmounts all running applications, continuing even if some fail.
+     * Any exceptions during unmount are caught and logged as warnings.
      */
     public static function clearApplications(): void
     {
-        foreach (self::$applications as $app) {
+        $errors = [];
+
+        foreach (self::$applications as $id => $app) {
             if ($app->isRunning()) {
-                $app->unmount();
+                try {
+                    $app->unmount();
+                } catch (\Throwable $e) {
+                    $errors[] = sprintf(
+                        'Failed to unmount application %s: %s',
+                        $id,
+                        $e->getMessage()
+                    );
+                }
             }
         }
+
         self::$applications = [];
         self::$currentApplication = null;
+
+        // Log any errors that occurred during cleanup
+        foreach ($errors as $error) {
+            trigger_error($error, E_USER_WARNING);
+        }
     }
 
     /**

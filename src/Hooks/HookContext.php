@@ -226,4 +226,29 @@ class HookContext implements HookContextInterface
 
         return true;
     }
+
+    /**
+     * Create stable dependencies from an array of values.
+     *
+     * This helper creates a memoized version of an array that only changes
+     * when its contents change, solving the common problem of inline arrays
+     * causing unnecessary effect re-runs.
+     *
+     * @param array<mixed> $deps Array of dependency values
+     * @return array<mixed> A stable array reference
+     *
+     * @example
+     * // Instead of this (triggers on every render):
+     * $context->onRender($effect, ['foo', 'bar']);
+     *
+     * // Use this (only triggers when values change):
+     * $context->onRender($effect, $context->stableDeps(['foo', 'bar']));
+     *
+     * // Or with dynamic values:
+     * $context->onRender($effect, $context->stableDeps([$userId, $count]));
+     */
+    public function stableDeps(array $deps): array
+    {
+        return $this->memo(fn () => $deps, $deps);
+    }
 }

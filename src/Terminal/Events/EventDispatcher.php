@@ -176,22 +176,35 @@ class EventDispatcher implements EventDispatcherInterface
 
     /**
      * Create a one-time handler that removes itself after being called.
+     *
+     * The handler is guaranteed to be removed even if the event fires
+     * synchronously during registration.
      */
     public function once(string $event, callable $handler, int $priority = 0): string
     {
-        /** @var string|null $id */
-        $id = null;
+        $removed = false;
+        $handlerId = null;
 
-        $wrapper = function (object $payload) use ($handler, &$id): void {
-            if (is_string($id)) {
-                $this->off($id);
+        $wrapper = function (object $payload) use ($handler, &$removed, &$handlerId): void {
+            $removed = true;
+            try {
+                $handler($payload);
+            } finally {
+                // Remove handler after callback completes
+                if ($handlerId !== null) {
+                    $this->off($handlerId);
+                }
             }
-            $handler($payload);
         };
 
-        $id = $this->on($event, $wrapper, $priority);
+        $handlerId = $this->on($event, $wrapper, $priority);
 
-        return $id;
+        // Handle edge case where event fired synchronously during on()
+        if ($removed && $handlerId !== null) {
+            $this->off($handlerId);
+        }
+
+        return $handlerId;
     }
 
     private function generateHandlerId(): string
