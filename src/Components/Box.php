@@ -180,6 +180,30 @@ class Box extends AbstractContainerComponent
         return $this;
     }
 
+    public function paddingTop(int $padding): self
+    {
+        $this->style['paddingTop'] = $padding;
+        return $this;
+    }
+
+    public function paddingRight(int $padding): self
+    {
+        $this->style['paddingRight'] = $padding;
+        return $this;
+    }
+
+    public function paddingBottom(int $padding): self
+    {
+        $this->style['paddingBottom'] = $padding;
+        return $this;
+    }
+
+    public function paddingLeft(int $padding): self
+    {
+        $this->style['paddingLeft'] = $padding;
+        return $this;
+    }
+
     public function margin(int $margin): self
     {
         $this->style['margin'] = $margin;
@@ -197,6 +221,30 @@ class Box extends AbstractContainerComponent
     {
         $this->style['marginTop'] = $margin;
         $this->style['marginBottom'] = $margin;
+        return $this;
+    }
+
+    public function marginTop(int $margin): self
+    {
+        $this->style['marginTop'] = $margin;
+        return $this;
+    }
+
+    public function marginRight(int $margin): self
+    {
+        $this->style['marginRight'] = $margin;
+        return $this;
+    }
+
+    public function marginBottom(int $margin): self
+    {
+        $this->style['marginBottom'] = $margin;
+        return $this;
+    }
+
+    public function marginLeft(int $margin): self
+    {
+        $this->style['marginLeft'] = $margin;
         return $this;
     }
 

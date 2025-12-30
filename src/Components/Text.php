@@ -74,9 +74,11 @@ class Text implements Component
 
     // Colors
 
-    public function color(string $color): self
+    public function color(?string $color): self
     {
-        $this->style['color'] = $color;
+        if ($color !== null) {
+            $this->style['color'] = $color;
+        }
         return $this;
     }
 
@@ -459,6 +461,24 @@ class Text implements Component
     public function isHyperlinkFallbackEnabled(): bool
     {
         return $this->hyperlinkFallbackEnabled;
+    }
+
+    /**
+     * Append text to the content.
+     */
+    public function append(string $text): self
+    {
+        $this->content .= $text;
+        return $this;
+    }
+
+    /**
+     * Prepend text to the content.
+     */
+    public function prepend(string $text): self
+    {
+        $this->content = $text . $this->content;
+        return $this;
     }
 
     /**
