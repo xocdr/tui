@@ -967,6 +967,123 @@ Capabilities::all()                    // Get all capabilities as array
 
 ---
 
+## Terminal Control
+
+### TerminalManager
+
+```php
+use Xocdr\Tui\Application\TerminalManager;
+
+$terminal = $app->getTerminalManager();
+
+// Window title
+$terminal->setTitle($title)        // Set terminal window/tab title
+$terminal->resetTitle()            // Reset to default
+$terminal->getTitle()              // Get current title (if set via manager)
+
+// Cursor control
+$terminal->setCursorShape($shape)  // 'default', 'block', 'block_blink', 'underline', 'underline_blink', 'bar', 'bar_blink'
+$terminal->showCursor()            // Show cursor
+$terminal->hideCursor()            // Hide cursor
+$terminal->isCursorHidden()        // Check if hidden
+
+// Capability detection
+$terminal->getCapabilities()       // Get all terminal capabilities
+$terminal->hasCapability($name)    // Check specific capability
+$terminal->getTerminalType()       // 'kitty', 'iterm2', 'wezterm', etc.
+$terminal->getColorDepth()         // 8, 256, or 16777216
+$terminal->supportsTrueColor()     // 24-bit color support
+$terminal->supportsHyperlinks()    // OSC 8 support
+$terminal->supportsMouse()         // Mouse input support
+$terminal->supportsSyncOutput()    // Synchronized output (prevents flicker)
+```
+
+---
+
+## Scrolling
+
+### SmoothScroller
+
+Spring physics-based smooth scrolling:
+
+```php
+use Xocdr\Tui\Scroll\SmoothScroller;
+
+// Creation
+SmoothScroller::create()           // Default spring settings
+SmoothScroller::fast()             // Quick animations (300, 30)
+SmoothScroller::slow()             // Slow, smooth (100, 20)
+SmoothScroller::bouncy()           // Bouncy effect (200, 15)
+new SmoothScroller($stiffness, $damping)  // Custom spring
+
+// Spring configuration
+->setSpring($stiffness, $damping)
+->getStiffness()
+->getDamping()
+
+// Target and position
+->setTarget($x, $y)                // Set absolute target
+->scrollBy($dx, $dy)               // Add to current target
+->snap()                           // Immediately jump to target
+->getPosition()                    // ['x' => float, 'y' => float]
+->getX()
+->getY()
+->getTarget()                      // ['x' => float, 'y' => float]
+
+// Animation
+->update($dt)                      // Update physics, returns true if animating
+->isAnimating()                    // Check if still animating
+->getProgress()                    // Progress 0.0 to 1.0
+
+// Cleanup
+->destroy()                        // Explicitly destroy native resource
+->isNativeAvailable()              // Check if ext-tui is available
+```
+
+### VirtualList
+
+Efficient rendering for large datasets (windowing/virtualization):
+
+```php
+use Xocdr\Tui\Scroll\VirtualList;
+
+// Creation
+VirtualList::create($itemCount, $viewportHeight, $itemHeight, $overscan)
+new VirtualList($itemCount, $itemHeight, $viewportHeight, $overscan)
+
+// Visible range
+->getVisibleRange()                // ['start' => int, 'end' => int, 'offset' => int, 'progress' => float]
+->isVisible($index)                // Check if item visible
+->getItemOffset($index)            // Y offset for item
+
+// Scrolling
+->scrollTo($index)                 // Scroll to specific item
+->scrollBy($delta)                 // Scroll by rows
+->scrollItems($items)              // Scroll by item count
+->ensureVisible($index)            // Make item visible if not
+->pageUp()                         // Scroll up by viewport
+->pageDown()                       // Scroll down by viewport
+->scrollToTop()                    // Scroll to first item
+->scrollToBottom()                 // Scroll to last item
+
+// Configuration
+->setItemCount($count)             // Update total items
+->setViewportHeight($height)       // Update viewport (on resize)
+
+// Getters
+->getItemCount()
+->getItemHeight()
+->getViewportHeight()
+->getOverscan()
+->getProgress()                    // Scroll progress 0.0 to 1.0
+
+// Cleanup
+->destroy()
+->isNativeAvailable()
+```
+
+---
+
 ## Focus
 
 ### FocusManager

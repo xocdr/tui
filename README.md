@@ -489,6 +489,97 @@ Border::BOLD;    // ┏━┓┃┗━┛
 $chars = Border::getChars('round');
 ```
 
+## Terminal Control
+
+Access terminal features via `TerminalManager`:
+
+```php
+$app = Tui::render($myComponent);
+$terminal = $app->getTerminalManager();
+
+// Window title
+$terminal->setTitle('My TUI App');
+$terminal->resetTitle();
+
+// Cursor control
+$terminal->hideCursor();
+$terminal->showCursor();
+$terminal->setCursorShape('bar');  // 'block', 'underline', 'bar', etc.
+
+// Terminal capabilities
+$terminal->supportsTrueColor();    // 24-bit color support
+$terminal->supportsHyperlinks();   // OSC 8 support
+$terminal->supportsMouse();        // Mouse input
+$terminal->getTerminalType();      // 'kitty', 'iterm2', 'wezterm', etc.
+$terminal->getColorDepth();        // 8, 256, or 16777216
+```
+
+## Scrolling
+
+### SmoothScroller
+
+Spring physics-based smooth scrolling:
+
+```php
+use Xocdr\Tui\Scroll\SmoothScroller;
+
+// Create with default spring physics
+$scroller = SmoothScroller::create();
+
+// Or with custom settings
+$scroller = new SmoothScroller(stiffness: 170.0, damping: 26.0);
+
+// Preset configurations
+$scroller = SmoothScroller::fast();   // Quick animations
+$scroller = SmoothScroller::slow();   // Smooth, slow animations
+$scroller = SmoothScroller::bouncy(); // Bouncy effect
+
+// Set target position
+$scroller->setTarget(0.0, 100.0);
+
+// Or scroll by delta
+$scroller->scrollBy(0, 10);
+
+// In render loop
+while ($scroller->isAnimating()) {
+    $scroller->update(1.0 / 60.0);  // 60 FPS
+    $pos = $scroller->getPosition();
+    // Render at $pos['y']
+}
+```
+
+### VirtualList
+
+Efficient rendering for large lists (windowing/virtualization):
+
+```php
+use Xocdr\Tui\Scroll\VirtualList;
+
+// Create for 100,000 items with 1-row height, 20-row viewport
+$vlist = VirtualList::create(
+    itemCount: 100000,
+    viewportHeight: 20,
+    itemHeight: 1,
+    overscan: 5
+);
+
+// Get visible range (only render these!)
+$range = $vlist->getVisibleRange();
+for ($i = $range['start']; $i < $range['end']; $i++) {
+    $offset = $vlist->getItemOffset($i);
+    // Render item at Y = $offset
+}
+
+// Navigation
+$vlist->scrollItems(1);     // Arrow down
+$vlist->scrollItems(-1);    // Arrow up
+$vlist->pageDown();         // Page down
+$vlist->pageUp();           // Page up
+$vlist->scrollToTop();      // Home
+$vlist->scrollToBottom();   // End
+$vlist->ensureVisible($i);  // Scroll to make item visible
+```
+
 ## Architecture
 
 The package follows SOLID principles with a clean separation of concerns:
@@ -497,7 +588,11 @@ The package follows SOLID principles with a clean separation of concerns:
 src/
 ├── Application/          # Manager classes for Application
 │   ├── TimerManager.php  # Timer and interval management
-│   └── OutputManager.php # Terminal output operations
+│   ├── OutputManager.php # Terminal output operations
+│   └── TerminalManager.php # Cursor, title, capabilities
+├── Scroll/               # Scrolling utilities
+│   ├── SmoothScroller.php # Spring physics scrolling
+│   └── VirtualList.php   # Virtual list for large datasets
 ├── Components/           # UI components
 │   ├── Component.php     # Base interface
 │   ├── Box.php           # Flexbox container
@@ -512,7 +607,8 @@ src/
 │   ├── InstanceInterface.php
 │   ├── TimerManagerInterface.php
 │   ├── OutputManagerInterface.php
-│   └── InputManagerInterface.php
+│   ├── InputManagerInterface.php
+│   └── TerminalManagerInterface.php
 ├── Hooks/                # State management hooks
 │   ├── HookContext.php
 │   ├── HookRegistry.php

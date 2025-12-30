@@ -43,6 +43,11 @@ The ext-tui C extension provides classes and functions:
 - `tui_ease()`, `tui_gradient()`, `tui_lerp()` - Animation utilities
 - `tui_get_terminal_size()`, `tui_is_interactive()`, `tui_is_ci()`
 - `tui_string_width()`, `tui_wrap_text()`, `tui_truncate()`
+- `tui_cursor_shape()`, `tui_cursor_show()`, `tui_cursor_hide()` - Cursor control
+- `tui_set_title()`, `tui_reset_title()` - Window title control
+- `tui_get_capabilities()`, `tui_has_capability()` - Terminal capability detection
+- `tui_virtual_*()` - Virtual list/windowing functions
+- `tui_scroll_*()` - Smooth scrolling functions
 
 ## Installation
 
@@ -96,7 +101,8 @@ tui/
 │   ├── Container.php              # Simple DI container
 │   ├── Application/               # Manager classes for Application
 │   │   ├── TimerManager.php       # Timer and interval management
-│   │   └── OutputManager.php      # Terminal output operations
+│   │   ├── OutputManager.php      # Terminal output operations
+│   │   └── TerminalManager.php    # Terminal control (cursor, title, capabilities)
 │   ├── Components/
 │   │   ├── Component.php          # Base interface
 │   │   ├── AbstractContainerComponent.php  # Shared child logic
@@ -117,7 +123,8 @@ tui/
 │   │   ├── InstanceInterface.php  # Application instance abstraction
 │   │   ├── TimerManagerInterface.php   # Timer manager abstraction
 │   │   ├── OutputManagerInterface.php  # Output manager abstraction
-│   │   └── InputManagerInterface.php   # Input manager abstraction
+│   │   ├── InputManagerInterface.php   # Input manager abstraction
+│   │   └── TerminalManagerInterface.php  # Terminal control abstraction
 │   ├── Hooks/
 │   │   ├── Hooks.php              # Main hooks class
 │   │   ├── HooksInterface.php     # Interface for hooks
@@ -180,6 +187,9 @@ tui/
 │   │   │   ├── FocusEvent.php         # Focus change event
 │   │   │   └── ResizeEvent.php        # Terminal resize event
 │   │   └── Capabilities.php           # Terminal feature detection
+│   ├── Scroll/                    # Scrolling utilities
+│   │   ├── SmoothScroller.php         # Spring physics smooth scrolling
+│   │   └── VirtualList.php            # Virtual list for large datasets
 │   └── Widgets/                   # Pre-built widgets
 │       ├── Widget.php                 # Base widget class
 │       ├── Table.php                  # Tabular data
@@ -254,6 +264,7 @@ The codebase follows SOLID principles:
 | `TimerManagerInterface` | Timer and interval management |
 | `OutputManagerInterface` | Terminal output operations |
 | `InputManagerInterface` | Keyboard input handling |
+| `TerminalManagerInterface` | Terminal control (cursor, title, capabilities) |
 
 ### Testing Without C Extension
 
