@@ -617,7 +617,7 @@ final readonly class Hooks implements HooksInterface
         [$value, $setValue] = $this->state($initial);
 
         $toggle = function () use ($setValue): void {
-            $setValue(fn (bool $v) => !$v);
+            $setValue(fn (mixed $v): bool => !$v);
         };
 
         return [$value, $toggle, $setValue];

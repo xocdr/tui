@@ -6,6 +6,7 @@ namespace Xocdr\Tui\Rendering\Render;
 
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\StatefulComponent;
+use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Contracts\NodeInterface;
 use Xocdr\Tui\Contracts\RendererInterface;
 use Xocdr\Tui\Contracts\RenderTargetInterface;
@@ -29,6 +30,9 @@ class ComponentRenderer implements RendererInterface
      */
     public function render(Component|callable $component): NodeInterface
     {
+        // Start a new render cycle
+        RenderCycleTracker::beginCycle();
+
         try {
             if (is_callable($component)) {
                 $result = $component();
@@ -36,7 +40,12 @@ class ComponentRenderer implements RendererInterface
                 $result = $component;
             }
 
-            return $this->toNode($result);
+            $node = $this->toNode($result);
+
+            // Finalize the render cycle - suspend effects for components not rendered
+            RenderCycleTracker::endCycle();
+
+            return $node;
         } catch (\RuntimeException|\InvalidArgumentException $e) {
             // Re-throw known exceptions
             throw $e;
@@ -70,6 +79,12 @@ class ComponentRenderer implements RendererInterface
 
         // StatefulComponent - render directly (already returns TuiBox/TuiText)
         if ($value instanceof StatefulComponent) {
+            // Prepare hook context for HooksAware components before rendering
+            if ($value instanceof HooksAwareInterface) {
+                $value->prepareRender();
+                // Track this component as rendered in current cycle
+                RenderCycleTracker::trackComponent($value);
+            }
             $rendered = $value->render();
 
             return $this->toNode($rendered);
@@ -77,6 +92,12 @@ class ComponentRenderer implements RendererInterface
 
         // Component - render it
         if ($value instanceof Component) {
+            // Prepare hook context for HooksAware components before rendering
+            if ($value instanceof HooksAwareInterface) {
+                $value->prepareRender();
+                // Track this component as rendered in current cycle
+                RenderCycleTracker::trackComponent($value);
+            }
             $rendered = $value->render();
 
             return $this->toNode($rendered);

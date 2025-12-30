@@ -11,8 +11,8 @@ use Xocdr\Tui\Tui;
  * Trait providing hooks access for components.
  *
  * Components using this trait gain convenient access to state management
- * and lifecycle methods through either an injected Hooks instance or
- * the global application context.
+ * and lifecycle methods. Each component instance gets its own isolated
+ * HookContext, allowing multiple components to use hooks independently.
  *
  * @example
  * class MyComponent implements Component, HooksAwareInterface
@@ -38,6 +38,7 @@ use Xocdr\Tui\Tui;
 trait HooksAwareTrait
 {
     private ?HooksInterface $hooks = null;
+    private ?HookContext $componentContext = null;
 
     /**
      * Set the hooks service instance.
@@ -50,15 +51,47 @@ trait HooksAwareTrait
     /**
      * Get the hooks service instance.
      *
-     * If no instance was injected, creates one from the current application.
+     * Each component instance gets its own isolated HookContext,
+     * allowing independent state management across components.
      */
     public function getHooks(): HooksInterface
     {
         if ($this->hooks === null) {
-            $this->hooks = new Hooks(Tui::getApplication());
+            $app = Tui::getApplication();
+
+            // Create component-specific context
+            if ($this->componentContext === null) {
+                $this->componentContext = new HookContext();
+                // Share the rerender callback from the app
+                $this->componentContext->setRerenderCallback(fn () => $app->rerender());
+            }
+
+            // Create Hooks with this component's own context
+            $this->hooks = new Hooks($app, $this->componentContext);
         }
 
         return $this->hooks;
+    }
+
+    /**
+     * Prepare for a new render cycle.
+     *
+     * Called automatically before render() to reset hook indices.
+     */
+    public function prepareRender(): void
+    {
+        $this->componentContext?->resetForRender();
+    }
+
+    /**
+     * Suspend active effects (input handlers, intervals, etc.).
+     *
+     * Called when a component is no longer being rendered but still exists.
+     * Effects will be re-registered on the next render.
+     */
+    public function suspendEffects(): void
+    {
+        $this->componentContext?->cleanup();
     }
 
     /**

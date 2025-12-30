@@ -88,20 +88,32 @@ final class Notification
      * Uses OSC 9 or OSC 777 sequences to send notifications to
      * supporting terminals (iTerm2, Kitty, some others).
      *
+     * Note: For iTerm2, notifications must be enabled:
+     * Preferences → Profiles → Terminal → Enable "Notification center alerts"
+     *
      * @param string $title Notification title
      * @param string|null $body Optional notification body text
      * @param int $priority PRIORITY_NORMAL or PRIORITY_URGENT
      * @return bool True if notification was sent
      */
-    public static function notify(string $title, ?string $body = null, int $priority = self::PRIORITY_NORMAL): bool
+    public static function notify(string $title, ?string $body = null, int $priority = self::PRIORITY_URGENT): bool
     {
         if (function_exists('tui_notify')) {
             return tui_notify($title, $body, $priority);
         }
 
-        // Fallback: OSC 9 notification (iTerm2 style)
+        // Try multiple notification methods for broad terminal support
         $message = $body !== null ? "{$title}: {$body}" : $title;
+
+        // OSC 777 (Konsole, some others) - notify;title;message
+        echo "\033]777;notify;{$title};{$message}\033\\";
+
+        // OSC 9 (iTerm2 growl-style)
         echo "\033]9;{$message}\033\\";
+
+        // OSC 99 (iTerm2 native notification) - requires i=1 for user attention
+        $urgency = $priority === self::PRIORITY_URGENT ? 'i=1:u=0' : 'i=0:u=0';
+        echo "\033]99;{$urgency};{$message}\033\\";
 
         return true;
     }
