@@ -241,7 +241,7 @@ class MockHooks implements HooksInterface
     {
         [$state, $setState] = $this->state($initialState);
 
-        $dispatch = function (mixed $action) use ($reducer, $setState, &$state): void {
+        $dispatch = function (mixed $action) use ($reducer, $setState): void {
             $setState(fn ($s) => $reducer($s, $action));
         };
 
@@ -305,7 +305,7 @@ class MockHooks implements HooksInterface
                 }
             },
             'clear' => function (): void {},
-            'render' => function (): array {
+            'render' => function () use ($width, $height): array {
                 return array_fill(0, $height, str_repeat(' ', $width));
             },
         ];

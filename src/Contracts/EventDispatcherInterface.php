@@ -44,4 +44,9 @@ interface EventDispatcherInterface
      * Remove all handlers for a specific event.
      */
     public function removeAllListeners(string $event): void;
+
+    /**
+     * Remove all handlers for all events.
+     */
+    public function removeAll(): void;
 }

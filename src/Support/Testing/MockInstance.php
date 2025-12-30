@@ -59,13 +59,14 @@ class MockInstance implements InstanceInterface
         $this->options = $options;
         $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
         $this->hookContext = $hookContext ?? new HookContext();
-        $this->renderer = new TestRenderer(
-            $options['width'] ?? 80,
-            $options['height'] ?? 24
-        );
+        /** @var int $width */
+        $width = $options['width'] ?? 80;
+        /** @var int $height */
+        $height = $options['height'] ?? 24;
+        $this->renderer = new TestRenderer($width, $height);
         $this->size = [
-            'width' => $options['width'] ?? 80,
-            'height' => $options['height'] ?? 24,
+            'width' => $width,
+            'height' => $height,
         ];
 
         if ($this->hookContext instanceof HookContext) {

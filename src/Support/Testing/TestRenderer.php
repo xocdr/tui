@@ -223,6 +223,7 @@ class TestRenderer
         }
 
         // Apply padding
+        /** @var int $padding */
         $padding = $style['padding'] ?? 0;
         if ($padding > 0) {
             $paddedLines = [];
@@ -247,6 +248,7 @@ class TestRenderer
         }
 
         // Apply border
+        /** @var string|null $borderStyle */
         $borderStyle = $style['borderStyle'] ?? null;
         if ($borderStyle !== null) {
             $lines = $this->applyBorder($lines, $borderStyle);

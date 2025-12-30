@@ -199,8 +199,9 @@ class BusyBar extends Widget
      */
     private function renderGradient(): Component
     {
+        $colorFrom = $this->color instanceof Color ? (string) $this->color : ($this->color ?? 'dodgerblue');
         $gradient = $this->gradient ?? Gradient::between(
-            $this->color ?? 'dodgerblue',
+            $colorFrom,
             'deeppink',
             $this->width
         )->circular();

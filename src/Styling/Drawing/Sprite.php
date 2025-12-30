@@ -231,9 +231,13 @@ class Sprite implements SpriteInterface
         return $this->loop;
     }
 
+    /**
+     * @return array{x: int, y: int, width: int, height: int}
+     */
     public function getBounds(): array
     {
         if ($this->useNative && $this->native !== null) {
+            /** @var array{x: int, y: int, width: int, height: int} */
             return tui_sprite_get_bounds($this->native);
         }
 

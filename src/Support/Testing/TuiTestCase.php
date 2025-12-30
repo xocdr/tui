@@ -94,6 +94,9 @@ abstract class TuiTestCase extends TestCase
      */
     protected function createWidget(HooksAwareInterface $widget): HooksAwareInterface
     {
+        if ($this->mockHooks === null) {
+            throw new \RuntimeException('MockHooks not initialized. Ensure setUp() was called.');
+        }
         $widget->setHooks($this->mockHooks);
 
         return $widget;
@@ -121,6 +124,9 @@ abstract class TuiTestCase extends TestCase
      */
     protected function renderWidget(HooksAwareInterface $widget): Component
     {
+        if ($this->mockHooks === null) {
+            throw new \RuntimeException('MockHooks not initialized. Ensure setUp() was called.');
+        }
         $this->mockHooks->resetIndices();
 
         // For Widgets, return the component tree (build) not the Ext object (render)
@@ -182,6 +188,10 @@ abstract class TuiTestCase extends TestCase
      */
     protected function renderToString(callable|Component $component): string
     {
+        if ($this->renderer === null) {
+            throw new \RuntimeException('TestRenderer not initialized. Ensure setUp() was called.');
+        }
+
         return $this->renderer->render($component);
     }
 
@@ -310,8 +320,12 @@ abstract class TuiTestCase extends TestCase
      */
     protected function assertTextPresent(string $text, string $message = ''): void
     {
+        $subject = $this->instance ?? $this->renderer;
+        if ($subject === null) {
+            throw new \RuntimeException('No instance or renderer available. Ensure setUp() was called and render() was invoked.');
+        }
         $this->assertOutputContains(
-            $this->instance ?? $this->renderer,
+            $subject,
             $text,
             $message
         );
@@ -322,8 +336,12 @@ abstract class TuiTestCase extends TestCase
      */
     protected function assertTextNotPresent(string $text, string $message = ''): void
     {
+        $subject = $this->instance ?? $this->renderer;
+        if ($subject === null) {
+            throw new \RuntimeException('No instance or renderer available. Ensure setUp() was called and render() was invoked.');
+        }
         $this->assertOutputNotContains(
-            $this->instance ?? $this->renderer,
+            $subject,
             $text,
             $message
         );

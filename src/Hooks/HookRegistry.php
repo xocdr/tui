@@ -14,10 +14,18 @@ use Xocdr\Tui\Contracts\HookContextInterface;
  */
 class HookRegistry
 {
+    /**
+     * Maximum number of contexts before warning.
+     * This helps detect memory leaks from contexts not being cleaned up.
+     */
+    private const MAX_CONTEXTS_WARNING = 100;
+
     private static ?HookContextInterface $currentContext = null;
 
     /** @var array<string, HookContextInterface> */
     private static array $contexts = [];
+
+    private static bool $warningIssued = false;
 
     /**
      * Set the current hook context for rendering.
@@ -54,11 +62,27 @@ class HookRegistry
 
     /**
      * Create and register a context for an instance.
+     *
+     * Warns once if too many contexts are registered, which may indicate
+     * a memory leak from applications not being properly unmounted.
      */
     public static function createContext(string $instanceId): HookContextInterface
     {
         $context = new HookContext();
         self::$contexts[$instanceId] = $context;
+
+        // Check for potential memory leak
+        if (!self::$warningIssued && count(self::$contexts) > self::MAX_CONTEXTS_WARNING) {
+            self::$warningIssued = true;
+            trigger_error(
+                sprintf(
+                    'HookRegistry has %d contexts registered. This may indicate a memory leak. ' .
+                    'Ensure Application::unmount() is called when applications are no longer needed.',
+                    count(self::$contexts)
+                ),
+                E_USER_WARNING
+            );
+        }
 
         return $context;
     }
@@ -114,5 +138,16 @@ class HookRegistry
         }
         self::$contexts = [];
         self::$currentContext = null;
+        self::$warningIssued = false;
+    }
+
+    /**
+     * Get the number of registered contexts.
+     *
+     * Useful for debugging and testing memory management.
+     */
+    public static function getContextCount(): int
+    {
+        return count(self::$contexts);
     }
 }

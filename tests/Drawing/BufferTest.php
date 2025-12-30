@@ -10,11 +10,11 @@ use Xocdr\Tui\Styling\Drawing\Buffer;
 class BufferTest extends TestCase
 {
     /**
-     * Create a buffer using PHP fallback (not native extension).
+     * Create a buffer using PHP fallback.
      */
     private function createBuffer(int $width, int $height): Buffer
     {
-        return new Buffer($width, $height, useNative: false);
+        return new Buffer($width, $height);
     }
 
     public function testCreate(): void

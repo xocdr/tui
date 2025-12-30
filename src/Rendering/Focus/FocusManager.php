@@ -108,6 +108,7 @@ class FocusManager
         // Try to get from native if available
         $focusedNode = $this->app->getFocusedNode();
         if ($focusedNode !== null && isset($focusedNode['id'])) {
+            /** @var string */
             return $focusedNode['id'];
         }
 

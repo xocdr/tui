@@ -94,14 +94,18 @@ class ComponentRenderer implements RendererInterface
         $type = $data['type'] ?? 'box';
 
         if ($type === 'text') {
-            return $this->target->createText(
-                $data['content'] ?? '',
-                $data['style'] ?? []
-            );
+            /** @var string $content */
+            $content = $data['content'] ?? '';
+            /** @var array<string, mixed> $textStyle */
+            $textStyle = $data['style'] ?? [];
+
+            return $this->target->createText($content, $textStyle);
         }
 
         // Box type
-        $box = $this->target->createBox($data['style'] ?? []);
+        /** @var array<string, mixed> $boxStyle */
+        $boxStyle = $data['style'] ?? [];
+        $box = $this->target->createBox($boxStyle);
 
         if (isset($data['children']) && is_array($data['children'])) {
             foreach ($data['children'] as $child) {

@@ -133,7 +133,10 @@ class ElementWrapper
      */
     public function getStyle(string $property): mixed
     {
-        return $this->data['styles'][$property] ?? null;
+        /** @var array<string, mixed>|null $styles */
+        $styles = $this->data['styles'] ?? null;
+
+        return $styles[$property] ?? null;
     }
 
     /**

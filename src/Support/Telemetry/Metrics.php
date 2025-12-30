@@ -109,6 +109,7 @@ class Metrics
     public function nodes(): array
     {
         if ($this->extensionAvailable) {
+            /** @var array{node_count: int, box_count: int, text_count: int, static_count: int, max_depth: int} */
             return \tui_get_node_metrics();
         }
 
@@ -129,6 +130,7 @@ class Metrics
     public function reconciler(): array
     {
         if ($this->extensionAvailable) {
+            /** @var array{diff_runs: int, creates: int, updates: int, deletes: int, replaces: int, reorders: int, total_ops: int, avg_ops_per_diff: float} */
             return \tui_get_reconciler_metrics();
         }
 
@@ -152,6 +154,7 @@ class Metrics
     public function render(): array
     {
         if ($this->extensionAvailable) {
+            /** @var array{render_count: int, layout_time_ms: float, buffer_time_ms: float, output_time_ms: float, total_render_time_ms: float, avg_render_ms: float, max_render_ms: float, min_render_ms: float} */
             return \tui_get_render_metrics();
         }
 
@@ -175,6 +178,7 @@ class Metrics
     public function loop(): array
     {
         if ($this->extensionAvailable) {
+            /** @var array{loop_iterations: int, input_events: int, resize_events: int, timer_fires: int} */
             return \tui_get_loop_metrics();
         }
 

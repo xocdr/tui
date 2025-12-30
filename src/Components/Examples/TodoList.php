@@ -35,6 +35,7 @@ class TodoList extends StatefulComponent
      */
     public function add(string $text): void
     {
+        /** @var array<array{id: string, text: string, completed: bool}> $items */
         $items = $this->state['items'];
         $items[] = [
             'id' => uniqid(),
@@ -50,7 +51,9 @@ class TodoList extends StatefulComponent
      */
     public function toggleCurrent(): void
     {
+        /** @var array<array{id: string, text: string, completed: bool}> $items */
         $items = $this->state['items'];
+        /** @var int $index */
         $index = $this->state['selectedIndex'];
 
         if (isset($items[$index])) {
@@ -64,7 +67,9 @@ class TodoList extends StatefulComponent
      */
     public function deleteCurrent(): void
     {
+        /** @var array<array{id: string, text: string, completed: bool}> $items */
         $items = $this->state['items'];
+        /** @var int $index */
         $index = $this->state['selectedIndex'];
 
         if (isset($items[$index])) {
@@ -95,8 +100,11 @@ class TodoList extends StatefulComponent
      */
     public function moveDown(): void
     {
+        /** @var int $index */
         $index = $this->state['selectedIndex'];
-        $maxIndex = count($this->state['items']) - 1;
+        /** @var array<array{id: string, text: string, completed: bool}> $items */
+        $items = $this->state['items'];
+        $maxIndex = count($items) - 1;
 
         if ($index < $maxIndex) {
             $this->setState(['selectedIndex' => $index + 1]);
@@ -110,6 +118,7 @@ class TodoList extends StatefulComponent
      */
     public function getItems(): array
     {
+        /** @var array<array{id: string, text: string, completed: bool}> */
         return $this->state['items'];
     }
 
@@ -118,13 +127,19 @@ class TodoList extends StatefulComponent
      */
     public function getCompletedCount(): int
     {
-        return count(array_filter($this->state['items'], fn ($item) => $item['completed']));
+        /** @var array<array{id: string, text: string, completed: bool}> $items */
+        $items = $this->state['items'];
+
+        return count(array_filter($items, fn (array $item): bool => $item['completed']));
     }
 
     public function render(): \Xocdr\Tui\Ext\Box
     {
+        /** @var string $title */
         $title = $this->prop('title', 'Todo List');
+        /** @var array<array{id: string, text: string, completed: bool}> $items */
         $items = $this->state['items'];
+        /** @var int $selectedIndex */
         $selectedIndex = $this->state['selectedIndex'];
         $completedCount = $this->getCompletedCount();
         $totalCount = count($items);

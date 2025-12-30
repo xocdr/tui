@@ -237,8 +237,12 @@ final readonly class Hooks implements HooksInterface
     {
         return [
             'copy' => fn (string $text, string $target = Clipboard::TARGET_CLIPBOARD): bool => Clipboard::copy($text, $target),
-            'request' => fn (string $target = Clipboard::TARGET_CLIPBOARD): null => (Clipboard::request($target) ?? null),
-            'clear' => fn (string $target = Clipboard::TARGET_CLIPBOARD): null => (Clipboard::clear($target) ?? null),
+            'request' => function (string $target = Clipboard::TARGET_CLIPBOARD): void {
+                Clipboard::request($target);
+            },
+            'clear' => function (string $target = Clipboard::TARGET_CLIPBOARD): void {
+                Clipboard::clear($target);
+            },
         ];
     }
 
@@ -526,13 +530,14 @@ final readonly class Hooks implements HooksInterface
             $setValue($from);
         };
 
-        $this->onRender(function () use ($isAnimating, $tween, $setValue, $setIsAnimating) {
+        $this->onRender(function () use ($isAnimating, $tween, $setValue) {
             if (!$isAnimating) {
                 return null;
             }
 
-            // Animation tick logic would go here
+            // Update value based on tween progress
             // In a real implementation, this would integrate with the event loop
+            $setValue($tween->getValue());
 
             return null;
         }, [$isAnimating]);

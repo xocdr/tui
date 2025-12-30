@@ -46,7 +46,9 @@ class StreamViewer extends StatefulComponent
      */
     public function appendText(string $text): void
     {
+        /** @var int $maxLines */
         $maxLines = $this->prop('maxLines', 100);
+        /** @var array<string> $lines */
         $lines = $this->state['lines'];
 
         // Split by newlines and add
@@ -70,7 +72,9 @@ class StreamViewer extends StatefulComponent
      */
     public function appendLine(string $line): void
     {
+        /** @var int $maxLines */
         $maxLines = $this->prop('maxLines', 100);
+        /** @var array<string> $lines */
         $lines = $this->state['lines'];
         $lines[] = $line;
 
@@ -109,8 +113,12 @@ class StreamViewer extends StatefulComponent
      */
     public function scrollDown(int $amount = 1): void
     {
-        $maxOffset = max(0, count($this->state['lines']) - $this->getVisibleLines());
-        $offset = min($maxOffset, $this->state['scrollOffset'] + $amount);
+        /** @var array<string> $lines */
+        $lines = $this->state['lines'];
+        /** @var int $currentOffset */
+        $currentOffset = $this->state['scrollOffset'];
+        $maxOffset = max(0, count($lines) - $this->getVisibleLines());
+        $offset = min($maxOffset, $currentOffset + $amount);
         $this->setState(['scrollOffset' => $offset]);
     }
 
@@ -119,8 +127,10 @@ class StreamViewer extends StatefulComponent
      */
     public function scrollToBottom(): void
     {
+        /** @var array<string> $lines */
+        $lines = $this->state['lines'];
         $this->setState([
-            'scrollOffset' => max(0, count($this->state['lines']) - $this->getVisibleLines()),
+            'scrollOffset' => max(0, count($lines) - $this->getVisibleLines()),
             'autoScroll' => true,
         ]);
     }
@@ -130,11 +140,15 @@ class StreamViewer extends StatefulComponent
      */
     public function toggleAutoScroll(): void
     {
-        $autoScroll = !$this->state['autoScroll'];
+        /** @var bool $currentAutoScroll */
+        $currentAutoScroll = $this->state['autoScroll'];
+        $autoScroll = !$currentAutoScroll;
         $state = ['autoScroll' => $autoScroll];
 
         if ($autoScroll) {
-            $state['scrollOffset'] = max(0, count($this->state['lines']) - $this->getVisibleLines());
+            /** @var array<string> $lines */
+            $lines = $this->state['lines'];
+            $state['scrollOffset'] = max(0, count($lines) - $this->getVisibleLines());
         }
 
         $this->setState($state);
@@ -165,12 +179,17 @@ class StreamViewer extends StatefulComponent
 
     public function render(): \Xocdr\Tui\Ext\Box
     {
+        /** @var string $title */
         $title = $this->prop('title', 'Stream');
+        /** @var int $height */
         $height = $this->prop('height', 10);
         $visibleLines = $this->getVisibleLines();
 
+        /** @var array<string> $lines */
         $lines = $this->state['lines'];
+        /** @var int $offset */
         $offset = $this->state['scrollOffset'];
+        /** @var bool $autoScroll */
         $autoScroll = $this->state['autoScroll'];
 
         // Auto-scroll to bottom when new content arrives

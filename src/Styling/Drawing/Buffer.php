@@ -32,7 +32,7 @@ class Buffer implements BufferInterface
 
     private bool $useNative;
 
-    public function __construct(int $width, int $height, bool $useNative = true)
+    public function __construct(int $width, int $height)
     {
         $this->width = $width;
         $this->height = $height;
@@ -279,9 +279,15 @@ class Buffer implements BufferInterface
         return $this;
     }
 
+    /**
+     * Render the buffer to an array of strings.
+     *
+     * @return array<string>
+     */
     public function render(): array
     {
         if ($this->useNative && $this->native !== null) {
+            /** @var array<string> */
             return tui_buffer_render($this->native);
         }
 

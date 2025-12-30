@@ -15,8 +15,16 @@ use Xocdr\Tui\Rendering\Lifecycle\ApplicationLifecycle;
  */
 class TimerManager implements TimerManagerInterface
 {
+    /**
+     * Maximum number of pending timers before warning.
+     * Helps detect potential memory issues from excessive timer queueing.
+     */
+    private const MAX_PENDING_TIMERS = 1000;
+
     /** @var array<array{interval: int, callback: callable}> Timers queued before ext-tui Instance is ready */
     private array $pendingTimers = [];
+
+    private bool $warningIssued = false;
 
     public function __construct(
         private readonly ApplicationLifecycle $lifecycle
@@ -47,6 +55,19 @@ class TimerManager implements TimerManagerInterface
         // Queue the timer to be registered after Instance is available
         // This happens when interval() is called during initial render
         $this->pendingTimers[] = ['interval' => $intervalMs, 'callback' => $callback];
+
+        // Check for potential runaway timer queueing
+        if (!$this->warningIssued && count($this->pendingTimers) > self::MAX_PENDING_TIMERS) {
+            $this->warningIssued = true;
+            trigger_error(
+                sprintf(
+                    'TimerManager has %d pending timers queued. This may indicate a bug. ' .
+                    'Timers queued before start() will be registered when the application starts.',
+                    count($this->pendingTimers)
+                ),
+                E_USER_WARNING
+            );
+        }
 
         // Return a placeholder ID (pending timers will get real IDs when flushed)
         return -1;

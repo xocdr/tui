@@ -187,10 +187,26 @@ class HookContext implements HookContextInterface
     }
 
     /**
-     * Compare two dependency arrays for equality.
+     * Compare two dependency arrays for equality using shallow comparison.
      *
-     * Uses strict comparison (!==) for each element. Handles edge cases
-     * where array keys might differ between prev and next.
+     * Uses strict comparison (!==) for each element. This is a SHALLOW
+     * comparison - objects and arrays are compared by reference only,
+     * not by their contents.
+     *
+     * Implications for users:
+     * - Primitive values (int, string, bool, float) work as expected
+     * - Objects are only "equal" if they are the exact same instance
+     * - Arrays are only "equal" if they are the exact same reference
+     * - New arrays/objects created each render will always trigger effects
+     *
+     * Example:
+     * ```php
+     * // This will re-run on every render (new array each time):
+     * $this->hooks()->onRender($effect, ['foo', 'bar']);
+     *
+     * // Better: use primitive values or memoize:
+     * $this->hooks()->onRender($effect, [$count, $name]);
+     * ```
      *
      * @param array<mixed> $prev Previous dependencies
      * @param array<mixed> $next Current dependencies

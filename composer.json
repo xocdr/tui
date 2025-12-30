@@ -30,7 +30,7 @@
     },
     "scripts": {
         "test": "phpunit",
-        "analyse": "phpstan analyse",
+        "analyse": "phpstan analyse --memory-limit=8G",
         "format": "pint",
         "format:check": "pint --test"
     },

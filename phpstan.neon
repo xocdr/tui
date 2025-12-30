@@ -1,5 +1,5 @@
 parameters:
-    level: 6
+    level: 9
     paths:
         - src
     treatPhpDocTypesAsCertain: false
@@ -12,3 +12,59 @@ parameters:
         - message: '#TuiInstance#'
         - message: '#TuiFocusEvent#'
         - message: '#tui_#'
+        # ext-tui Instance methods not visible to PHPStan
+        - message: '#Xocdr\\Tui\\Ext\\Instance::focus\(\)#'
+        - message: '#Xocdr\\Tui\\Ext\\Instance::getFocusedNode\(\)#'
+        - message: '#Xocdr\\Tui\\Ext\\Instance::getSize\(\)#'
+        - message: '#Xocdr\\Tui\\Ext\\Instance::getRootNode\(\)#'
+        # class_alias for StaticOutput
+        - message: '#StaticOutput not found#'
+        # Intentional for inheritance pattern
+        -
+            message: '#Unsafe usage of new static#'
+            path: src/Components/StatefulComponent.php
+        # Ref objects are stdClass with writable properties
+        - message: '#Property object\{current:.*\}::\$current is not writable#'
+        # ExtTestRenderer uses ext-tui methods
+        - message: '#Call to an undefined method.*ExtTestRenderer#'
+        # Properties stored for future/fallback use
+        - message: '#Property .* is never read, only written#'
+        # Mock classes don't need strict types
+        -
+            message: '#no value type specified in iterable type array#'
+            path: src/Support/Testing/*
+        # Mock return types may not match exactly
+        -
+            message: '#should return#'
+            path: src/Support/Testing/*
+        # Test case render method
+        -
+            message: '#HooksAwareInterface::render#'
+        # Snapshot code structure
+        -
+            message: '#Unreachable statement#'
+            path: src/Support/Testing/Snapshot.php
+        # Callable type with optional param
+        -
+            message: '#callable\(string, int=\)#'
+        # Color palette type
+        -
+            message: '#Color::\$palette type has no value type#'
+        # Color __callStatic parameter
+        -
+            message: '#Color::__callStatic.*no value type#'
+        # Inspector formatTreeNode
+        -
+            message: '#Inspector::formatTreeNode.*no value type#'
+        # MockKey is a test double that substitutes for \Xocdr\Tui\Ext\Key
+        - message: '#Xocdr\\Tui\\Ext\\Key\|Xocdr\\Tui\\Support\\Testing\\MockKey given#'
+        # Hooks::context() generic return - Container returns object that may need casting
+        -
+            message: '#Hooks::context\(\) should return T\|null#'
+            path: src/Hooks/Hooks.php
+        # MockHooks anonymous class properties - these are dynamic stdClass-like refs
+        -
+            message: '#Access to an undefined property object::\$current#'
+            path: src/Support/Testing/MockHooks.php
+        # ext-tui Color class has __toString but PHPStan doesn't see it
+        - message: '#Cannot cast Xocdr\\Tui\\Ext\\Color to string#'

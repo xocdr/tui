@@ -26,7 +26,7 @@ class Transform implements Component
     /** @var Component|string */
     private $child;
 
-    /** @var array<callable(string, int): string> */
+    /** @var array<callable(string, int=): string> */
     private array $transformers = [];
 
     /** @var array{from: string, to: string, mode: string}|null */
@@ -428,7 +428,7 @@ class Transform implements Component
     private function applyGradient(array $lines): array
     {
         $count = count($lines);
-        if ($count <= 1) {
+        if ($count <= 1 || $this->gradientConfig === null) {
             return $lines;
         }
 

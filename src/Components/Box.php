@@ -472,7 +472,7 @@ class Box extends AbstractContainerComponent
      */
     public function isFocusable(): bool
     {
-        return $this->style['focusable'] ?? false;
+        return (bool) ($this->style['focusable'] ?? false);
     }
 
     /**

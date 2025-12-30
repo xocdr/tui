@@ -99,6 +99,7 @@ class OutputManager implements OutputManagerInterface
     {
         $extInstance = $this->lifecycle->getTuiInstance();
         if ($extInstance !== null && method_exists($extInstance, 'measureElement')) {
+            /** @var array{x: int, y: int, width: int, height: int}|null */
             return $extInstance->measureElement($id);
         }
 

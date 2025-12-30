@@ -59,19 +59,23 @@ class Counter extends StatefulComponent
 
     public function getCount(): int
     {
+        /** @var int */
         return $this->state['count'];
     }
 
     public function render(): \Xocdr\Tui\Ext\Box
     {
+        /** @var string $label */
         $label = $this->prop('label', 'Count');
+        /** @var int $count */
+        $count = $this->state['count'];
 
         return Box::create()
             ->flexDirection('column')
             ->padding(1)
             ->border('round')
             ->children([
-                Text::create("{$label}: {$this->state['count']}"),
+                Text::create("{$label}: {$count}"),
                 Text::create(''),
                 Text::create('↑/↓ to change, r to reset'),
             ])

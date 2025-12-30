@@ -257,6 +257,12 @@ class Application implements InstanceInterface
         $this->hookContext->cleanup();
         HookRegistry::removeContext($this->id);
 
+        // Clean up event handlers to prevent memory leaks
+        $this->eventDispatcher->removeAll();
+
+        // Clear any pending timers that weren't flushed
+        $this->timerManager->clearPendingTimers();
+
         // Stop lifecycle
         $this->lifecycle->stop();
     }

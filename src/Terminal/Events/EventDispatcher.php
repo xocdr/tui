@@ -29,6 +29,9 @@ class EventDispatcher implements EventDispatcherInterface
     /**
      * Register an event handler.
      *
+     * Uses insertion-based ordering O(n) instead of sorting O(n log n)
+     * for better performance with many handlers.
+     *
      * @param string $event Event name
      * @param callable $handler Handler function
      * @param int $priority Higher priority = called first (default: 0)
@@ -42,16 +45,26 @@ class EventDispatcher implements EventDispatcherInterface
             $this->handlers[$event] = [];
         }
 
-        $this->handlers[$event][] = [
+        $entry = [
             'id' => $id,
             'handler' => $handler,
             'priority' => $priority,
         ];
 
-        // Sort by priority (higher first)
-        usort($this->handlers[$event], function ($a, $b) {
-            return $b['priority'] <=> $a['priority'];
-        });
+        // Insert in sorted position (higher priority first) - O(n)
+        $inserted = false;
+        $newHandlers = [];
+        foreach ($this->handlers[$event] as $existing) {
+            if (!$inserted && $priority > $existing['priority']) {
+                $newHandlers[] = $entry;
+                $inserted = true;
+            }
+            $newHandlers[] = $existing;
+        }
+        if (!$inserted) {
+            $newHandlers[] = $entry;
+        }
+        $this->handlers[$event] = $newHandlers;
 
         // Track which event this handler belongs to
         $this->handlerEventMap[$id] = $event;
