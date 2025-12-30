@@ -74,9 +74,23 @@ Text::create('HSL')
 
 ### Palette Colors (Tailwind-style)
 
-TUI includes the complete Tailwind color palette:
+TUI includes the complete Tailwind color palette. Use the unified `color()` and `bgColor()` methods with an optional shade parameter:
 
 ```php
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
+
+// Unified API - recommended
+Text::create('Palette')
+    ->color('blue', 500)        // Palette name + shade
+    ->bgColor('blue', 100);
+
+// Also works with Color enum + shade
+Text::create('Palette')
+    ->color(Color::Blue, 500)
+    ->bgColor(Color::Blue, 100);
+
+// Legacy methods (deprecated, use color()/bgColor() with shade instead)
 Text::create('Palette')
     ->palette('blue', 500)
     ->bgPalette('blue', 100);

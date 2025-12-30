@@ -79,70 +79,313 @@ class Text implements Component
         return $this;
     }
 
+    // Tailwind-like utility classes
+
+    /**
+     * Apply Tailwind-like utility classes.
+     *
+     * Accepts multiple arguments: strings, arrays, or callables.
+     *
+     * Supported utilities:
+     * - Text styles: bold, italic, underline, dim, strikethrough, inverse
+     * - Colors: text-{color}, text-{palette}-{shade}, bg-{color}, bg-{palette}-{shade}
+     * - Border: border-{color}, border-{palette}-{shade}
+     * - Bare colors: {color}, {palette}-{shade} (alias for text-{color})
+     *
+     * @example
+     * ->styles('bold text-green-500')
+     * ->styles('text-red bg-slate-900 underline')
+     * ->styles('red')  // Bare color alias for text-red
+     * ->styles('green-500')  // Bare palette alias for text-green-500
+     * ->styles('bold', 'italic', 'text-blue-500')  // Multiple string arguments
+     * ->styles(['bold', 'italic'], 'text-blue-500')  // Mixed arrays and strings
+     * ->styles(fn() => $isDark ? 'bg-slate-900' : 'bg-white')  // Callable
+     * ->styles(fn() => $status === 'active' ? 'green' : 'red')  // Dynamic bare colors
+     *
+     * @param string|array<string>|callable ...$classes Utility classes as strings, arrays, or callables
+     */
+    public function styles(string|array|callable ...$classes): self
+    {
+        foreach ($classes as $class) {
+            $this->applyStylesArgument($class);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Process a single styles() argument (string, array, or callable).
+     *
+     * @param string|array<mixed>|callable $argument
+     */
+    private function applyStylesArgument(mixed $argument): void
+    {
+        // Handle callable - call it and process the result
+        if (is_callable($argument)) {
+            $result = $argument();
+            if ($result !== null) {
+                $this->applyStylesArgument($result);
+            }
+            return;
+        }
+
+        // Handle array - process each element recursively
+        if (is_array($argument)) {
+            foreach ($argument as $item) {
+                if (is_array($item) || is_callable($item) || is_string($item)) {
+                    $this->applyStylesArgument($item);
+                }
+            }
+            return;
+        }
+
+        // Skip non-string values
+        if (!is_string($argument)) {
+            return;
+        }
+
+        // Handle string - split by whitespace and apply each utility
+        $utilities = preg_split('/\s+/', trim($argument), -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($utilities === false) {
+            return;
+        }
+
+        foreach ($utilities as $utility) {
+            $this->applyUtility($utility);
+        }
+    }
+
+    /**
+     * Apply a single utility class.
+     */
+    private function applyUtility(string $utility): void
+    {
+        // Text style utilities
+        $styleUtilities = [
+            'bold' => 'bold',
+            'italic' => 'italic',
+            'underline' => 'underline',
+            'dim' => 'dim',
+            'strikethrough' => 'strikethrough',
+            'inverse' => 'inverse',
+        ];
+
+        if (isset($styleUtilities[$utility])) {
+            $this->style[$styleUtilities[$utility]] = true;
+            return;
+        }
+
+        // Color utilities: text-{color} or text-{palette}-{shade}
+        if (str_starts_with($utility, 'text-')) {
+            $colorPart = substr($utility, 5);
+            $this->applyColorUtility($colorPart, 'color');
+            return;
+        }
+
+        // Background utilities: bg-{color} or bg-{palette}-{shade}
+        if (str_starts_with($utility, 'bg-')) {
+            $colorPart = substr($utility, 3);
+            $this->applyColorUtility($colorPart, 'bgColor');
+            return;
+        }
+
+        // Border color utilities: border-{color} or border-{palette}-{shade}
+        if (str_starts_with($utility, 'border-')) {
+            $colorPart = substr($utility, 7);
+            $this->applyColorUtility($colorPart, 'borderColor');
+            return;
+        }
+
+        // Bare color alias: treat as text color (e.g., 'red', 'green-500', 'coral')
+        // This allows ->styles('red') as shorthand for ->styles('text-red')
+        if ($this->isValidColor($utility)) {
+            $this->applyColorUtility($utility, 'color');
+        }
+    }
+
+    /**
+     * Check if a string is a valid color (custom color, CSS name, palette name, palette-shade, or hex).
+     */
+    private function isValidColor(string $value): bool
+    {
+        // Hex color
+        if (str_starts_with($value, '#')) {
+            return true;
+        }
+
+        // Custom color alias
+        if (ColorUtil::isCustomColor($value)) {
+            return true;
+        }
+
+        // Palette-shade format: "green-500"
+        if (preg_match('/^([a-z]+)-(\d+)$/i', $value, $matches)) {
+            return in_array(strtolower($matches[1]), ColorUtil::paletteNames());
+        }
+
+        // CSS color name
+        if (ColorUtil::css($value) !== null) {
+            return true;
+        }
+
+        // Palette name (without shade)
+        return in_array(strtolower($value), ColorUtil::paletteNames());
+    }
+
+    /**
+     * Apply a color utility to a specific style property.
+     *
+     * @param string $colorPart The color portion (e.g., "green", "green-500", "coral", "dusty-orange")
+     * @param string $property The style property to set ("color", "bgColor", "borderColor")
+     */
+    private function applyColorUtility(string $colorPart, string $property): void
+    {
+        // Check for custom color alias first
+        $customHex = ColorUtil::custom($colorPart);
+        if ($customHex !== null) {
+            $this->style[$property] = $customHex;
+            return;
+        }
+
+        // Check for palette-shade format: "green-500"
+        if (preg_match('/^([a-z]+)-(\d+)$/i', $colorPart, $matches)) {
+            $palette = strtolower($matches[1]);
+            $shade = (int) $matches[2];
+
+            // Verify it's a valid palette
+            if (in_array($palette, ColorUtil::paletteNames())) {
+                $hex = ColorUtil::palette($palette, $shade);
+                $this->style[$property] = $hex;
+                return;
+            }
+        }
+
+        // Try as palette name (prioritize over CSS names)
+        // Uses defaultShade() which finds the closest match to CSS color if applicable
+        if (in_array(strtolower($colorPart), ColorUtil::paletteNames())) {
+            $this->style[$property] = ColorUtil::palette($colorPart);
+            return;
+        }
+
+        // Try as CSS color name (coral, salmon, etc.)
+        $cssHex = ColorUtil::css($colorPart);
+        if ($cssHex !== null) {
+            $this->style[$property] = $cssHex;
+            return;
+        }
+
+        // If it looks like a hex color, use it directly
+        if (str_starts_with($colorPart, '#')) {
+            $this->style[$property] = $colorPart;
+        }
+    }
+
     // Colors
 
     /**
      * Set foreground color.
      *
-     * Accepts Color enum or hex string.
+     * Accepts Color enum, hex string, or palette name with optional shade.
      *
      * @example
-     * ->color(Color::Red)
-     * ->color(Color::Coral)
-     * ->color('#ff0000')
+     * ->color(Color::Red)           // Enum (backward compatible)
+     * ->color(Color::Red, 500)      // Palette with shade
+     * ->color('#ff0000')            // Hex color
+     * ->color('red', 500)           // Palette name with shade
+     * ->color('custom', 300)        // Custom palette with shade
      *
-     * @param Color|string|null $color Color enum or hex string
+     * @param Color|string|null $color Color enum, hex string, or palette name
+     * @param int|null $shade Shade level (50-950) for palette colors
      */
-    public function color(Color|string|null $color): self
+    public function color(Color|string|null $color, ?int $shade = null): self
     {
-        if ($color !== null) {
-            $this->style['color'] = $color instanceof Color ? $color->value : $color;
+        if ($color === null) {
+            return $this;
         }
+
+        $this->style['color'] = $this->resolveColor($color, $shade);
+
         return $this;
     }
 
     /**
      * Set background color.
      *
-     * Accepts Color enum or hex string.
+     * Accepts Color enum, hex string, or palette name with optional shade.
      *
      * @example
-     * ->bgColor(Color::Black)
-     * ->bgColor('#000000')
+     * ->bgColor(Color::Black)       // Enum (backward compatible)
+     * ->bgColor(Color::Blue, 100)   // Palette with shade
+     * ->bgColor('#000000')          // Hex color
+     * ->bgColor('slate', 100)       // Palette name with shade
      *
-     * @param Color|string|null $color Color enum or hex string
+     * @param Color|string|null $color Color enum, hex string, or palette name
+     * @param int|null $shade Shade level (50-950) for palette colors
      */
-    public function bgColor(Color|string|null $color): self
+    public function bgColor(Color|string|null $color, ?int $shade = null): self
     {
-        if ($color !== null) {
-            $this->style['bgColor'] = $color instanceof Color ? $color->value : $color;
+        if ($color === null) {
+            return $this;
         }
+
+        $this->style['bgColor'] = $this->resolveColor($color, $shade);
+
         return $this;
     }
 
-    // Tailwind-style palette colors
+    /**
+     * Resolve a color value to a hex string.
+     *
+     * @param Color|string $color Color enum, hex string, or palette name
+     * @param int|null $shade Shade level for palette colors
+     */
+    private function resolveColor(Color|string $color, ?int $shade): string
+    {
+        // If shade is provided, treat as palette lookup
+        if ($shade !== null) {
+            $paletteName = $color instanceof Color ? strtolower($color->name) : $color;
+
+            return ColorUtil::palette($paletteName, $shade);
+        }
+
+        // Color enum without shade - use enum value (backward compatible)
+        if ($color instanceof Color) {
+            return $color->value;
+        }
+
+        // Hex color - use as-is
+        if (str_starts_with($color, '#')) {
+            return $color;
+        }
+
+        // String without shade and not hex - treat as palette with default shade 500
+        return ColorUtil::palette($color, 500);
+    }
+
+    // Tailwind-style palette colors (deprecated, use color()/bgColor() with shade)
 
     /**
      * Set foreground color from palette with shade.
      *
-     * @example
-     * ->palette('red', 500)
-     * ->palette('blue', 300)
+     * @deprecated Use ->color('red', 500) instead
      *
      * @param string $name Color name (red, blue, emerald, etc.)
      * @param int $shade Shade level (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
      */
     public function palette(string $name, int $shade = 500): self
     {
-        return $this->color(ColorUtil::palette($name, $shade));
+        return $this->color($name, $shade);
     }
 
     /**
      * Set background color from palette with shade.
+     *
+     * @deprecated Use ->bgColor('slate', 100) instead
      */
     public function bgPalette(string $name, int $shade = 500): self
     {
-        return $this->bgColor(ColorUtil::palette($name, $shade));
+        return $this->bgColor($name, $shade);
     }
 
     // Custom RGB/HSL colors

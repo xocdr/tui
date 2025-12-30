@@ -92,6 +92,13 @@ Box::create()
 // Shortcuts
 Box::column([...]); // flexDirection('column')
 Box::row([...]);    // flexDirection('row')
+
+// Tailwind-like utility classes
+Box::create()
+    ->styles('border border-round border-blue-500')   // Border style + color
+    ->styles('bg-slate-900 p-2')                      // Background + padding
+    ->styles('flex-col items-center gap-1')           // Layout utilities
+    ->styles(fn() => $hasBorder ? 'border' : '');     // Conditional
 ```
 
 ### Text
@@ -108,14 +115,36 @@ Text::create('Hello World')
     ->strikethrough()
     ->dim()
     ->inverse()
-    ->color('#ff0000')     // Hex color
-    ->bgColor('#0000ff')   // Background color
-    ->wrap('word');        // 'word' | 'none'
+    ->color('#ff0000')        // Hex color
+    ->bgColor('#0000ff')      // Background color
+    ->color('blue', 500)      // Tailwind palette + shade
+    ->bgColor('slate', 100)   // Background palette + shade
+    ->wrap('word');           // 'word' | 'none'
 
 // Color shortcuts
 Text::create('Error')->red();
 Text::create('Success')->green();
 Text::create('Info')->blue()->bold();
+
+// Unified color API (accepts Color enum, hex, or palette name with shade)
+use Xocdr\Tui\Ext\Color;
+Text::create('Palette')->color('red', 500);           // Palette name + shade
+Text::create('Palette')->color(Color::Red, 500);      // Color enum + shade
+Text::create('Palette')->color(Color::Coral);         // CSS color via enum
+
+// Tailwind-like utility classes
+Text::create('Hello')
+    ->styles('bold text-green-500')                   // Multiple utilities
+    ->styles('text-red bg-slate-900 underline');      // Colors + styles
+
+// Bare colors as text color shorthand
+Text::create('Error')->styles('red');                 // Same as text-red
+Text::create('Success')->styles('green-500');         // Same as text-green-500
+
+// Dynamic styles with callables
+Text::create('Status')
+    ->styles(fn() => $active ? 'green' : 'red')       // Conditional styling
+    ->styles('bold', ['italic', 'underline']);        // Mixed arguments
 ```
 
 ### Other Components
@@ -406,6 +435,45 @@ $blue500 = Color::palette('blue', 500);  // '#3b82f6'
 $hex = Color::resolve('coral');           // CSS name
 $hex = Color::resolve('#ff0000');         // Hex passthrough
 $hex = Color::resolve('red-500');         // Tailwind palette
+
+// Custom color aliases
+Color::defineColor('dusty-orange', 'orange', 700);  // From palette + shade
+Color::defineColor('brand-primary', '#3498db');      // From hex
+Color::defineColor('accent', 'coral');               // From CSS name
+
+// Use custom colors anywhere
+Text::create('Hello')->styles('dusty-orange');
+Box::create()->styles('bg-brand-primary border-accent');
+$hex = Color::custom('dusty-orange');                // Get hex value
+Color::isCustomColor('brand-primary');               // true
+
+// Custom palettes (auto-generates shades 50-950)
+Color::define('brand', '#3498db');                   // Base color becomes 500
+Text::create('Hello')->color('brand', 300);          // Use lighter shade
+```
+
+### Gradients
+
+```php
+use Xocdr\Tui\Styling\Animation\Gradient;
+use Xocdr\Tui\Ext\Color;
+
+// Create gradient between colors (hex, palette, or Color enum)
+$gradient = Gradient::between('#ff0000', '#0000ff', 10);
+$gradient = Gradient::between(['red', 500], ['blue', 500], 10);
+$gradient = Gradient::between(Color::Red, Color::Blue, 10);
+
+// Fluent builder API
+$gradient = Gradient::from('red', 500)
+    ->to('blue', 300)
+    ->steps(10)
+    ->hsl()        // Use HSL interpolation (default: RGB)
+    ->circular()   // Make gradient loop back
+    ->build();
+
+// Get colors from gradient
+$colors = $gradient->getColors();  // Array of hex strings
+$color = $gradient->at(0.5);       // Color at position (0-1)
 ```
 
 ### Border Styles

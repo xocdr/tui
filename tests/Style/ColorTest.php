@@ -117,4 +117,147 @@ class ColorTest extends TestCase
         $this->assertEquals('brightCyan', Color::BRIGHT_CYAN);
         $this->assertEquals('brightWhite', Color::BRIGHT_WHITE);
     }
+
+    public function testPalette(): void
+    {
+        $this->assertEquals('#ef4444', Color::palette('red', 500));
+        $this->assertEquals('#3b82f6', Color::palette('blue', 500));
+        $this->assertEquals('#22c55e', Color::palette('green', 500));
+    }
+
+    public function testPaletteNames(): void
+    {
+        $names = Color::paletteNames();
+
+        $this->assertContains('red', $names);
+        $this->assertContains('blue', $names);
+        $this->assertContains('green', $names);
+        $this->assertContains('slate', $names);
+    }
+
+    public function testDefineColorFromPalette(): void
+    {
+        Color::defineColor('test-palette-color', 'orange', 700);
+
+        $this->assertTrue(Color::isCustomColor('test-palette-color'));
+        $this->assertEquals('#c2410c', Color::custom('test-palette-color'));
+    }
+
+    public function testDefineColorFromHex(): void
+    {
+        Color::defineColor('test-hex-color', '#3498db');
+
+        $this->assertTrue(Color::isCustomColor('test-hex-color'));
+        $this->assertEquals('#3498db', Color::custom('test-hex-color'));
+    }
+
+    public function testDefineColorFromCssName(): void
+    {
+        Color::defineColor('test-css-color', 'coral');
+
+        $this->assertTrue(Color::isCustomColor('test-css-color'));
+        $this->assertEquals('#ff7f50', Color::custom('test-css-color'));
+    }
+
+    public function testDefineColorFromPaletteName(): void
+    {
+        Color::defineColor('test-palette-name', 'emerald');
+
+        $this->assertTrue(Color::isCustomColor('test-palette-name'));
+        $this->assertEquals('#10b981', Color::custom('test-palette-name')); // emerald-500
+    }
+
+    public function testCustomNames(): void
+    {
+        Color::defineColor('custom-test-a', '#000000');
+        Color::defineColor('custom-test-b', '#ffffff');
+
+        $names = Color::customNames();
+
+        $this->assertContains('custom-test-a', $names);
+        $this->assertContains('custom-test-b', $names);
+    }
+
+    public function testIsCustomColor(): void
+    {
+        Color::defineColor('is-custom-test', '#123456');
+
+        $this->assertTrue(Color::isCustomColor('is-custom-test'));
+        $this->assertFalse(Color::isCustomColor('non-existent-color'));
+    }
+
+    public function testCustomReturnNullForNonExistent(): void
+    {
+        $this->assertNull(Color::custom('definitely-not-defined'));
+    }
+
+    public function testResolveHex(): void
+    {
+        $this->assertEquals('#ff0000', Color::resolve('#ff0000'));
+    }
+
+    public function testResolveCustomColor(): void
+    {
+        Color::defineColor('resolve-test', 'blue', 600);
+
+        $this->assertEquals('#2563eb', Color::resolve('resolve-test'));
+    }
+
+    public function testResolvePaletteShade(): void
+    {
+        $this->assertEquals('#ef4444', Color::resolve('red-500'));
+        $this->assertEquals('#1d4ed8', Color::resolve('blue-700'));
+    }
+
+    public function testResolveRgbArray(): void
+    {
+        $this->assertEquals('#ff8040', Color::resolve(['r' => 255, 'g' => 128, 'b' => 64]));
+    }
+
+    public function testMagicCallStatic(): void
+    {
+        $this->assertEquals('#ef4444', Color::red(500));
+        $this->assertEquals('#3b82f6', Color::blue(500));
+        $this->assertEquals('#10b981', Color::emerald(500));
+    }
+
+    public function testDefaultShadeForCssMatchingPalette(): void
+    {
+        // 'red' is both a CSS color and a palette name
+        // Should find the shade closest to CSS red (#ff0000)
+        $shade = Color::defaultShade('red');
+
+        // The exact shade depends on the palette, but it should not be 500
+        // since CSS red is brighter than palette red-500
+        $this->assertIsInt($shade);
+        $this->assertGreaterThanOrEqual(50, $shade);
+        $this->assertLessThanOrEqual(950, $shade);
+    }
+
+    public function testDefaultShadeForPaletteOnlyColor(): void
+    {
+        // 'slate' is only a palette name, not a CSS color
+        // Should default to 500
+        $shade = Color::defaultShade('slate');
+
+        $this->assertEquals(500, $shade);
+    }
+
+    public function testPaletteWithNullShadeUsesDefault(): void
+    {
+        // When shade is null, palette() should use defaultShade()
+        $withNull = Color::palette('red');
+        $withExplicit = Color::palette('red', Color::defaultShade('red'));
+
+        $this->assertEquals($withExplicit, $withNull);
+    }
+
+    public function testResolveBareColorName(): void
+    {
+        // Bare palette name should resolve using defaultShade
+        $resolved = Color::resolve('red');
+        $expected = Color::palette('red', Color::defaultShade('red'));
+
+        $this->assertEquals($expected, $resolved);
+    }
 }

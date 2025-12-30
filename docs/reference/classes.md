@@ -203,15 +203,20 @@ use Xocdr\Tui\Components\Text;
 // Creation
 Text::create('content')
 
-// Colors
-->color('#fff')
+// Colors - unified API accepts Color enum, hex, or palette name with optional shade
+->color('#fff')                  // Hex color
+->color(Color::Red)              // Color enum
+->color('blue', 500)             // Palette name + shade
+->color(Color::Blue, 500)        // Color enum + shade
 ->bgColor('#000')
+->bgColor(Color::Navy)
+->bgColor('slate', 100)
 ->rgb(255, 0, 0)
 ->bgRgb(0, 0, 0)
 ->hsl(180, 0.5, 0.5)
 ->bgHsl(0, 0, 0.2)
-->palette('blue', 500)
-->bgPalette('blue', 100)
+->palette('blue', 500)           // @deprecated - use ->color('blue', 500)
+->bgPalette('blue', 100)         // @deprecated - use ->bgColor('blue', 100)
 
 // Named colors
 ->red() / ->green() / ->blue() / ->yellow() / ->cyan() / ->magenta()
@@ -636,15 +641,24 @@ Tween::create($from, $to, $duration, $easing)
 
 ```php
 use Xocdr\Tui\Styling\Animation\Gradient;
+use Xocdr\Tui\Ext\Color;
 
 // Creation
 Gradient::create($stops, $steps)
-Gradient::between($from, $to, $steps)
 Gradient::rainbow($steps)
 Gradient::grayscale($steps)
 Gradient::heatmap($steps)
 Gradient::hueRotate($baseColor, $steps)   // Full 360° color wheel
 Gradient::fromPalette($name, $from, $to, $steps)  // Tailwind palette
+
+// Between two colors - supports Color enum, hex, or [color, shade] arrays
+Gradient::between('#ff0000', '#0000ff', 10)              // Hex colors
+Gradient::between(Color::Red, Color::Blue, 10)           // Color enum
+Gradient::between(['red', 500], ['blue', 300], 10)       // Palette + shade
+
+// Fluent builder with palette support
+Gradient::from('red', 500)->to('blue', 300)->steps(10)->build()
+Gradient::from(Color::Red, 400)->to(Color::Blue, 600)->steps(20)->hsl()->build()
 
 // Interpolation modes
 ->hsl()                        // HSL interpolation (smoother)
@@ -660,6 +674,26 @@ Gradient::fromPalette($name, $from, $to, $steps)  // Tailwind palette
 ->getColor($index)
 ->at($t)
 ->count()
+```
+
+### GradientBuilder
+
+```php
+use Xocdr\Tui\Styling\Animation\Gradient;
+
+// Create via Gradient::from()
+$gradient = Gradient::from('red', 500)
+    ->to('blue', 300)           // End color with optional shade
+    ->steps(10)                 // Number of gradient steps
+    ->hsl()                     // Use HSL interpolation
+    ->circular()                // Make it loop
+    ->build();                  // Returns Gradient instance
+
+// Or get colors directly
+$colors = Gradient::from(Color::Emerald, 400)
+    ->to(Color::Purple, 600)
+    ->steps(20)
+    ->getColors();              // Returns array of hex colors
 ```
 
 ---

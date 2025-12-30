@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Components;
 
 use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Styling\Style\Color as ColorUtil;
 use Xocdr\Tui\Styling\Style\Style;
 
 /**
@@ -64,6 +65,263 @@ class Box extends AbstractContainerComponent
     public static function row(array $children = []): self
     {
         return self::create()->flexDirection('row')->children($children);
+    }
+
+    // Tailwind-like utility classes
+
+    /**
+     * Apply Tailwind-like utility classes.
+     *
+     * Accepts multiple arguments: strings, arrays, or callables.
+     *
+     * Supported utilities:
+     * - Background: bg-{color}, bg-{palette}-{shade}
+     * - Border style: border, border-single, border-double, border-round, border-bold
+     * - Border color: border-{color}, border-{palette}-{shade}
+     * - Padding: p-{n}, px-{n}, py-{n}, pt-{n}, pb-{n}, pl-{n}, pr-{n}
+     * - Margin: m-{n}, mx-{n}, my-{n}, mt-{n}, mb-{n}, ml-{n}, mr-{n}
+     * - Gap: gap-{n}
+     * - Flex: flex-row, flex-col, items-center, items-start, items-end,
+     *         justify-center, justify-start, justify-end, justify-between
+     *
+     * @example
+     * ->styles('border border-round border-blue-500')
+     * ->styles('bg-slate-900 p-2')
+     * ->styles('flex-col', 'items-center', 'gap-1')  // Multiple string arguments
+     * ->styles(['border-round', 'border-blue-500'], 'p-2')  // Mixed arrays and strings
+     * ->styles(fn() => $hasBorder ? 'border border-round' : '')  // Callable
+     *
+     * @param string|array<string>|callable ...$classes Utility classes as strings, arrays, or callables
+     */
+    public function styles(string|array|callable ...$classes): self
+    {
+        foreach ($classes as $class) {
+            $this->applyStylesArgument($class);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Process a single styles() argument (string, array, or callable).
+     *
+     * @param string|array<mixed>|callable $argument
+     */
+    private function applyStylesArgument(mixed $argument): void
+    {
+        // Handle callable - call it and process the result
+        if (is_callable($argument)) {
+            $result = $argument();
+            if ($result !== null) {
+                $this->applyStylesArgument($result);
+            }
+            return;
+        }
+
+        // Handle array - process each element recursively
+        if (is_array($argument)) {
+            foreach ($argument as $item) {
+                if (is_array($item) || is_callable($item) || is_string($item)) {
+                    $this->applyStylesArgument($item);
+                }
+            }
+            return;
+        }
+
+        // Skip non-string values
+        if (!is_string($argument)) {
+            return;
+        }
+
+        // Handle string - split by whitespace and apply each utility
+        $utilities = preg_split('/\s+/', trim($argument), -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($utilities === false) {
+            return;
+        }
+
+        foreach ($utilities as $utility) {
+            $this->applyBoxUtility($utility);
+        }
+    }
+
+    /**
+     * Apply a single utility class.
+     */
+    private function applyBoxUtility(string $utility): void
+    {
+        // Border style shortcuts
+        $borderStyles = [
+            'border' => 'single',
+            'border-single' => 'single',
+            'border-1' => 'single',
+            'border-double' => 'double',
+            'border-2' => 'double',
+            'border-round' => 'round',
+            'border-rounded' => 'round',
+            'border-bold' => 'bold',
+        ];
+
+        if (isset($borderStyles[$utility])) {
+            $this->border($borderStyles[$utility]);
+            return;
+        }
+
+        // Flex direction
+        if ($utility === 'flex-row') {
+            $this->flexDirection('row');
+            return;
+        }
+        if ($utility === 'flex-col' || $utility === 'flex-column') {
+            $this->flexDirection('column');
+            return;
+        }
+
+        // Align items
+        $alignMap = [
+            'items-start' => 'flex-start',
+            'items-center' => 'center',
+            'items-end' => 'flex-end',
+            'items-stretch' => 'stretch',
+        ];
+        if (isset($alignMap[$utility])) {
+            $this->alignItems($alignMap[$utility]);
+            return;
+        }
+
+        // Justify content
+        $justifyMap = [
+            'justify-start' => 'flex-start',
+            'justify-center' => 'center',
+            'justify-end' => 'flex-end',
+            'justify-between' => 'space-between',
+            'justify-around' => 'space-around',
+            'justify-evenly' => 'space-evenly',
+        ];
+        if (isset($justifyMap[$utility])) {
+            $this->justifyContent($justifyMap[$utility]);
+            return;
+        }
+
+        // Gap: gap-{n}
+        if (preg_match('/^gap-(\d+)$/', $utility, $matches)) {
+            $this->gap((int) $matches[1]);
+            return;
+        }
+
+        // Padding utilities
+        if ($this->applySpacingUtility($utility, 'p', 'padding')) {
+            return;
+        }
+
+        // Margin utilities
+        if ($this->applySpacingUtility($utility, 'm', 'margin')) {
+            return;
+        }
+
+        // Background: bg-{color} or bg-{palette}-{shade}
+        if (str_starts_with($utility, 'bg-')) {
+            $colorPart = substr($utility, 3);
+            $hex = $this->resolveColorUtility($colorPart);
+            if ($hex !== null) {
+                $this->style['bgColor'] = $hex;
+            }
+            return;
+        }
+
+        // Border color: border-{color} or border-{palette}-{shade}
+        // (only if not matching a border style above)
+        if (str_starts_with($utility, 'border-') && !isset($borderStyles[$utility])) {
+            $colorPart = substr($utility, 7);
+            $hex = $this->resolveColorUtility($colorPart);
+            if ($hex !== null) {
+                $this->borderColor($hex);
+            }
+        }
+    }
+
+    /**
+     * Apply spacing utility (padding or margin).
+     *
+     * @return bool True if the utility was handled
+     */
+    private function applySpacingUtility(string $utility, string $prefix, string $property): bool
+    {
+        // Full: p-{n} / m-{n}
+        if (preg_match('/^' . $prefix . '-(\d+)$/', $utility, $matches)) {
+            $this->{$property}((int) $matches[1]);
+            return true;
+        }
+
+        // X axis: px-{n} / mx-{n}
+        if (preg_match('/^' . $prefix . 'x-(\d+)$/', $utility, $matches)) {
+            $method = $property . 'X';
+            $this->{$method}((int) $matches[1]);
+            return true;
+        }
+
+        // Y axis: py-{n} / my-{n}
+        if (preg_match('/^' . $prefix . 'y-(\d+)$/', $utility, $matches)) {
+            $method = $property . 'Y';
+            $this->{$method}((int) $matches[1]);
+            return true;
+        }
+
+        // Individual sides: pt-{n}, pb-{n}, pl-{n}, pr-{n} / mt-{n}, etc.
+        $sides = ['t' => 'Top', 'b' => 'Bottom', 'l' => 'Left', 'r' => 'Right'];
+        foreach ($sides as $short => $full) {
+            if (preg_match('/^' . $prefix . $short . '-(\d+)$/', $utility, $matches)) {
+                $method = $property . $full;
+                $this->{$method}((int) $matches[1]);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Resolve a color utility to a hex string.
+     *
+     * @param string $colorPart The color portion (e.g., "green", "green-500", "coral", "dusty-orange")
+     * @return string|null Hex color or null if not resolved
+     */
+    private function resolveColorUtility(string $colorPart): ?string
+    {
+        // Check for custom color alias first
+        $customHex = ColorUtil::custom($colorPart);
+        if ($customHex !== null) {
+            return $customHex;
+        }
+
+        // Check for palette-shade format: "green-500"
+        if (preg_match('/^([a-z]+)-(\d+)$/i', $colorPart, $matches)) {
+            $palette = strtolower($matches[1]);
+            $shade = (int) $matches[2];
+
+            if (in_array($palette, ColorUtil::paletteNames())) {
+                return ColorUtil::palette($palette, $shade);
+            }
+        }
+
+        // Try as palette name (prioritize over CSS names)
+        // Uses defaultShade() which finds the closest match to CSS color if applicable
+        if (in_array(strtolower($colorPart), ColorUtil::paletteNames())) {
+            return ColorUtil::palette($colorPart);
+        }
+
+        // Try as CSS color name (coral, salmon, etc.)
+        $cssHex = ColorUtil::css($colorPart);
+        if ($cssHex !== null) {
+            return $cssHex;
+        }
+
+        // If it looks like a hex color, use it directly
+        if (str_starts_with($colorPart, '#')) {
+            return $colorPart;
+        }
+
+        return null;
     }
 
     // Layout properties

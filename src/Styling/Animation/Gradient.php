@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Styling\Animation;
 
-use Xocdr\Tui\Styling\Style\Color;
+use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Styling\Style\Color as ColorUtil;
 
 /**
  * Color gradient generator.
@@ -54,7 +55,7 @@ class Gradient
     public function __construct(array $stops, int $steps)
     {
         // Resolve color names to hex
-        $this->stops = array_map(fn ($c) => Color::resolve($c), $stops);
+        $this->stops = array_map(fn ($c) => ColorUtil::resolve($c), $stops);
         $this->steps = max(2, $steps);
     }
 
@@ -70,10 +71,62 @@ class Gradient
 
     /**
      * Create a gradient between two colors.
+     *
+     * Accepts hex strings, Color enum, or palette name with shade.
+     *
+     * @example
+     * Gradient::between('#ff0000', '#0000ff', 10)
+     * Gradient::between(Color::Red, Color::Blue, 10)
+     * Gradient::between(['red', 500], ['blue', 300], 10)
+     *
+     * @param string|Color|array{0: string|Color, 1: int} $from Start color
+     * @param string|Color|array{0: string|Color, 1: int} $to End color
      */
-    public static function between(string $from, string $to, int $steps): self
+    public static function between(string|Color|array $from, string|Color|array $to, int $steps): self
     {
-        return new self([$from, $to], $steps);
+        return new self([self::resolveColorArg($from), self::resolveColorArg($to)], $steps);
+    }
+
+    /**
+     * Start building a gradient from a color.
+     *
+     * @example
+     * Gradient::from('red', 500)->to('blue', 300)->steps(10)
+     * Gradient::from(Color::Red)->to(Color::Blue)->steps(10)
+     *
+     * @param string|Color $color Color (hex, name, or enum)
+     * @param int|null $shade Optional shade for palette colors
+     */
+    public static function from(string|Color $color, ?int $shade = null): GradientBuilder
+    {
+        return new GradientBuilder(self::resolveColorArg($shade !== null ? [$color, $shade] : $color));
+    }
+
+    /**
+     * Resolve a color argument to a hex string.
+     *
+     * @param string|Color|array{0: string|Color, 1: int} $color
+     */
+    private static function resolveColorArg(string|Color|array $color): string
+    {
+        // Array format: ['palette', shade] or [Color::Red, shade]
+        if (is_array($color)) {
+            $name = $color[0] instanceof Color ? strtolower($color[0]->name) : $color[0];
+            return ColorUtil::palette($name, $color[1]);
+        }
+
+        // Color enum
+        if ($color instanceof Color) {
+            return $color->value;
+        }
+
+        // Hex string - use as-is
+        if (str_starts_with($color, '#')) {
+            return $color;
+        }
+
+        // CSS color name or palette name without shade - resolve
+        return ColorUtil::resolve($color);
     }
 
     /**
@@ -129,8 +182,8 @@ class Gradient
      */
     public static function hueRotate(string $baseColor, int $steps): self
     {
-        $hex = Color::resolve($baseColor);
-        $hsl = Color::hexToHsl($hex);
+        $hex = ColorUtil::resolve($baseColor);
+        $hsl = ColorUtil::hexToHsl($hex);
 
         // Generate colors around the hue wheel
         $stops = [];
@@ -138,7 +191,7 @@ class Gradient
 
         for ($i = 0; $i < $numStops; $i++) {
             $hue = fmod($hsl['h'] + ($i * 360 / $numStops), 360);
-            $stops[] = Color::hslToHex($hue, $hsl['s'], $hsl['l']);
+            $stops[] = ColorUtil::hslToHex($hue, $hsl['s'], $hsl['l']);
         }
 
         $gradient = new self($stops, $steps);
@@ -158,8 +211,8 @@ class Gradient
      */
     public static function fromPalette(string $paletteName, int $fromShade, int $toShade, int $steps): self
     {
-        $from = Color::palette($paletteName, $fromShade);
-        $to = Color::palette($paletteName, $toShade);
+        $from = ColorUtil::palette($paletteName, $fromShade);
+        $to = ColorUtil::palette($paletteName, $toShade);
 
         return new self([$from, $to], $steps);
     }
@@ -365,7 +418,7 @@ class Gradient
 
         $stopCount = count($stops);
         $colors = [];
-        $lerpFn = $this->useHsl ? [Color::class, 'lerpHsl'] : [Color::class, 'lerp'];
+        $lerpFn = $this->useHsl ? [ColorUtil::class, 'lerpHsl'] : [ColorUtil::class, 'lerp'];
 
         // Try native function if available and not using HSL
         if (!$this->useHsl && !$this->isCircular && function_exists('tui_gradient')) {

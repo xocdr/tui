@@ -79,14 +79,14 @@ class ColorPaletteDemo implements Component, HooksAwareInterface
         $rows = [];
 
         // Title
-        $rows[] = Text::create('Tailwind-style Color Palette')->bold()->palette('sky', 400);
+        $rows[] = Text::create('Tailwind-style Color Palette')->bold()->color('sky', 400);
         $rows[] = Text::create('← → to change palette, q to quit')->dim();
         $rows[] = Newline::create();
 
         // Current palette name
         $rows[] = Box::row([
             Text::create('Palette: ')->dim(),
-            Text::create($currentPalette)->bold()->palette($currentPalette, 500),
+            Text::create($currentPalette)->bold()->color($currentPalette, 500),
             Text::create(' (' . ($paletteIndex + 1) . '/' . count($palettes) . ')')->dim(),
         ]);
         $rows[] = Newline::create();
@@ -97,7 +97,7 @@ class ColorPaletteDemo implements Component, HooksAwareInterface
         $swatchRow = [];
         foreach ($shades as $shade) {
             $swatchRow[] = Text::create(' ' . str_pad((string) $shade, 4) . ' ')
-                ->bgPalette($currentPalette, $shade)
+                ->bgColor($currentPalette, $shade)
                 ->color($shade < 500 ? '#000000' : '#ffffff');
         }
         $rows[] = Box::row($swatchRow);
@@ -109,23 +109,23 @@ class ColorPaletteDemo implements Component, HooksAwareInterface
             $rows[] = Box::row([
                 Text::create(str_pad((string) $shade, 4))->dim(),
                 Text::create(' The quick brown fox jumps over the lazy dog')
-                    ->palette($currentPalette, $shade),
+                    ->color($currentPalette, $shade),
             ]);
         }
         $rows[] = Newline::create();
 
         // Usage examples
         $rows[] = Text::create('Usage:')->bold();
-        $rows[] = Text::create("  Text::create('Hello')->palette('$currentPalette', 500)")->palette('zinc', 400);
-        $rows[] = Text::create("  Text::create('Hello')->bgPalette('$currentPalette', 100)")->palette('zinc', 400);
-        $rows[] = Text::create("  Color::palette('$currentPalette', 500)  // Returns hex")->palette('zinc', 400);
-        $rows[] = Text::create("  Color::$currentPalette(500)             // Shorthand")->palette('zinc', 400);
+        $rows[] = Text::create("  Text::create('Hello')->color('$currentPalette', 500)")->color('zinc', 400);
+        $rows[] = Text::create("  Text::create('Hello')->bgColor('$currentPalette', 100)")->color('zinc', 400);
+        $rows[] = Text::create("  Color::palette('$currentPalette', 500)  // Returns hex")->color('zinc', 400);
+        $rows[] = Text::create("  Color::$currentPalette(500)             // Shorthand")->color('zinc', 400);
         $rows[] = Newline::create();
 
         // Custom palette definition
         $rows[] = Text::create('Define custom palettes:')->bold();
-        $rows[] = Text::create("  Color::define('brand', '#e3855a');  // Auto-generate shades")->palette('zinc', 400);
-        $rows[] = Text::create("  Color::define('custom', '#ff6b6b', [50 => '...', ...]);")->palette('zinc', 400);
+        $rows[] = Text::create("  Color::define('brand', '#e3855a');  // Auto-generate shades")->color('zinc', 400);
+        $rows[] = Text::create("  Color::define('custom', '#ff6b6b', [50 => '...', ...]);")->color('zinc', 400);
 
         return Box::column($rows);
     }

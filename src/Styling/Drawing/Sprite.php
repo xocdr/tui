@@ -172,6 +172,23 @@ class Sprite implements SpriteInterface
         }
     }
 
+    /**
+     * Advance to the next frame.
+     */
+    public function advance(): void
+    {
+        $frames = $this->getCurrentFrames();
+        if (empty($frames)) {
+            return;
+        }
+
+        $this->currentFrame++;
+        if ($this->currentFrame >= count($frames)) {
+            $this->currentFrame = $this->loop ? 0 : count($frames) - 1;
+        }
+        $this->frameTime = 0;
+    }
+
     public function setPosition(int $x, int $y): void
     {
         $this->x = $x;

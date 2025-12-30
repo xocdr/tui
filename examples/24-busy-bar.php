@@ -8,6 +8,7 @@
  * - Creating busy/loading bars
  * - HSL mode: from-to color with rainbow interpolation
  * - RGB mode: array of colors with calculated values in between
+ * - Palette mode: using Tailwind palette colors with shades
  * - Auto-animating using interval
  * - Moving gradient effect (like Claude Code/exocoder streaming indicator)
  *
@@ -25,6 +26,7 @@ use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Ext\Color as ExtColor;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Styling\Style\Color;
 use Xocdr\Tui\Tui;
 
@@ -138,6 +140,53 @@ function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true):
     return Box::row($blocks);
 }
 
+/**
+ * Render a palette-based gradient bar using Gradient::from() fluent builder.
+ * Uses Tailwind palette colors with shades for consistent styling.
+ *
+ * @param int $width Bar width in characters
+ * @param int $frame Current animation frame
+ * @param string $fromPalette Start palette name (e.g., 'red', 'blue')
+ * @param int $fromShade Start shade (50-950)
+ * @param string $toPalette End palette name
+ * @param int $toShade End shade
+ */
+function renderPaletteBar(int $width, int $frame, string $fromPalette, int $fromShade, string $toPalette, int $toShade): Box
+{
+    $blocks = [];
+
+    // Create gradient using fluent builder with palette colors
+    $gradient = Gradient::from($fromPalette, $fromShade)
+        ->to($toPalette, $toShade)
+        ->steps($width)
+        ->hsl()
+        ->circular()  // Makes the gradient loop seamlessly
+        ->build();
+
+    $colors = $gradient->getColors();
+
+    for ($i = 0; $i < $width; $i++) {
+        // Calculate position with phase offset for animation
+        $phase = (abs($frame) % 100) / 100.0;
+        if ($frame < 0) {
+            $phase = 1.0 - $phase;
+        }
+        $colorIdx = (int) (fmod(($i / $width) + $phase, 1.0) * count($colors)) % count($colors);
+
+        // Create wave intensity effect
+        $pos = fmod(($i / $width) + $phase, 1.0);
+        $intensity = (sin($pos * M_PI * 2) + 1) / 2;
+
+        // Vary brightness based on wave intensity
+        $hsl = Color::hexToHsl($colors[$colorIdx]);
+        $l = 0.2 + $hsl['l'] * 0.5 + $intensity * 0.3;
+        $finalColor = Color::hslToHex($hsl['h'], $hsl['s'], min(1.0, $l));
+
+        $blocks[] = Text::create('━')->color($finalColor);
+    }
+    return Box::row($blocks);
+}
+
 class BusyBarDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
@@ -189,6 +238,16 @@ class BusyBarDemo implements Component, HooksAwareInterface
             Box::create()->padding(0, 2)->children([renderRgbBar(50, -$frame, $purpleGradient)]),
             Text::create('  Fire:'),
             Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $fireGradient)]),
+            Text::create(''),
+
+            // Palette Mode - Using Tailwind palette colors
+            Text::create('Palette Mode (Tailwind colors with Gradient::from() builder):')->bold(),
+            Text::create('  red-500 -> blue-500:'),
+            Box::create()->padding(0, 2)->children([renderPaletteBar(50, $frame, 'red', 500, 'blue', 500)]),
+            Text::create('  emerald-300 -> violet-600:'),
+            Box::create()->padding(0, 2)->children([renderPaletteBar(50, -$frame, 'emerald', 300, 'violet', 600)]),
+            Text::create('  amber-400 -> rose-500:'),
+            Box::create()->padding(0, 2)->children([renderPaletteBar(50, $frame * 2, 'amber', 400, 'rose', 500)]),
             Text::create(''),
 
             Text::create('Press ESC to exit.')->dim(),

@@ -32,21 +32,32 @@ if (!Tui::isInteractive()) {
     exit(1);
 }
 
-// Create a table
-$table = Table::create(['Name', 'Age', 'City', 'Score'])
+// Create a basic table
+$table1 = Table::create(['Name', 'Age', 'City', 'Score'])
     ->addRow(['Alice', 28, 'New York', 95.5])
     ->addRow(['Bob', 34, 'Los Angeles', 87.2])
     ->addRow(['Charlie', 22, 'Chicago', 92.8])
-    ->addRow(['Diana', 31, 'Houston', 88.9])
-    ->addRow(['Eve', 27, 'Phoenix', 91.3])
     ->setAlign(1, true)  // Right-align Age
     ->setAlign(3, true); // Right-align Score
+
+// Create a second table with double borders
+$table2 = Table::create(['Product', 'Price', 'Stock'])
+    ->addRow(['Widget', '$19.99', 150])
+    ->addRow(['Gadget', '$49.99', 42])
+    ->addRow(['Gizmo', '$9.99', 500])
+    ->border('double')
+    ->setAlign(1, true)  // Right-align Price
+    ->setAlign(2, true); // Right-align Stock
 
 class TableDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function __construct(private Table $table)
+    /**
+     * @param Table $table1
+     * @param Table $table2
+     */
+    public function __construct(private Table $table1, private Table $table2)
     {
     }
 
@@ -60,18 +71,36 @@ class TableDemo implements Component, HooksAwareInterface
             }
         });
 
-        $lines = $this->table->render();
+        $lines1 = $this->table1->toLines();
+        $lines2 = $this->table2->toLines();
+
+        // Render first table with bold header
+        $table1Texts = [];
+        foreach ($lines1 as $i => $line) {
+            $text = Text::create($line);
+            if ($i === 1) { // Header row
+                $text = $text->bold();
+            }
+            $table1Texts[] = $text;
+        }
+
+        // Render second table (plain)
+        $table2Texts = array_map(fn ($line) => Text::create($line), $lines2);
 
         return Box::column([
             Text::create('Table Component Demo')->bold()->color(Color::Cyan),
             Text::create(''),
-            ...array_map(fn ($line) => Text::create($line), $lines),
+            Text::create('Single border:')->dim(),
+            ...$table1Texts,
             Text::create(''),
-            Text::create('Features: headers, alignment, borders')->dim(),
+            Text::create('Double border:')->dim(),
+            ...$table2Texts,
+            Text::create(''),
+            Text::create('Features: headers, alignment, border styles, colors')->dim(),
             Text::create('Press ESC to exit.')->dim(),
         ]);
     }
 }
 
-$instance = Tui::render(new TableDemo($table));
+$instance = Tui::render(new TableDemo($table1, $table2));
 $instance->waitUntilExit();

@@ -151,6 +151,7 @@ class ApplicationLifecycle
             return null;
         }
 
+        /** @var array{width: int, height: int, columns: int, rows: int} */
         return $this->extInstance->getSize();
     }
 }

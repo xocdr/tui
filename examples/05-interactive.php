@@ -38,25 +38,56 @@ class InteractiveDemo implements Component, HooksAwareInterface
     {
         [$lastKey, $setLastKey] = $this->hooks()->state('(none)');
         [$keyCount, $setKeyCount] = $this->hooks()->state(0);
+        [$modifierState, $setModifierState] = $this->hooks()->state([
+            'ctrl' => false,
+            'alt' => false,
+            'shift' => false,
+            'meta' => false,
+        ]);
+        [$keyName, $setKeyName] = $this->hooks()->state('');
+        [$rawInput, $setRawInput] = $this->hooks()->state('');
         $app = $this->hooks()->app();
 
-        $this->hooks()->onInput(function (string $input, $key) use ($setLastKey, $setKeyCount, $app) {
-            // Build key description
-            $desc = [];
+        $this->hooks()->onInput(function (string $input, $key) use ($setLastKey, $setKeyCount, $setModifierState, $setKeyName, $setRawInput, $app) {
+            // Store modifier states
+            $setModifierState([
+                'ctrl' => $key->ctrl,
+                'alt' => $key->alt,
+                'shift' => $key->shift,
+                'meta' => $key->meta ?? false,
+            ]);
+
+            // Store key name and raw input
+            $setKeyName($key->name ?? '');
+            $setRawInput($input);
+
+            // Build key description with modifiers
+            $modifiers = [];
             if ($key->ctrl) {
-                $desc[] = 'Ctrl';
+                $modifiers[] = 'CTRL';
             }
             if ($key->alt) {
-                $desc[] = 'Alt';
+                $modifiers[] = 'ALT';
             }
             if ($key->shift) {
-                $desc[] = 'Shift';
+                $modifiers[] = 'SHIFT';
+            }
+            if ($key->meta ?? false) {
+                $modifiers[] = 'META';
             }
 
+            // Build the key part
+            $keyPart = '';
             if ($key->name !== '') {
-                $desc[] = ucfirst($key->name);
+                $keyPart = strtoupper($key->name);
             } elseif ($input !== '') {
-                $desc[] = $input;
+                $keyPart = $input;
+            }
+
+            // Combine modifiers and key
+            $desc = $modifiers;
+            if ($keyPart !== '') {
+                $desc[] = $keyPart;
             }
 
             $setLastKey(implode('+', $desc) ?: $input);
@@ -67,6 +98,12 @@ class InteractiveDemo implements Component, HooksAwareInterface
                 $app['exit'](0);
             }
         });
+
+        // Format modifier display
+        $ctrlColor = $modifierState['ctrl'] ? Color::Green : Color::Red;
+        $altColor = $modifierState['alt'] ? Color::Green : Color::Red;
+        $shiftColor = $modifierState['shift'] ? Color::Green : Color::Red;
+        $metaColor = $modifierState['meta'] ? Color::Green : Color::Red;
 
         return Box::column([
             Text::create('=== Interactive Input Demo ===')->bold()->color(Color::Cyan),
@@ -85,11 +122,37 @@ class InteractiveDemo implements Component, HooksAwareInterface
             ]),
             Newline::create(),
 
-            Text::create('Special keys to try:')->dim(),
-            Text::create('  - Arrow keys (up, down, left, right)')->dim(),
-            Text::create('  - Ctrl+key combinations')->dim(),
-            Text::create('  - Shift+key combinations')->dim(),
+            Text::create('Key details:')->bold(),
+            Box::row([
+                Text::create('  Raw input: ')->dim(),
+                Text::create($rawInput !== '' ? "'" . $rawInput . "'" : '(empty)')->color(Color::Magenta),
+            ]),
+            Box::row([
+                Text::create('  Key name:  ')->dim(),
+                Text::create($keyName !== '' ? $keyName : '(none)')->color(Color::Cyan),
+            ]),
+            Newline::create(),
+
+            Text::create('Modifier flags:')->bold(),
+            Box::row([
+                Text::create('  CTRL:  ')->dim(),
+                Text::create($modifierState['ctrl'] ? 'YES' : 'no')->color($ctrlColor),
+                Text::create('   ALT:   ')->dim(),
+                Text::create($modifierState['alt'] ? 'YES' : 'no')->color($altColor),
+            ]),
+            Box::row([
+                Text::create('  SHIFT: ')->dim(),
+                Text::create($modifierState['shift'] ? 'YES' : 'no')->color($shiftColor),
+                Text::create('   META:  ')->dim(),
+                Text::create($modifierState['meta'] ? 'YES' : 'no')->color($metaColor),
+            ]),
+            Newline::create(),
+
+            Text::create('Try these combinations:')->dim(),
+            Text::create('  - Ctrl+A, Ctrl+C, Ctrl+L')->dim(),
+            Text::create('  - Arrow keys (UP, DOWN, LEFT, RIGHT)')->dim(),
             Text::create('  - Tab, Enter, Escape, Backspace')->dim(),
+            Text::create('  - Shift+Arrow (may show SHIFT flag)')->dim(),
         ]);
     }
 }

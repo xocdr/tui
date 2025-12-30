@@ -143,7 +143,8 @@ tui/
 │   │   │   └── Border.php             # Border style constants
 │   │   ├── Animation/
 │   │   │   ├── Easing.php             # 27+ easing functions
-│   │   │   ├── Gradient.php           # Color gradients
+│   │   │   ├── Gradient.php           # Color gradients (with palette support)
+│   │   │   ├── GradientBuilder.php    # Fluent gradient builder
 │   │   │   ├── Spinner.php            # Spinner character sets
 │   │   │   └── Tween.php              # Value interpolation
 │   │   ├── Drawing/

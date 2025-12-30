@@ -257,7 +257,7 @@ class Color
      * Resolve any color input to a hex color.
      *
      * Handles: hex codes, CSS names, Tailwind palette names with shade,
-     * RGB arrays, and ANSI color names.
+     * custom color aliases, RGB arrays, and ANSI color names.
      *
      * @param string|array{r: int, g: int, b: int} $color
      */
@@ -273,10 +273,10 @@ class Color
             return $color;
         }
 
-        // CSS named color
-        $hex = self::css($color);
-        if ($hex !== null) {
-            return $hex;
+        // Custom color alias
+        $custom = self::custom($color);
+        if ($custom !== null) {
+            return $custom;
         }
 
         // Tailwind-style: "red-500", "blue-300"
@@ -286,6 +286,18 @@ class Color
             if (isset(self::$palette[$name][$shade]) || isset(self::$customPalettes[$name][$shade])) {
                 return self::palette($name, $shade);
             }
+        }
+
+        // Palette name without shade (prioritize over CSS names)
+        // Uses defaultShade() which finds the closest match to CSS color if applicable
+        if (in_array(strtolower($color), self::paletteNames())) {
+            return self::palette($color);
+        }
+
+        // CSS named color (coral, salmon, etc.)
+        $hex = self::css($color);
+        if ($hex !== null) {
+            return $hex;
         }
 
         // Return unchanged
@@ -416,14 +428,79 @@ class Color
     private static array $customPalettes = [];
 
     /**
+     * Custom color aliases defined at runtime.
+     * Maps custom names to hex colors.
+     * @var array<string, string>
+     */
+    private static array $customColors = [];
+
+    /**
+     * Cache for computed default shades.
+     * Maps palette names to their default shade based on CSS color matching.
+     * @var array<string, int>
+     */
+    private static array $defaultShadeCache = [];
+
+    /**
+     * Get the default shade for a palette color name.
+     *
+     * If the palette name matches a CSS color (e.g., 'red', 'blue'), finds
+     * the shade that most closely matches the CSS color value.
+     * Otherwise returns 500.
+     *
+     * @param string $name Palette name
+     * @return int Default shade (50-950)
+     */
+    public static function defaultShade(string $name): int
+    {
+        $name = strtolower($name);
+
+        // Check cache first
+        if (isset(self::$defaultShadeCache[$name])) {
+            return self::$defaultShadeCache[$name];
+        }
+
+        // If the name is also a CSS color, find the closest palette shade
+        $cssHex = self::css($name);
+        if ($cssHex !== null && isset(self::$palette[$name])) {
+            $cssRgb = self::hexToRgb($cssHex);
+            $bestShade = 500;
+            $bestDistance = PHP_FLOAT_MAX;
+
+            foreach (self::$palette[$name] as $shade => $paletteHex) {
+                $paletteRgb = self::hexToRgb($paletteHex);
+                // Euclidean distance in RGB space
+                $distance = sqrt(
+                    pow($cssRgb['r'] - $paletteRgb['r'], 2) +
+                    pow($cssRgb['g'] - $paletteRgb['g'], 2) +
+                    pow($cssRgb['b'] - $paletteRgb['b'], 2)
+                );
+
+                if ($distance < $bestDistance) {
+                    $bestDistance = $distance;
+                    $bestShade = $shade;
+                }
+            }
+
+            self::$defaultShadeCache[$name] = $bestShade;
+            return $bestShade;
+        }
+
+        // Default to 500
+        self::$defaultShadeCache[$name] = 500;
+        return 500;
+    }
+
+    /**
      * Get a color from the palette.
      *
      * @param string $name Color name (e.g., 'red', 'blue', 'slate')
-     * @param int $shade Shade level (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
+     * @param int|null $shade Shade level (50-950). If null, uses defaultShade().
      * @return string Hex color code
      */
-    public static function palette(string $name, int $shade = 500): string
+    public static function palette(string $name, ?int $shade = null): string
     {
+        $shade ??= self::defaultShade($name);
         $name = strtolower($name);
 
         // Check custom palettes first
@@ -455,6 +532,76 @@ class Color
             // Auto-generate shades from base color
             self::$customPalettes[strtolower($name)] = self::generateShades($baseColor);
         }
+    }
+
+    /**
+     * Define a custom color alias.
+     *
+     * Creates a named alias for a color that can be used anywhere colors are accepted.
+     * Can reference hex colors, palette colors with shades, or CSS named colors.
+     *
+     * @param string $name Custom color name (e.g., 'dusty-orange', 'brand-primary')
+     * @param string $color Base color - hex string, CSS name, or palette name
+     * @param int|null $shade Optional shade (50-950) when using a palette color
+     *
+     * @example
+     * Color::defineColor('dusty-orange', 'orange', 700);  // from palette
+     * Color::defineColor('brand-primary', '#3498db');      // hex color
+     * Color::defineColor('accent', 'coral');               // CSS color name
+     * Color::defineColor('soft-blue', 'blue', 300);        // palette with shade
+     */
+    public static function defineColor(string $name, string $color, ?int $shade = null): void
+    {
+        $name = strtolower($name);
+
+        if ($shade !== null) {
+            // Palette color with shade
+            self::$customColors[$name] = self::palette($color, $shade);
+        } elseif (str_starts_with($color, '#')) {
+            // Hex color
+            self::$customColors[$name] = $color;
+        } else {
+            // Could be CSS name or palette name
+            $cssHex = self::css($color);
+            if ($cssHex !== null) {
+                self::$customColors[$name] = $cssHex;
+            } elseif (in_array(strtolower($color), self::paletteNames())) {
+                // Palette name without shade - use 500
+                self::$customColors[$name] = self::palette($color, 500);
+            } else {
+                // Unknown - store as-is
+                self::$customColors[$name] = $color;
+            }
+        }
+    }
+
+    /**
+     * Get a custom color by name.
+     *
+     * @param string $name Custom color name
+     * @return string|null Hex color or null if not found
+     */
+    public static function custom(string $name): ?string
+    {
+        return self::$customColors[strtolower($name)] ?? null;
+    }
+
+    /**
+     * Get all custom color names.
+     *
+     * @return array<string>
+     */
+    public static function customNames(): array
+    {
+        return array_keys(self::$customColors);
+    }
+
+    /**
+     * Check if a string is a custom color name.
+     */
+    public static function isCustomColor(string $name): bool
+    {
+        return isset(self::$customColors[strtolower($name)]);
     }
 
     /**

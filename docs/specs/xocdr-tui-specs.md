@@ -540,6 +540,7 @@ Styled text with extensive color support.
 
 ```php
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Ext\Color;
 
 // Basic text
 $text = Text::create('Hello, World!');
@@ -550,10 +551,20 @@ $text = Text::create('Error!')
     ->red()
     ->bgColor('#330000');
 
-// Palette colors (Tailwind-style)
+// Unified color API - accepts Color enum, hex, or palette name with optional shade
 $text = Text::create('Info')
-    ->palette('blue', 500)
-    ->bgPalette('blue', 100);
+    ->color('blue', 500)           // Palette name + shade
+    ->bgColor('blue', 100);
+
+// Using Color enum with shade
+$text = Text::create('Styled')
+    ->color(Color::Red, 500)
+    ->bgColor(Color::Slate, 100);
+
+// Legacy palette methods (deprecated)
+$text = Text::create('Info')
+    ->palette('blue', 500)         // Use ->color('blue', 500) instead
+    ->bgPalette('blue', 100);      // Use ->bgColor('blue', 100) instead
 ```
 
 **Methods:**
@@ -570,13 +581,13 @@ underline(): self
 strikethrough(): self
 inverse(): self
 
-// Colors
-color(string $color): self
-bgColor(string $color): self
+// Colors - unified API accepts Color enum, hex, or palette name with optional shade
+color(Color|string|null $color, ?int $shade = null): self
+bgColor(Color|string|null $color, ?int $shade = null): self
 
-// Palette colors (Tailwind-style)
-palette(string $name, int $shade = 500): self
-bgPalette(string $name, int $shade = 500): self
+// Palette colors (Tailwind-style) - DEPRECATED
+palette(string $name, int $shade = 500): self    // Use ->color($name, $shade) instead
+bgPalette(string $name, int $shade = 500): self  // Use ->bgColor($name, $shade) instead
 
 // RGB colors
 rgb(int $r, int $g, int $b): self
@@ -1568,12 +1579,19 @@ Color gradient generation with animation support.
 
 ```php
 use Xocdr\Tui\Styling\Animation\Gradient;
+use Xocdr\Tui\Ext\Color;
 
 // Create gradient
 $gradient = Gradient::create(['#ff0000', '#00ff00', '#0000ff'], steps: 20);
 
-// Between two colors
+// Between two colors - supports Color enum, hex, or [color, shade] arrays
 $gradient = Gradient::between('#ff0000', '#0000ff', 10);
+$gradient = Gradient::between(Color::Red, Color::Blue, 10);
+$gradient = Gradient::between(['red', 500], ['blue', 300], 10);
+
+// Fluent builder with palette support
+$gradient = Gradient::from('red', 500)->to('blue', 300)->steps(10)->build();
+$gradient = Gradient::from(Color::Emerald, 400)->to(Color::Purple, 600)->steps(20)->hsl()->build();
 
 // Preset gradients
 $gradient = Gradient::rainbow(10);
@@ -1625,12 +1643,17 @@ $gradient = Gradient::fromPalette('blue', 100, 900, 10);
 ```php
 // Creation
 static create(string|array $colors, int $steps = 10): self
-static between(string $from, string $to, int $steps = 10): self
 static rainbow(int $steps = 10): self
 static grayscale(int $steps = 10): self
 static heatmap(int $steps = 10): self
 static hueRotate(string $baseColor, int $steps = 10): self
 static fromPalette(string $paletteName, int $fromShade, int $toShade, int $steps): self
+
+// Between two colors - supports Color enum, hex, or [color, shade] arrays
+static between(string|Color|array $from, string|Color|array $to, int $steps = 10): self
+
+// Fluent builder - supports Color enum, hex, or palette name with optional shade
+static from(string|Color $color, ?int $shade = null): GradientBuilder
 
 // Mode modifiers
 hsl(): self                    // Use HSL interpolation
@@ -1648,6 +1671,23 @@ at(float $t): string           // Get color at position (0.0 to 1.0)
 count(): int
 getSteps(): int
 render(): array<string>
+```
+
+**GradientBuilder Methods:**
+
+```php
+// Set end color - supports Color enum, hex, or palette name with optional shade
+to(string|Color $color, ?int $shade = null): self
+
+// Configuration
+steps(int $steps): self        // Set number of gradient steps (min 2)
+hsl(): self                    // Use HSL interpolation
+rgb(): self                    // Use RGB interpolation (default)
+circular(): self               // Make gradient loop
+
+// Build
+build(): Gradient              // Returns configured Gradient instance
+getColors(): array<string>     // Shortcut to build()->getColors()
 ```
 
 ---
