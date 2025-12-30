@@ -8,10 +8,10 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
 use Xocdr\Tui\Contracts\RendererInterface;
-use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Rendering\Render\ComponentRenderer;
 use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 /**
  * Fluent builder for creating Application objects.

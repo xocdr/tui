@@ -7,10 +7,10 @@ namespace Xocdr\Tui\Tests\Components;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\DebugPanel;
-use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Support\Telemetry\Metrics;
 use Xocdr\Tui\Support\Testing\TuiTestCase;
+use Xocdr\Tui\Widgets\DebugPanel;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Tests for DebugPanel widget.

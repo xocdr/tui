@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Hooks;
 
-use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Contracts\HookContextInterface;
 use Xocdr\Tui\Contracts\HooksInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
+use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\Terminal\Events\InputEvent;
 

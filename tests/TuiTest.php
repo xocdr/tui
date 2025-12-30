@@ -8,10 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Application;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Container;
-use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\InstanceBuilder;
 use Xocdr\Tui\Rendering\Render\ComponentRenderer;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
 use Xocdr\Tui\Tui;
 

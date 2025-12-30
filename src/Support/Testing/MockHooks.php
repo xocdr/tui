@@ -287,12 +287,22 @@ class MockHooks implements HooksInterface
     public function canvas(int $width, int $height, string $mode = 'braille'): array
     {
         return [
-            'canvas' => new class {
-                public function drawLine(int $x1, int $y1, int $x2, int $y2): void {}
-                public function drawRect(int $x, int $y, int $w, int $h): void {}
-                public function drawCircle(int $cx, int $cy, int $r): void {}
-                public function setPixel(int $x, int $y, bool $on = true): void {}
-                public function clear(): void {}
+            'canvas' => new class () {
+                public function drawLine(int $x1, int $y1, int $x2, int $y2): void
+                {
+                }
+                public function drawRect(int $x, int $y, int $w, int $h): void
+                {
+                }
+                public function drawCircle(int $cx, int $cy, int $r): void
+                {
+                }
+                public function setPixel(int $x, int $y, bool $on = true): void
+                {
+                }
+                public function clear(): void
+                {
+                }
             },
             'clear' => function (): void {},
             'render' => function (): array {

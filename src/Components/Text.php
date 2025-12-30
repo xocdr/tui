@@ -24,6 +24,8 @@ class Text implements Component
 
     private ?string $hyperlinkUrl = null;
 
+    private ?string $hyperlinkId = null;
+
     private bool $hyperlinkFallbackEnabled = false;
 
     public function __construct(string $content = '')

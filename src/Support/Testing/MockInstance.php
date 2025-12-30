@@ -8,8 +8,8 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
-use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 /**
  * Mock instance for testing TUI components without the C extension.

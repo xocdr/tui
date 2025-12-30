@@ -6,9 +6,9 @@ namespace Xocdr\Tui\Support\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
 use Xocdr\Tui\Support\Telemetry\Metrics;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Base test case for TUI component testing.

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Widgets\Spinner;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Widgets\Spinner;
 
 class SpinnerTest extends TestCase
 {

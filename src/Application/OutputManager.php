@@ -19,7 +19,8 @@ class OutputManager implements OutputManagerInterface
 
     public function __construct(
         private readonly ApplicationLifecycle $lifecycle
-    ) {}
+    ) {
+    }
 
     /**
      * Clear the terminal output.

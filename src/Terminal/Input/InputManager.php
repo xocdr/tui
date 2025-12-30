@@ -30,7 +30,8 @@ class InputManager implements InputManagerInterface
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly ApplicationLifecycle $lifecycle
-    ) {}
+    ) {
+    }
 
     /**
      * Set focus navigation callbacks.

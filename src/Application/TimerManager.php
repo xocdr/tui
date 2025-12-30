@@ -20,7 +20,8 @@ class TimerManager implements TimerManagerInterface
 
     public function __construct(
         private readonly ApplicationLifecycle $lifecycle
-    ) {}
+    ) {
+    }
 
     /**
      * Add a timer that calls the callback at the specified interval.
