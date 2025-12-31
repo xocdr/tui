@@ -1,19 +1,25 @@
-# Hooks Reference
+# UI Hooks Reference
 
-Complete reference for the `Hooks` class in xocdr/tui.
+Complete reference for the hook methods available in the `UI` class.
 
-## Hooks Class
+## UI Class
 
-The `Hooks` class is the primary API for state management and side effects in TUI applications.
+The `UI` class is the base class for building TUI applications. Extend it and implement the `build()` method.
 
 ```php
-use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\UI;
 
-$hooks = new Hooks($instance);
+class MyApp extends UI
+{
+    public function build(): Component
+    {
+        // Use hooks and return component tree
+    }
+}
+
+(new MyApp())->run();
 ```
-
-**Constructor Parameters:**
-- `$instance` (InstanceInterface|null) - Runtime instance (optional)
 
 ---
 
@@ -24,7 +30,7 @@ $hooks = new Hooks($instance);
 Manage component state that persists across renders.
 
 ```php
-[$value, $setValue] = $hooks->state($initial);
+[$value, $setValue] = $this->state($initial);
 ```
 
 **Parameters:**
@@ -35,28 +41,12 @@ Manage component state that persists across renders.
 - `$setValue(mixed $newValue)` - Update state with value
 - `$setValue(callable $fn)` - Update state with function receiving current value
 
-### reducer
-
-Manage complex state with a reducer function.
-
-```php
-[$state, $dispatch] = $hooks->reducer($reducer, $initialState);
-```
-
-**Parameters:**
-- `$reducer` (callable) - `function($state, $action): mixed`
-- `$initialState` (mixed) - Initial state
-
-**Returns:** `[mixed $state, callable $dispatch]`
-- `$state` - Current state
-- `$dispatch(array $action)` - Dispatch an action
-
 ### ref
 
 Create a mutable reference that persists across renders.
 
 ```php
-$ref = $hooks->ref($initial);
+$ref = $this->ref($initial);
 $ref->current = 'new value';
 ```
 
@@ -65,315 +55,187 @@ $ref->current = 'new value';
 
 **Returns:** `object{current: mixed}`
 
-### memo
-
-Memoize expensive computations.
-
-```php
-$value = $hooks->memo($factory, $deps);
-```
-
-**Parameters:**
-- `$factory` (callable) - Function that returns the memoized value
-- `$deps` (array) - Dependency array
-
-**Returns:** `mixed` - Memoized value
-
-### callback
-
-Memoize callbacks.
-
-```php
-$callback = $hooks->callback($fn, $deps);
-```
-
-**Parameters:**
-- `$fn` (callable) - The callback to memoize
-- `$deps` (array) - Dependency array
-
-**Returns:** `callable` - Memoized callback
-
-### previous
-
-Get the previous value of a variable.
-
-```php
-$previous = $hooks->previous($value);
-```
-
-**Parameters:**
-- `$value` (mixed) - Current value
-
-**Returns:** `mixed|null` - Previous value (null on first render)
-
 ---
 
 ## Effect Hooks
 
-### onRender
+### effect
 
 Run side effects after render.
 
 ```php
-$hooks->onRender($effect, $deps);
+$this->effect($callback, $deps);
 ```
 
 **Parameters:**
-- `$effect` (callable) - Effect function, optionally returns cleanup function
-- `$deps` (array|null) - Dependency array, `[]` for mount-only, `null` for every render
-
-**Returns:** `void`
-
-### interval
-
-Run a callback at a fixed interval.
-
-```php
-$hooks->interval($callback, $ms, $isActive);
-```
-
-**Parameters:**
-- `$callback` (callable) - Function to call
-- `$ms` (int) - Interval in milliseconds
-- `$isActive` (bool) - Whether interval is active (default: true)
+- `$callback` (callable) - Effect function, optionally returns cleanup function
+- `$deps` (array) - Dependency array, `[]` for mount-only
 
 **Returns:** `void`
 
 ---
 
-## Input/Output Hooks
+## Input Hooks
 
-### onInput
+### onKeyPress
 
 Handle keyboard input.
 
 ```php
-$hooks->onInput($handler, $options);
+$this->onKeyPress($handler);
 ```
 
 **Parameters:**
-- `$handler` (callable) - `function(string $key, \Xocdr\Tui\Ext\Key $keyInfo): void`
-- `$options` (array) - Options array
-  - `isActive` (bool) - Whether handler is active (default: true)
+- `$handler` (callable) - `function(string $input, Key $key): void`
+  - `$input` - Character pressed
+  - `$key` - Key object with properties: `escape`, `return`, `backspace`, `delete`, `tab`, `upArrow`, `downArrow`, `leftArrow`, `rightArrow`, `ctrl`, `meta`, `shift`
 
 **Returns:** `void`
 
-### app
+### onInput
 
-Access application control functions.
-
-```php
-['exit' => $exit] = $hooks->app();
-```
-
-**Returns:** `array{exit: callable}`
-- `exit(int $code = 0)` - Exit the application
-
-### stdout
-
-Get terminal dimensions and write access.
+Lower-level input handling (alias for onKeyPress).
 
 ```php
-$stdout = $hooks->stdout();
+$this->onInput($handler);
 ```
-
-**Returns:** `array{columns: int, rows: int, write: callable}`
-- `columns` - Terminal width
-- `rows` - Terminal height
-- `write(string $text)` - Write directly to stdout
 
 ---
 
-## Focus Hooks
+## Application Control
 
-### focus
+### exit
 
-Track focus state of a component.
+Exit the application.
 
 ```php
-['isFocused' => $isFocused, 'focus' => $focus] = $hooks->focus($options);
+$this->exit($code);
 ```
 
 **Parameters:**
-- `$options` (array) - Options array
-  - `autoFocus` (bool) - Focus on mount (default: false)
-  - `isActive` (bool) - Is focusable (default: true)
+- `$code` (int) - Exit code (default: 0)
 
-**Returns:** `array{isFocused: bool, focus: callable}`
-- `isFocused` - Whether component is focused
-- `focus()` - Programmatically focus this component
-
-### focusManager
-
-Navigate focus between components.
-
-```php
-$focusManager = $hooks->focusManager();
-```
-
-**Returns:** `array{focusNext: callable, focusPrevious: callable}`
-- `focusNext()` - Focus next element
-- `focusPrevious()` - Focus previous element
+**Returns:** `void`
 
 ---
 
-## Utility Hooks
+## Timer Hooks
 
-### context
+### every
 
-Access shared context values.
+Run a callback at a fixed interval.
 
 ```php
-$service = $hooks->context($class);
+$this->every($ms, $callback);
 ```
 
 **Parameters:**
-- `$class` (string) - Class or interface name
+- `$ms` (int) - Interval in milliseconds
+- `$callback` (callable) - Function to call
 
-**Returns:** `object|null` - Context value
+**Returns:** `void`
 
-### toggle
+### after
 
-Boolean state with toggle function.
+Run a callback after a delay.
 
 ```php
-[$value, $toggle, $setValue] = $hooks->toggle($initial);
+$this->after($ms, $callback);
 ```
 
 **Parameters:**
-- `$initial` (bool) - Initial value (default: false)
+- `$ms` (int) - Delay in milliseconds
+- `$callback` (callable) - Function to call
 
-**Returns:** `[bool $value, callable $toggle, callable $setValue]`
-- `$value` - Current boolean value
-- `$toggle()` - Toggle the value
-- `$setValue(bool $value)` - Set directly
-
-### counter
-
-Numeric counter.
-
-```php
-$counter = $hooks->counter($initial);
-```
-
-**Parameters:**
-- `$initial` (int) - Initial count (default: 0)
-
-**Returns:** `array{count: int, increment: callable, decrement: callable, reset: callable, set: callable}`
-
-### list
-
-Manage a list of items.
-
-```php
-$list = $hooks->list($initial);
-```
-
-**Parameters:**
-- `$initial` (array) - Initial items (default: [])
-
-**Returns:** `array{items: array, add: callable, remove: callable, update: callable, clear: callable, set: callable}`
-- `items` - Current items array
-- `add(mixed $item)` - Add item to end
-- `remove(int $index)` - Remove by index
-- `update(int $index, mixed $value)` - Update by index
-- `clear()` - Remove all items
-- `set(array $items)` - Replace all items
-
-### animation
-
-Manage animation state with tweening.
-
-```php
-$animation = $hooks->animation($from, $to, $duration, $easing);
-```
-
-**Parameters:**
-- `$from` (float) - Start value
-- `$to` (float) - End value
-- `$duration` (int) - Duration in milliseconds
-- `$easing` (string) - Easing function name (default: 'linear')
-
-**Returns:** `array{value: float, isAnimating: bool, start: callable, reset: callable}`
-- `value` - Current animated value
-- `isAnimating` - Whether animation is running
-- `start()` - Start the animation
-- `reset()` - Reset to start value
-
-### canvas
-
-Create and manage a drawing canvas.
-
-```php
-['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $hooks->canvas($width, $height, $mode);
-```
-
-**Parameters:**
-- `$width` (int) - Canvas width in terminal cells
-- `$height` (int) - Canvas height in terminal cells
-- `$mode` (string) - Canvas mode: 'braille', 'block', or 'ascii' (default: 'braille')
-
-**Returns:** `array{canvas: Canvas, clear: callable, render: callable}`
-- `canvas` - Canvas instance for drawing
-- `clear()` - Clear the canvas
-- `render()` - Render canvas to array of strings
+**Returns:** `void`
 
 ---
 
-## HooksAware Interface
+## Running the Application
 
-For components that need hooks access, implement `HooksAwareInterface` and use `HooksAwareTrait`:
+### run
+
+Start the application.
 
 ```php
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
+$runtime = $app->run($options);
+```
 
-class MyComponent implements HooksAwareInterface
+**Parameters:**
+- `$options` (array) - Options array (optional)
+
+**Returns:** `Runtime` - The runtime instance
+
+---
+
+## Key Object Properties
+
+The `$key` parameter in `onKeyPress` has these boolean properties:
+
+| Property | Description |
+|----------|-------------|
+| `escape` | Escape key |
+| `return` | Enter key |
+| `backspace` | Backspace key |
+| `delete` | Delete key |
+| `tab` | Tab key |
+| `upArrow` | Up arrow key |
+| `downArrow` | Down arrow key |
+| `leftArrow` | Left arrow key |
+| `rightArrow` | Right arrow key |
+| `ctrl` | Ctrl modifier |
+| `meta` | Meta/Cmd modifier |
+| `shift` | Shift modifier |
+
+---
+
+## Complete Example
+
+```php
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\UI;
+
+class Counter extends UI
 {
-    use HooksAwareTrait;
-
-    public function render(): mixed
+    public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
-        // ...
+        [$count, $setCount] = $this->state(0);
+        $timerRef = $this->ref(null);
+
+        $this->effect(function() use ($timerRef) {
+            // Effect runs on mount
+            return function() use ($timerRef) {
+                // Cleanup runs on unmount
+            };
+        }, []);
+
+        $this->every(1000, function() use ($setCount) {
+            $setCount(fn($c) => $c + 1);
+        });
+
+        $this->onKeyPress(function($input, $key) use ($setCount) {
+            if ($key->escape) {
+                $this->exit();
+            }
+            if ($key->upArrow) {
+                $setCount(fn($c) => $c + 1);
+            }
+            if ($key->downArrow) {
+                $setCount(fn($c) => max(0, $c - 1));
+            }
+        });
+
+        return new Box([
+            new BoxColumn([
+                (new Text("Count: {$count}"))->bold(),
+                (new Text('↑/↓ to change, ESC to exit'))->dim(),
+            ]),
+        ]);
     }
 }
-```
 
-**HooksAwareInterface Methods:**
-- `setHooks(HooksInterface $hooks): void` - Set the hooks instance
-- `getHooks(): HooksInterface` - Get the hooks instance
-
-**HooksAwareTrait Protected Methods:**
-- `hooks(): HooksInterface` - Convenience alias for `getHooks()`
-
----
-
-## Constants
-
-### Easing Names
-
-For use with `animation`:
-
-```php
-'linear'
-'in-quad', 'out-quad', 'in-out-quad'
-'in-cubic', 'out-cubic', 'in-out-cubic'
-'in-quart', 'out-quart', 'in-out-quart'
-'in-sine', 'out-sine', 'in-out-sine'
-'in-expo', 'out-expo', 'in-out-expo'
-'in-circ', 'out-circ', 'in-out-circ'
-'in-elastic', 'out-elastic', 'in-out-elastic'
-'in-back', 'out-back', 'in-out-back'
-'in-bounce', 'out-bounce', 'in-out-bounce'
-```
-
-### Canvas Modes
-
-For use with `canvas`:
-
-```php
-'braille'  // 2x4 pixels per cell (highest resolution)
-'block'    // 2x2 pixels per cell (half-block characters)
-'ascii'    // 1x1 pixel per cell (full block or space)
+(new Counter())->run();
 ```

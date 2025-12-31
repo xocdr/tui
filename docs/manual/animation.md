@@ -222,38 +222,50 @@ while (!$tween->isComplete()) {
 
 ---
 
-## animation Hook
+## Animation in UI Apps
 
-For animations in widgets:
+For animations in UI apps, use a combination of state and timers:
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Widget;
+use Xocdr\Tui\Styling\Animation\Tween;
+use Xocdr\Tui\UI;
 
-class AnimatedBar extends Widget
+class AnimatedBar extends UI
 {
     public function build(): Component
     {
-        $animation = $this->hooks()->animation(0, 100, 1000, 'out-cubic');
+        [$elapsed, $setElapsed] = $this->state(0);
 
-        // $animation = [
-        //     'value' => float,        // Current animated value
-        //     'isAnimating' => bool,   // Animation in progress
-        //     'start' => callable,     // Start animation
-        //     'reset' => callable,     // Reset to start
-        // ]
+        $this->every(16, function() use ($setElapsed) {
+            $setElapsed(fn($e) => $e + 16);
+        });
 
-        $x = (int)$animation['value'];
+        $this->onKeyPress(function($input, $key) {
+            if ($key->escape) {
+                $this->exit();
+            }
+        });
+
+        $tween = Tween::create(0, 100, 1000, 'out-cubic');
+        $tween->update($elapsed);
+
+        $x = $tween->getValueInt();
         $bar = str_repeat('█', $x) . str_repeat('░', 100 - $x);
 
-        return Box::column([
-            Text::create($bar)->green(),
-            Text::create("Value: {$x}")->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text($bar))->green(),
+                (new Text("Value: {$x}"))->dim(),
+            ]),
         ]);
     }
 }
+
+(new AnimatedBar())->run();
 ```
 
 ---
@@ -266,16 +278,16 @@ use Xocdr\Tui\Styling\Animation\Easing;
 use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Widget;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-class AnimationDemo extends Widget
+class AnimationDemo extends UI
 {
     public function build(): Component
     {
-        [$frame, $setFrame] = $this->hooks()->state(0);
+        [$frame, $setFrame] = $this->state(0);
 
         // Create animations
         $xTween = Tween::create(0, 40, 2000, Easing::OUT_BOUNCE);
@@ -283,11 +295,13 @@ class AnimationDemo extends Widget
 
         $colorGradient = Gradient::rainbow(50);
 
-        $this->hooks()->onInput(function($input, $key) use ($setFrame) {
+        $this->onKeyPress(function($input, $key) use ($setFrame) {
             if ($input === ' ') {
                 $setFrame(fn($f) => $f + 1);
             } elseif ($input === 'r') {
                 $setFrame(0);
+            } elseif ($key->escape) {
+                $this->exit();
             }
         });
 
@@ -296,18 +310,20 @@ class AnimationDemo extends Widget
         $bar = str_repeat(' ', $x) . '●';
         $color = $colorGradient->at($frame / 40);
 
-        return Box::column([
-            Text::create('Animation Demo')->bold(),
-            Text::create(''),
-            Text::create($bar)->color($color),
-            Text::create(''),
-            Text::create("Frame: {$frame} | X: {$x}")->dim(),
-            Text::create('SPACE = advance, R = reset')->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Animation Demo'))->bold(),
+                new Text(''),
+                (new Text($bar))->color($color),
+                new Text(''),
+                (new Text("Frame: {$frame} | X: {$x}"))->dim(),
+                (new Text('SPACE = advance, R = reset, ESC = exit'))->dim(),
+            ]),
         ]);
     }
 }
 
-Tui::render(new AnimationDemo())->waitUntilExit();
+(new AnimationDemo())->run();
 ```
 
 [[TODO:SCREENSHOT:complete-animation-example]]

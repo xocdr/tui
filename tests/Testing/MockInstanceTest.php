@@ -97,7 +97,7 @@ class MockInstanceTest extends TestCase
         $receivedKey = null;
         $instance = new MockInstance(Text::create('Hello'));
 
-        $instance->onInput(function (string $key) use (&$receivedKey) {
+        $instance->getInputManager()->onInput(function (string $key) use (&$receivedKey) {
             $receivedKey = $key;
         });
 
@@ -112,7 +112,7 @@ class MockInstanceTest extends TestCase
         $receivedMods = null;
         $instance = new MockInstance(Text::create('Hello'));
 
-        $instance->onInput(function (string $key, $nativeKey) use (&$receivedMods) {
+        $instance->getInputManager()->onInput(function (string $key, $nativeKey) use (&$receivedMods) {
             $receivedMods = [
                 'ctrl' => $nativeKey->ctrl,
                 'alt' => $nativeKey->alt,
@@ -133,7 +133,7 @@ class MockInstanceTest extends TestCase
         $resizeEvent = null;
         $instance = new MockInstance(Text::create('Hello'), ['width' => 80, 'height' => 24]);
 
-        $instance->onResize(function ($event) use (&$resizeEvent) {
+        $instance->getEventDispatcher()->on('resize', function ($event) use (&$resizeEvent) {
             $resizeEvent = $event;
         });
 
@@ -152,14 +152,14 @@ class MockInstanceTest extends TestCase
         $instance = new MockInstance(Text::create('Hello'));
         $called = false;
 
-        $timerId = $instance->addTimer(100, function () use (&$called) {
+        $timerId = $instance->getTimerManager()->addTimer(100, function () use (&$called) {
             $called = true;
         });
 
         $this->assertIsInt($timerId);
 
         // Should not throw
-        $instance->removeTimer($timerId);
+        $instance->getTimerManager()->removeTimer($timerId);
     }
 
     public function testTickTimers(): void
@@ -167,7 +167,7 @@ class MockInstanceTest extends TestCase
         $instance = new MockInstance(Text::create('Hello'));
         $count = 0;
 
-        $instance->addTimer(50, function () use (&$count) {
+        $instance->getTimerManager()->addTimer(50, function () use (&$count) {
             $count++;
         });
 
@@ -232,12 +232,12 @@ class MockInstanceTest extends TestCase
         $instance = new MockInstance(Text::create('Hello'));
         $called = false;
 
-        $handlerId = $instance->onInput(function () use (&$called) {
+        $handlerId = $instance->getInputManager()->onInput(function () use (&$called) {
             $called = true;
         });
 
         $instance->start();
-        $instance->off($handlerId);
+        $instance->getEventDispatcher()->off($handlerId);
         $instance->simulateInput('a');
 
         $this->assertFalse($called);

@@ -2,108 +2,85 @@
 
 Complete reference for all classes in xocdr/tui.
 
-> **Note:** The ext-tui C extension uses the `Xocdr\Tui` namespace for its classes (e.g., `\Xocdr\Tui\Box`, `\Xocdr\Tui\Text`). Some classes like `\TuiKey`, `\TuiInstance`, and `\TuiFocusEvent` remain in the global namespace. All `tui_*` functions remain in the global namespace.
+> **Note:** The ext-tui C extension uses the `Xocdr\Tui` namespace for its classes (e.g., `\Xocdr\Tui\Box`, `\Xocdr\Tui\Text`). All `tui_*` functions remain in the global namespace.
 
 ## Entry Points
 
-### Tui (Static Facade)
+### UI (Base Class)
+
+The primary way to build TUI applications. Extend this class and implement `build()`:
 
 ```php
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\UI;
 
-// Rendering
-Tui::render($component, $options)   // Render and return Instance
-Tui::create($component, $options)   // Alias for render
-Tui::renderToString($component)     // Render to string (no C ext needed)
-Tui::builder()                      // Get InstanceBuilder
+class MyApp extends UI
+{
+    public function build(): Component
+    {
+        [$count, $setCount] = $this->state(0);
 
-// Extension checks
-Tui::isExtensionLoaded()            // Check if ext-tui is loaded
-Tui::ensureExtensionLoaded()        // Throw if ext-tui not loaded
+        $this->onKeyPress(function($input, $key) {
+            if ($key->escape) {
+                $this->exit();
+            }
+        });
 
-// Terminal utilities
-Tui::isInteractive()                // Check if TTY
-Tui::isCi()                         // Check if CI environment
-Tui::getTerminalSize()              // ['width', 'height']
-Tui::stringWidth($text)             // Display width of text
-Tui::wrapText($text, $width)        // Wrap text to width
-Tui::truncate($text, $width)        // Truncate with ellipsis
+        return new Box([
+            new BoxColumn([
+                new Text("Count: {$count}"),
+            ]),
+        ]);
+    }
+}
 
-// Instance management
-Tui::getInstance()                  // Get current Instance
-Tui::getInstanceById($id)           // Get Instance by ID
-Tui::getInstances()                 // Get all Instances
-Tui::getContainer()                 // Get DI Container
+// Run the app
+(new MyApp())->run();
 ```
 
-### Instance
-
+**Hook Methods:**
 ```php
-$instance = Tui::render($app);
+// State
+$this->state($initial)              // Returns [$value, $setValue]
+$this->ref($initial)                // Returns object with ->current
 
-// Lifecycle
-$instance->start()                  // Start render loop
-$instance->rerender()               // Request re-render
-$instance->unmount()                // Stop and cleanup
-$instance->waitUntilExit()          // Block until exit
-$instance->isRunning()              // Check if running
+// Effects
+$this->effect($callback, $deps)     // Run side effect
 
-// Event handlers
-$instance->onInput($handler)        // Register input handler
-$instance->onKey($key, $handler)    // Register key-specific handler
-$instance->onFocus($handler)        // Register focus handler
-$instance->onResize($handler)       // Register resize handler
-$instance->off($handlerId)          // Remove handler
-
-// Focus management
-$instance->focusNext()              // Focus next element
-$instance->focusPrev()              // Focus previous element
-$instance->getFocusedNode()         // Get focused node info
+// Input
+$this->onKeyPress($handler)         // Handle keyboard input
+$this->onInput($handler)            // Alias for onKeyPress
 
 // Timers
-$instance->addTimer($ms, $callback) // Add timer, returns ID
-$instance->removeTimer($timerId)    // Remove timer
-$instance->setInterval($ms, $cb)    // Alias for addTimer
-$instance->clearInterval($id)       // Alias for removeTimer
-$instance->onTick($handler)         // Per-frame callback
+$this->every($ms, $callback)        // Run callback every $ms
+$this->after($ms, $callback)        // Run callback after $ms
 
-// Output control
-$instance->clear()                  // Clear terminal
-$instance->getLastOutput()          // Get last rendered output
-$instance->setLastOutput($output)   // Set last output (testing)
-
-// Console capture and element measurement
-$instance->getCapturedOutput()      // Get stray echo/print from component renders
-$instance->measureElement($id)      // Get element dimensions ['x', 'y', 'width', 'height']
-
-// Getters
-$instance->getId()                  // Instance ID
-$instance->getSize()                // Terminal size
-$instance->getEventDispatcher()     // Get EventDispatcher
-$instance->getHookContext()         // Get HookContext
-$instance->getOptions()             // Get render options
-$instance->getTuiInstance()         // Get \Xocdr\Tui\TuiInstance
+// App control
+$this->exit($code)                  // Exit the application
 ```
 
-### InstanceBuilder
+**run() Method:**
+```php
+$runtime = (new MyApp())->run($options);
+```
+
+**Parameters:**
+- `$options` (array) - Optional configuration
+
+**Returns:** `Runtime` - The runtime instance
+
+### Runtime
+
+The runtime manages the application lifecycle. Returned by `UI::run()`:
 
 ```php
-$instance = Tui::builder()
-    ->component($myComponent)
-    ->fullscreen(true)
-    ->exitOnCtrlC(true)
-    ->eventDispatcher($dispatcher)
-    ->hookContext($context)
-    ->renderer($renderer)
-    ->options(['key' => 'value'])
-    ->build();
+$runtime = (new MyApp())->run();
 
-$instance->start();
-
-// Or directly start
-Tui::builder()
-    ->component($app)
-    ->start();
+// The runtime handles the render loop automatically
+// Access runtime for advanced control if needed
 ```
 
 ---
@@ -114,11 +91,13 @@ Tui::builder()
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 
 // Creation
-Box::create()
-Box::column($children)
-Box::row($children)
+new Box($children)                  // Basic box with children
+new BoxColumn($children)            // Vertical layout (flexDirection: column)
+new BoxRow($children)               // Horizontal layout (flexDirection: row)
 
 // Layout
 ->flexDirection('column')
@@ -201,11 +180,12 @@ Box::row($children)
 use Xocdr\Tui\Components\Text;
 
 // Creation
-Text::create('content')
+new Text('content')
 
-// Colors - unified API accepts Color enum, hex, or palette name with optional shade
-->color('#fff')                  // Hex color
-->color(Color::Red)              // Color enum
+// With fluent styling
+(new Text('content'))
+    ->color('#fff')              // Hex color
+    ->color(Color::Red)          // Color enum
 ->color('blue', 500)             // Palette name + shade
 ->color(Color::Blue, 500)        // Color enum + shade
 ->bgColor('#000')

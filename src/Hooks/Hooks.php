@@ -286,8 +286,10 @@ final readonly class Hooks implements HooksInterface
 
         return [
             'exit' => function (int $code = 0) use ($app): void {
+                // Just unmount - don't call PHP's exit() from within event callbacks
+                // as it causes issues with the C extension's event loop cleanup.
+                // The unmount() signals the loop to terminate and waitUntilExit() returns.
                 $app?->unmount();
-                exit($code);
             },
         ];
     }
@@ -489,14 +491,14 @@ final readonly class Hooks implements HooksInterface
                 return null;
             }
 
-            // Add timer using the application's timer system
-            $timerId = $app->addTimer($ms, function () use ($callbackRef) {
+            // Add timer using the application's timer manager
+            $timerId = $app->getTimerManager()->addTimer($ms, function () use ($callbackRef) {
                 ($callbackRef->current)();
             });
 
             return function () use ($app, $timerId) {
                 if ($timerId >= 0) {
-                    $app->removeTimer($timerId);
+                    $app->getTimerManager()->removeTimer($timerId);
                 }
             };
         }, [$ms, $isActive]);

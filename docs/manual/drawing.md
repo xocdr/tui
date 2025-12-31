@@ -73,8 +73,8 @@ $lines = $canvas->render();
 // Returns array of strings (one per terminal row)
 
 // Use in component
-Box::column(array_map(
-    fn($line) => Text::create($line),
+new BoxColumn(array_map(
+    fn($line) => new Text($line),
     $canvas->render()
 ));
 ```
@@ -226,32 +226,46 @@ $lines = $sprite->render();
 
 ---
 
-## Using canvas Hook
+## Using Canvas in a UI App
 
-For animated canvases in widgets:
+For animated canvases:
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Widget;
+use Xocdr\Tui\Styling\Drawing\Canvas;
+use Xocdr\Tui\UI;
 
-class AnimatedCanvas extends Widget
+class AnimatedCanvas extends UI
 {
     public function build(): Component
     {
-        ['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $this->hooks()->canvas(40, 12);
+        [$frame, $setFrame] = $this->state(0);
 
-        $this->hooks()->interval(function() use ($canvas, $clear) {
-            $clear();
-            $canvas->circle(40, 24, rand(10, 20));
-        }, 100);
+        $this->every(100, function() use ($setFrame) {
+            $setFrame(fn($f) => $f + 1);
+        });
 
-        return Box::column(
-            array_map(fn($l) => Text::create($l), $render())
-        );
+        $this->onKeyPress(function($input, $key) {
+            if ($key->escape) {
+                $this->exit();
+            }
+        });
+
+        $canvas = Canvas::create(40, 12);
+        $canvas->circle(40, 24, 10 + ($frame % 10));
+
+        return new Box([
+            new BoxColumn(
+                array_map(fn($l) => new Text($l), $canvas->render())
+            ),
+        ]);
     }
 }
+
+(new AnimatedCanvas())->run();
 ```
 
 ---
@@ -260,18 +274,18 @@ class AnimatedCanvas extends Widget
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\Styling\Drawing\Sprite;
-use Xocdr\Tui\Widgets\Widget;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-class AnimatedScene extends Widget
+class AnimatedScene extends UI
 {
     public function build(): Component
     {
-        [$frame, $setFrame] = $this->hooks()->state(0);
+        [$frame, $setFrame] = $this->state(0);
 
         // Create canvas
         $canvas = Canvas::create(40, 12);
@@ -288,25 +302,30 @@ class AnimatedScene extends Widget
         ], 100);
         $sprite->setFrame($frame % 2);
 
-        $this->hooks()->onInput(function($input, $key) use ($setFrame) {
+        $this->onKeyPress(function($input, $key) use ($setFrame) {
             if ($input === ' ') {
                 $setFrame(fn($f) => $f + 1);
             }
+            if ($key->escape) {
+                $this->exit();
+            }
         });
 
-        return Box::column([
-            Text::create('Canvas:')->bold(),
-            ...array_map(fn($l) => Text::create($l), $canvas->render()),
-            Text::create(''),
-            Text::create('Sprite:')->bold(),
-            ...array_map(fn($l) => Text::create($l), $sprite->render()),
-            Text::create(''),
-            Text::create('SPACE to animate')->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Canvas:'))->bold(),
+                ...array_map(fn($l) => new Text($l), $canvas->render()),
+                new Text(''),
+                (new Text('Sprite:'))->bold(),
+                ...array_map(fn($l) => new Text($l), $sprite->render()),
+                new Text(''),
+                (new Text('SPACE to animate, ESC to exit'))->dim(),
+            ]),
         ]);
     }
 }
 
-Tui::render(new AnimatedScene())->waitUntilExit();
+(new AnimatedScene())->run();
 ```
 
 [[TODO:SCREENSHOT:animated-scene-example]]

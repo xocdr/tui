@@ -10,11 +10,15 @@ Flexbox container for layout.
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 
-// Factory methods
-Box::create()              // Empty box
-Box::column($children)     // Vertical layout
-Box::row($children)        // Horizontal layout
+// Basic box
+new Box([...])                    // Creates box with children
+
+// Shorthand for layout direction
+new BoxColumn([...])              // Vertical layout (flexDirection: column)
+new BoxRow([...])                 // Horizontal layout (flexDirection: row)
 
 // Layout properties
 ->flexDirection('column')   // 'row' | 'column'
@@ -62,11 +66,10 @@ Box::row($children)        // Horizontal layout
 **Border Title Example:**
 
 ```php
-Box::create()
+(new Box([new Text('Content here')]))
     ->border('round')
     ->borderTitle('Warning')
-    ->borderTitlePosition('top-center')
-    ->children([Text::create('Content here')]);
+    ->borderTitlePosition('top-center');
 
 // Output:
 // ╭─────────── Warning ───────────────╮
@@ -81,46 +84,47 @@ Styled text output.
 ```php
 use Xocdr\Tui\Components\Text;
 
-Text::create('Hello')
+new Text('Hello');
 
-// Colors
-->color('#ff0000')          // foreground color (hex)
-->bgColor('#000000')        // background color (hex)
-->red()                     // named colors
-->green()
-->blue()
-->cyan()
-->magenta()
-->yellow()
-->white()
-->black()
+// With styling (fluent API)
+(new Text('Hello'))
+    ->color('#ff0000')          // foreground color (hex)
+    ->bgColor('#000000')        // background color (hex)
+    ->red()                     // named colors
+    ->green()
+    ->blue()
+    ->cyan()
+    ->magenta()
+    ->yellow()
+    ->white()
+    ->black()
 
-// Styles
-->bold()
-->dim()
-->italic()
-->underline()
-->strikethrough()
-->inverse()
+    // Styles
+    ->bold()
+    ->dim()
+    ->italic()
+    ->underline()
+    ->strikethrough()
+    ->inverse()
 
-// Text wrapping
-->wrap('word')              // 'word' | 'char' | null
+    // Text wrapping
+    ->wrap('word')              // 'word' | 'char' | null
 
-// Hyperlinks (OSC 8)
-->hyperlink('https://example.com')
-->hyperlinkFallback()       // Show URL if terminal doesn't support OSC 8
+    // Hyperlinks (OSC 8)
+    ->hyperlink('https://example.com')
+    ->hyperlinkFallback();      // Show URL if terminal doesn't support OSC 8
 ```
 
 **Hyperlink Example:**
 
 ```php
-Text::create('Click here')
+(new Text('Click here'))
     ->hyperlink('https://example.com')
     ->color('cyan')
     ->underline();
 
 // With fallback for unsupported terminals
-Text::create('Documentation')
+(new Text('Documentation'))
     ->hyperlink('https://docs.example.com')
     ->hyperlinkFallback();
 // If terminal doesn't support OSC 8, renders as:
@@ -133,10 +137,11 @@ Groups components without adding a wrapper node.
 
 ```php
 use Xocdr\Tui\Components\Fragment;
+use Xocdr\Tui\Components\Text;
 
-Fragment::create()->children([
-    Text::create('Line 1'),
-    Text::create('Line 2'),
+new Fragment([
+    new Text('Line 1'),
+    new Text('Line 2'),
 ]);
 ```
 
@@ -145,12 +150,14 @@ Fragment::create()->children([
 Flexible space that expands to fill available room.
 
 ```php
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Spacer;
+use Xocdr\Tui\Components\Text;
 
-Box::row([
-    Text::create('Left'),
-    Spacer::create(),
-    Text::create('Right'),
+new BoxRow([
+    new Text('Left'),
+    new Spacer(),
+    new Text('Right'),
 ]);
 ```
 
@@ -159,13 +166,15 @@ Box::row([
 Explicit line break.
 
 ```php
+use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Newline;
+use Xocdr\Tui\Components\Text;
 
-Box::create()->children([
-    Text::create('Before'),
-    Newline::create(),
-    Newline::create(2),  // Multiple newlines
-    Text::create('After'),
+new Box([
+    new Text('Before'),
+    new Newline(),
+    new Newline(2),  // Multiple newlines
+    new Text('After'),
 ]);
 ```
 
@@ -175,9 +184,10 @@ Content that doesn't re-render (useful for logs).
 
 ```php
 use Xocdr\Tui\Components\Static_;
+use Xocdr\Tui\Components\Text;
 
-Static_::create($items)->children(
-    fn($item) => Text::create($item)
+(new Static_($items))->children(
+    fn($item) => new Text($item)
 );
 ```
 
@@ -189,21 +199,22 @@ Horizontal and vertical lines for dividers and structure.
 use Xocdr\Tui\Components\Line;
 
 // Horizontal line
-Line::horizontal(40);
+(new Line(40))->horizontal();
 
 // Styled line
-Line::horizontal(40)->style('double')->color('#00ffff');
+(new Line(40))->horizontal()->style('double')->color('#00ffff');
 
 // Line with label (section dividers)
-Line::horizontal(40)
+(new Line(40))
+    ->horizontal()
     ->label('Settings')
     ->labelPosition('center');
 
 // Vertical line
-Line::vertical(10)->style('single');
+(new Line(10))->vertical()->style('single');
 
 // With connectors (tree views, tables)
-Line::horizontal(20)->startCap('├')->endCap('┤');
+(new Line(20))->horizontal()->startCap('├')->endCap('┤');
 ```
 
 **Line Styles:**
@@ -376,37 +387,43 @@ interface Component
 For simple stateless components, implement this interface directly:
 
 ```php
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+
 class MyComponent implements Component
 {
-    public function render(): Box
+    public function render(): BoxColumn
     {
-        return Box::column([
-            Text::create('Custom component'),
+        return new BoxColumn([
+            new Text('Custom component'),
         ]);
     }
 }
 ```
 
-For stateful components that need hooks, extend the `Widget` class instead:
+For stateful components that need state management, extend the `UI` class:
 
 ```php
-use Xocdr\Tui\Widgets\Widget;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\UI;
 
-class MyWidget extends Widget
+class MyApp extends UI
 {
     public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
+        [$count, $setCount] = $this->state(0);
 
-        return Box::column([
-            Text::create("Count: {$count}"),
+        return new BoxColumn([
+            new Text("Count: {$count}"),
         ]);
     }
 }
 ```
 
-See [Widgets](widgets.md) for more information.
+See the [Getting Started](getting-started.md) guide for more information.
 
 ## See Also
 

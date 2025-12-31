@@ -7,7 +7,11 @@ namespace Xocdr\Tui\Support\Testing;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\HookContextInterface;
+use Xocdr\Tui\Contracts\InputManagerInterface;
 use Xocdr\Tui\Contracts\InstanceInterface;
+use Xocdr\Tui\Contracts\OutputManagerInterface;
+use Xocdr\Tui\Contracts\TerminalManagerInterface;
+use Xocdr\Tui\Contracts\TimerManagerInterface;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
@@ -34,15 +38,14 @@ class MockInstance implements InstanceInterface
     /** @var array<string, mixed> */
     private array $options;
 
-    private string $lastOutput = '';
+    // Managers
+    private MockTimerManager $timerManager;
 
-    /** @var array{width: int, height: int} */
-    private array $size;
+    private MockOutputManager $outputManager;
 
-    /** @var array<int, array{interval: int, callback: callable, lastRun: float}> */
-    private array $timers = [];
+    private MockInputManager $inputManager;
 
-    private int $nextTimerId = 1;
+    private MockTerminalManager $terminalManager;
 
     /**
      * @param callable|Component $component
@@ -59,24 +62,52 @@ class MockInstance implements InstanceInterface
         $this->options = $options;
         $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
         $this->hookContext = $hookContext ?? new HookContext();
+
         /** @var int $width */
         $width = $options['width'] ?? 80;
         /** @var int $height */
         $height = $options['height'] ?? 24;
         $this->renderer = new TestRenderer($width, $height);
-        $this->size = [
-            'width' => $width,
-            'height' => $height,
-        ];
+
+        // Initialize managers
+        $this->timerManager = new MockTimerManager();
+        $this->outputManager = new MockOutputManager();
+        $this->inputManager = new MockInputManager($this->eventDispatcher);
+        $this->terminalManager = new MockTerminalManager($width, $height);
 
         if ($this->hookContext instanceof HookContext) {
             $this->hookContext->setRerenderCallback(fn () => $this->rerender());
         }
     }
 
-    /**
-     * Start the mock instance.
-     */
+    // =========================================================================
+    // Manager Getters (InstanceInterface)
+    // =========================================================================
+
+    public function getTimerManager(): TimerManagerInterface
+    {
+        return $this->timerManager;
+    }
+
+    public function getOutputManager(): OutputManagerInterface
+    {
+        return $this->outputManager;
+    }
+
+    public function getInputManager(): InputManagerInterface
+    {
+        return $this->inputManager;
+    }
+
+    public function getTerminalManager(): TerminalManagerInterface
+    {
+        return $this->terminalManager;
+    }
+
+    // =========================================================================
+    // Lifecycle (LifecycleInterface)
+    // =========================================================================
+
     public function start(): void
     {
         if ($this->running || $this->unmounted) {
@@ -87,28 +118,6 @@ class MockInstance implements InstanceInterface
         $this->render();
     }
 
-    /**
-     * Render the component and store output.
-     */
-    private function render(): void
-    {
-        $this->lastOutput = $this->renderer->render($this->component);
-    }
-
-    /**
-     * Request a re-render.
-     */
-    public function rerender(): void
-    {
-        if ($this->running && !$this->unmounted) {
-            $this->hookContext->resetForRender();
-            $this->render();
-        }
-    }
-
-    /**
-     * Unmount the instance.
-     */
     public function unmount(): void
     {
         if ($this->unmounted) {
@@ -118,57 +127,111 @@ class MockInstance implements InstanceInterface
         $this->running = false;
         $this->unmounted = true;
         $this->hookContext->cleanup();
-        $this->timers = [];
+        $this->timerManager->clearPendingTimers();
     }
 
-    /**
-     * Wait for exit (no-op in mock).
-     */
     public function waitUntilExit(): void
     {
         // No-op in mock - immediately returns
     }
 
-    /**
-     * Check if running.
-     */
     public function isRunning(): bool
     {
         return $this->running;
     }
 
-    /**
-     * Get the instance ID.
-     */
+    // =========================================================================
+    // Rerender (RerenderableInterface)
+    // =========================================================================
+
+    public function rerender(): void
+    {
+        if ($this->running && !$this->unmounted) {
+            $this->hookContext->resetForRender();
+            $this->render();
+        }
+    }
+
+    // =========================================================================
+    // Focus (FocusableInterface)
+    // =========================================================================
+
+    public function focusNext(): void
+    {
+        // No-op in mock
+    }
+
+    public function focusPrevious(): void
+    {
+        // No-op in mock
+    }
+
+    public function focus(string $id): void
+    {
+        // No-op in mock
+    }
+
+    public function getFocusedNode(): ?array
+    {
+        return null;
+    }
+
+    // =========================================================================
+    // Size (SizableInterface)
+    // =========================================================================
+
+    public function getSize(): array
+    {
+        $size = $this->terminalManager->getSize();
+
+        return [
+            'width' => $size['width'],
+            'height' => $size['height'],
+            'columns' => $size['width'],
+            'rows' => $size['height'],
+        ];
+    }
+
+    // =========================================================================
+    // Core Getters (InstanceInterface)
+    // =========================================================================
+
     public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * Get the event dispatcher.
-     */
     public function getEventDispatcher(): EventDispatcherInterface
     {
         return $this->eventDispatcher;
     }
 
-    /**
-     * Get the hook context.
-     */
     public function getHookContext(): HookContextInterface
     {
         return $this->hookContext;
     }
 
-    /**
-     * Get render options.
-     *
-     * @return array<string, mixed>
-     */
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    public function getTuiInstance(): ?\Xocdr\Tui\Ext\Instance
+    {
+        return null;
+    }
+
+    // =========================================================================
+    // Test Helpers
+    // =========================================================================
+
+    /**
+     * Render the component and store output.
+     */
+    private function render(): void
+    {
+        $output = $this->renderer->render($this->component);
+        $this->outputManager->setLastOutput($output);
     }
 
     /**
@@ -176,7 +239,7 @@ class MockInstance implements InstanceInterface
      */
     public function getLastOutput(): string
     {
-        return $this->lastOutput;
+        return $this->outputManager->getLastOutput();
     }
 
     /**
@@ -194,22 +257,7 @@ class MockInstance implements InstanceInterface
      */
     public function clear(): void
     {
-        $this->lastOutput = '';
-    }
-
-    /**
-     * Get terminal size.
-     *
-     * @return array{width: int, height: int, columns: int, rows: int}
-     */
-    public function getSize(): array
-    {
-        return [
-            'width' => $this->size['width'],
-            'height' => $this->size['height'],
-            'columns' => $this->size['width'],
-            'rows' => $this->size['height'],
-        ];
+        $this->outputManager->clear();
     }
 
     /**
@@ -217,7 +265,7 @@ class MockInstance implements InstanceInterface
      */
     public function setSize(int $width, int $height): void
     {
-        $this->size = ['width' => $width, 'height' => $height];
+        $this->terminalManager->setSize($width, $height);
     }
 
     /**
@@ -236,58 +284,24 @@ class MockInstance implements InstanceInterface
      */
     public function simulateResize(int $width, int $height): void
     {
-        $oldWidth = $this->size['width'];
-        $oldHeight = $this->size['height'];
-        $this->size = ['width' => $width, 'height' => $height];
+        $oldSize = $this->terminalManager->getSize();
+        $this->terminalManager->setSize($width, $height);
 
-        $event = new \Xocdr\Tui\Terminal\Events\ResizeEvent($width, $height, $oldWidth, $oldHeight);
+        $event = new \Xocdr\Tui\Terminal\Events\ResizeEvent(
+            $width,
+            $height,
+            $oldSize['width'],
+            $oldSize['height']
+        );
         $this->eventDispatcher->emit('resize', $event);
     }
 
     /**
-     * Add a timer.
-     */
-    public function addTimer(int $intervalMs, callable $callback): int
-    {
-        $timerId = $this->nextTimerId++;
-        $this->timers[$timerId] = [
-            'interval' => $intervalMs,
-            'callback' => $callback,
-            'lastRun' => microtime(true) * 1000,
-        ];
-
-        return $timerId;
-    }
-
-    /**
-     * Remove a timer.
-     */
-    public function removeTimer(int $timerId): void
-    {
-        unset($this->timers[$timerId]);
-    }
-
-    /**
      * Tick all timers (for testing).
-     *
-     * Simulates the passage of time and calls any timers whose
-     * interval has elapsed. Call this with the elapsed time since
-     * the timer was created or last ticked.
-     *
-     * @param int $elapsedMs Milliseconds elapsed since last tick
      */
     public function tickTimers(int $elapsedMs): void
     {
-        foreach ($this->timers as $id => &$timer) {
-            // Accumulate elapsed time
-            $timer['elapsed'] = ($timer['elapsed'] ?? 0) + $elapsedMs;
-
-            // Fire if enough time has passed
-            if ($timer['elapsed'] >= $timer['interval']) {
-                ($timer['callback'])();
-                $timer['elapsed'] = 0; // Reset for next interval
-            }
-        }
+        $this->timerManager->tickTimers($elapsedMs);
     }
 
     /**
@@ -296,88 +310,5 @@ class MockInstance implements InstanceInterface
     public function getRenderer(): TestRenderer
     {
         return $this->renderer;
-    }
-
-    /**
-     * Register an input handler.
-     */
-    public function onInput(callable $handler, int $priority = 0): string
-    {
-        return $this->eventDispatcher->on('input', function (\Xocdr\Tui\Terminal\Events\InputEvent $event) use ($handler) {
-            $handler($event->key, $event->nativeKey);
-        }, $priority);
-    }
-
-    /**
-     * Register a resize handler.
-     */
-    public function onResize(callable $handler, int $priority = 0): string
-    {
-        return $this->eventDispatcher->on('resize', $handler, $priority);
-    }
-
-    /**
-     * Remove an event handler.
-     */
-    public function off(string $handlerId): void
-    {
-        $this->eventDispatcher->off($handlerId);
-    }
-
-    /**
-     * Focus next (no-op in mock).
-     */
-    public function focusNext(): void
-    {
-        // No-op in mock
-    }
-
-    /**
-     * Focus previous (no-op in mock).
-     */
-    public function focusPrevious(): void
-    {
-        // No-op in mock
-    }
-
-    /**
-     * Get info about the currently focused node.
-     *
-     * @return array<string, mixed>|null
-     */
-    public function getFocusedNode(): ?array
-    {
-        // No focus tracking in mock
-        return null;
-    }
-
-    /**
-     * Get the underlying ext-tui Instance (null in mock).
-     */
-    public function getTuiInstance(): ?\Xocdr\Tui\Ext\Instance
-    {
-        // No native instance in mock
-        return null;
-    }
-
-    /**
-     * Get captured console output (null in mock).
-     */
-    public function getCapturedOutput(): ?string
-    {
-        // No console capture in mock
-        return null;
-    }
-
-    /**
-     * Measure an element's dimensions (null in mock).
-     *
-     * @param string $id Element ID to measure
-     * @return array{x: int, y: int, width: int, height: int}|null
-     */
-    public function measureElement(string $id): ?array
-    {
-        // No element measurement in mock
-        return null;
     }
 }

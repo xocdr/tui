@@ -119,7 +119,7 @@ class TuiTestCaseTest extends TuiTestCase
 
         $this->render(fn () => Text::create('Timer test'));
 
-        $this->getInstance()->addTimer(100, function () use (&$timerFired) {
+        $this->getInstance()->getTimerManager()->addTimer(100, function () use (&$timerFired) {
             $timerFired = true;
         });
 
@@ -138,7 +138,7 @@ class TuiTestCaseTest extends TuiTestCase
 
         $this->render(fn () => Text::create('Resize test'));
 
-        $this->getInstance()->onResize(function () use (&$resized) {
+        $this->getInstance()->getEventDispatcher()->on('resize', function () use (&$resized) {
             $resized = true;
         });
 

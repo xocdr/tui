@@ -29,16 +29,24 @@ use Xocdr\Tui\Terminal\Events\FocusEvent;
 use Xocdr\Tui\Terminal\Events\InputEvent;
 use Xocdr\Tui\Terminal\Events\ResizeEvent;
 use Xocdr\Tui\Terminal\Input\InputManager;
-use Xocdr\Tui\Terminal\Input\Key;
 
 /**
- * Represents a running Tui application.
+ * Represents a running TUI application.
  *
- * Wraps ext-tui's Xocdr\Tui\Ext\Instance and adds PHP-specific features:
- * - EventDispatcher with priorities and handler IDs
- * - ComponentRenderer for PHP component builders
- * - Additional hooks (onRender, memo, reducer, etc.)
- * - HookContext/HookRegistry for PHP hook state management
+ * Runtime orchestrates the application lifecycle and provides access to
+ * specialized managers for different concerns:
+ *
+ * - getTimerManager()    - Timer/interval management
+ * - getTerminalManager() - Terminal control (title, cursor, capabilities)
+ * - getOutputManager()   - Output capture and measurement
+ * - getInputManager()    - Input event handling
+ *
+ * @example
+ * $runtime = (new MyApp())->run();
+ *
+ * // Access managers for specific functionality:
+ * $runtime->getTimerManager()->addTimer(100, fn() => doSomething());
+ * $runtime->getTerminalManager()->setTitle('My App');
  */
 class Runtime implements InstanceInterface
 {
@@ -132,25 +140,20 @@ class Runtime implements InstanceInterface
         HookRegistry::createContext($this->id);
     }
 
-    /**
-     * Get the timer manager.
-     */
+    // =========================================================================
+    // Manager Getters (InstanceInterface)
+    // =========================================================================
+
     public function getTimerManager(): TimerManagerInterface
     {
         return $this->timerManager;
     }
 
-    /**
-     * Get the output manager.
-     */
     public function getOutputManager(): OutputManagerInterface
     {
         return $this->outputManager;
     }
 
-    /**
-     * Get the input manager (lazy-initialized).
-     */
     public function getInputManager(): InputManagerInterface
     {
         if ($this->inputManager === null) {
@@ -164,36 +167,25 @@ class Runtime implements InstanceInterface
         return $this->inputManager;
     }
 
-    /**
-     * Get the terminal manager.
-     *
-     * Provides access to terminal control features:
-     * - Window title control
-     * - Cursor shape and visibility
-     * - Terminal capability detection
-     */
     public function getTerminalManager(): TerminalManagerInterface
     {
         return $this->terminalManager;
     }
 
-    /**
-     * Start the render loop.
-     */
+    // =========================================================================
+    // Lifecycle (LifecycleInterface)
+    // =========================================================================
+
     public function start(): void
     {
         if ($this->lifecycle->isRunning() || $this->lifecycle->isStopped()) {
             return;
         }
 
-        // Create the render callback
-        // Note: ext-tui may pass the previous render result on rerender,
-        // so we accept an optional parameter to avoid ArgumentCountError
         $renderCallback = function (mixed $previousResult = null) {
             return $this->renderComponent();
         };
 
-        // Start the lifecycle
         $tuiInstance = $this->lifecycle->start($renderCallback);
 
         // Store initial size
@@ -203,18 +195,190 @@ class Runtime implements InstanceInterface
             $this->previousHeight = $size['height'];
         }
 
-        // Set up native event handlers
         $this->setupNativeHandlers($tuiInstance);
-
-        // Register any timers that were queued during initial render
         $this->timerManager->flushPendingTimers();
     }
 
+    public function unmount(): void
+    {
+        if ($this->component instanceof StatefulComponent) {
+            $this->component->detach();
+        }
+
+        $this->hookContext->cleanup();
+        HookRegistry::removeContext($this->id);
+        $this->eventDispatcher->removeAll();
+        $this->timerManager->clearPendingTimers();
+        $this->lifecycle->stop();
+    }
+
+    public function waitUntilExit(): void
+    {
+        $this->lifecycle->waitUntilExit();
+    }
+
+    public function isRunning(): bool
+    {
+        return $this->lifecycle->isRunning();
+    }
+
+    // =========================================================================
+    // Rerender (RerenderableInterface)
+    // =========================================================================
+
+    public function rerender(): void
+    {
+        $this->lifecycle->rerender();
+    }
+
+    // =========================================================================
+    // Focus (FocusableInterface)
+    // =========================================================================
+
+    public function focusNext(): void
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->focusNext();
+        }
+    }
+
+    public function focusPrevious(): void
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->focusPrev();
+        }
+    }
+
+    public function focus(string $id): void
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            $extInstance->focus($id);
+        }
+    }
+
+    public function getFocusedNode(): ?array
+    {
+        $extInstance = $this->lifecycle->getTuiInstance();
+        if ($extInstance !== null) {
+            return $extInstance->getFocusedNode();
+        }
+
+        return null;
+    }
+
+    public function getFocusManager(): FocusManager
+    {
+        if ($this->focusManager === null) {
+            $this->focusManager = new FocusManager($this);
+        }
+
+        return $this->focusManager;
+    }
+
+    // =========================================================================
+    // Size (SizableInterface)
+    // =========================================================================
+
+    public function getSize(): ?array
+    {
+        return $this->lifecycle->getSize();
+    }
+
+    // =========================================================================
+    // Core Getters (InstanceInterface)
+    // =========================================================================
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function getEventDispatcher(): EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
+
+    public function getHookContext(): HookContextInterface
+    {
+        return $this->hookContext;
+    }
+
+    public function getOptions(): array
+    {
+        return $this->lifecycle->getOptions();
+    }
+
+    public function getTuiInstance(): ?\Xocdr\Tui\Ext\Instance
+    {
+        return $this->lifecycle->getTuiInstance();
+    }
+
+    // =========================================================================
+    // Debug Mode
+    // =========================================================================
+
+    public function enableDebug(): self
+    {
+        $this->inspector = new Inspector($this);
+        $this->inspector->enable();
+
+        $this->getInputManager()->onKey(['d'], function (\Xocdr\Tui\Ext\Key $key) {
+            if ($key->ctrl && $key->shift && $this->inspector !== null) {
+                $this->inspector->toggle();
+                $this->rerender();
+            }
+        }, -50);
+
+        return $this;
+    }
+
+    public function getInspector(): ?Inspector
+    {
+        return $this->inspector;
+    }
+
+    public function isDebugEnabled(): bool
+    {
+        return $this->inspector !== null && $this->inspector->isEnabled();
+    }
+
+    /**
+     * Get the root component for debugging.
+     *
+     * Returns the current component tree root.
+     */
+    public function getRootNode(): ?Component
+    {
+        $comp = $this->component;
+
+        if ($comp instanceof StatefulComponent) {
+            // StatefulComponent wraps a callable - let it render
+            return $comp->render();
+        }
+
+        if (is_callable($comp)) {
+            // Invoke callable within hook context
+            return HookRegistry::withContext($this->hookContext, function () use ($comp) {
+                return $comp();
+            });
+        }
+
+        if ($comp instanceof Component) {
+            return $comp;
+        }
+
+        return null;
+    }
+
+    // =========================================================================
+    // Internal
+    // =========================================================================
+
     /**
      * Render the component tree.
-     *
-     * Cursor visibility is handled by ext-tui inside the sync block
-     * based on the focused node's showCursor property.
      *
      * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
      *
@@ -222,9 +386,6 @@ class Runtime implements InstanceInterface
      */
     private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
     {
-        // Run with hook context
-        // Note: Cursor visibility is now handled by ext-tui inside the sync block
-        // based on the focused node's showCursor property
         $node = HookRegistry::withContext($this->hookContext, function () {
             return $this->renderer->render($this->component);
         });
@@ -238,12 +399,9 @@ class Runtime implements InstanceInterface
 
     /**
      * Set up native extension event handlers.
-     *
-     * @param \Xocdr\Tui\Ext\Instance $extInstance The ext-tui Instance
      */
     private function setupNativeHandlers(\Xocdr\Tui\Ext\Instance $extInstance): void
     {
-        // Input handler - use Instance method API
         if ($this->eventDispatcher->hasListeners('input')) {
             $extInstance->setInputHandler(function (\Xocdr\Tui\Ext\Key $key) {
                 $event = new InputEvent($key->key, $key);
@@ -251,7 +409,6 @@ class Runtime implements InstanceInterface
             });
         }
 
-        // Focus handler - use Instance method API
         if ($this->eventDispatcher->hasListeners('focus')) {
             $extInstance->setFocusHandler(function (\Xocdr\Tui\Ext\FocusEvent $nativeEvent) {
                 $event = new FocusEvent(
@@ -263,7 +420,6 @@ class Runtime implements InstanceInterface
             });
         }
 
-        // Resize handler - use Instance method API
         $extInstance->setResizeHandler(function () {
             $size = $this->lifecycle->getSize();
             if ($size === null) {
@@ -283,592 +439,6 @@ class Runtime implements InstanceInterface
             $this->eventDispatcher->emit('resize', $event);
         });
 
-        // Tab navigation bindings
         $this->getInputManager()->setupTabNavigation();
-    }
-
-    /**
-     * Request a re-render.
-     */
-    public function rerender(): void
-    {
-        $this->lifecycle->rerender();
-    }
-
-    /**
-     * Unmount and clean up.
-     */
-    public function unmount(): void
-    {
-        // Detach stateful components
-        if ($this->component instanceof StatefulComponent) {
-            $this->component->detach();
-        }
-
-        // Clean up hooks
-        $this->hookContext->cleanup();
-        HookRegistry::removeContext($this->id);
-
-        // Clean up event handlers to prevent memory leaks
-        $this->eventDispatcher->removeAll();
-
-        // Clear any pending timers that weren't flushed
-        $this->timerManager->clearPendingTimers();
-
-        // Stop lifecycle
-        $this->lifecycle->stop();
-    }
-
-    /**
-     * Wait for the application to exit.
-     */
-    public function waitUntilExit(): void
-    {
-        $this->lifecycle->waitUntilExit();
-    }
-
-    /**
-     * Check if the instance is running.
-     */
-    public function isRunning(): bool
-    {
-        return $this->lifecycle->isRunning();
-    }
-
-    /**
-     * Get the event dispatcher.
-     */
-    public function getEventDispatcher(): EventDispatcherInterface
-    {
-        return $this->eventDispatcher;
-    }
-
-    /**
-     * Get the hook context.
-     */
-    public function getHookContext(): HookContextInterface
-    {
-        return $this->hookContext;
-    }
-
-    /**
-     * Get render options.
-     *
-     * @return array<string, mixed>
-     */
-    public function getOptions(): array
-    {
-        return $this->lifecycle->getOptions();
-    }
-
-    /**
-     * Get the underlying TuiInstance.
-     */
-    public function getTuiInstance(): ?\Xocdr\Tui\Ext\Instance
-    {
-        return $this->lifecycle->getTuiInstance();
-    }
-
-    // =========================================================================
-    // Input Handling (delegated to InputManager)
-    // =========================================================================
-
-    /**
-     * Register an input event handler.
-     *
-     * @return string Handler ID for removal
-     */
-    public function onInput(callable $handler, int $priority = 0): string
-    {
-        return $this->getInputManager()->onInput($handler, $priority);
-    }
-
-    /**
-     * Register a handler for a specific key or key combination.
-     *
-     * @param Key|string|array<Key|\Xocdr\Tui\Terminal\Input\Modifier|string> $key The key to listen for
-     * @param callable(\Xocdr\Tui\Ext\Key): void $handler Handler to call when key is pressed
-     * @param int $priority Higher priority = called first
-     * @return string Handler ID for removal
-     *
-     * @example
-     * // Single key
-     * $instance->onKey(Key::UP, fn($key) => $this->moveUp());
-     *
-     * // Character key
-     * $instance->onKey('q', fn($key) => $this->quit());
-     *
-     * // Key with modifier
-     * $instance->onKey([Modifier::CTRL, 'c'], fn($key) => exit());
-     *
-     * // Shift+Tab
-     * $instance->onKey([Modifier::SHIFT, Key::TAB], fn($key) => $this->focusPrev());
-     */
-    public function onKey(Key|string|array $key, callable $handler, int $priority = 0): string
-    {
-        return $this->getInputManager()->onKey($key, $handler, $priority);
-    }
-
-    /**
-     * Register a focus change handler.
-     *
-     * @return string Handler ID for removal
-     */
-    public function onFocus(callable $handler, int $priority = 0): string
-    {
-        return $this->eventDispatcher->on('focus', $handler, $priority);
-    }
-
-    /**
-     * Register a resize handler.
-     *
-     * @return string Handler ID for removal
-     */
-    public function onResize(callable $handler, int $priority = 0): string
-    {
-        return $this->eventDispatcher->on('resize', $handler, $priority);
-    }
-
-    /**
-     * Remove an event handler.
-     */
-    public function off(string $handlerId): void
-    {
-        $this->eventDispatcher->off($handlerId);
-    }
-
-    // =========================================================================
-    // Focus Management
-    // =========================================================================
-
-    /**
-     * Move focus to the next focusable element.
-     */
-    public function focusNext(): void
-    {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->focusNext();
-        }
-    }
-
-    /**
-     * Move focus to the previous focusable element.
-     */
-    public function focusPrevious(): void
-    {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->focusPrev();
-        }
-    }
-
-    /**
-     * Focus a specific element by its ID.
-     *
-     * @param string $id The focusable element's ID
-     *
-     * @note This is a no-op if the application is not running.
-     */
-    public function focus(string $id): void
-    {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            $extInstance->focus($id);
-        }
-    }
-
-    /**
-     * Get the FocusManager service.
-     */
-    public function getFocusManager(): FocusManager
-    {
-        if ($this->focusManager === null) {
-            $this->focusManager = new FocusManager($this);
-        }
-
-        return $this->focusManager;
-    }
-
-    /**
-     * Enable Tab/Shift+Tab focus navigation.
-     */
-    public function enableTabNavigation(): self
-    {
-        $this->getInputManager()->enableTabNavigation();
-
-        return $this;
-    }
-
-    /**
-     * Disable Tab/Shift+Tab focus navigation.
-     *
-     * Use this when you need Tab key for other purposes (e.g., text input).
-     */
-    public function disableTabNavigation(): self
-    {
-        $this->getInputManager()->disableTabNavigation();
-
-        return $this;
-    }
-
-    /**
-     * Check if Tab navigation is enabled.
-     */
-    public function isTabNavigationEnabled(): bool
-    {
-        return $this->getInputManager()->isTabNavigationEnabled();
-    }
-
-    // =========================================================================
-    // Debug Mode
-    // =========================================================================
-
-    /**
-     * Enable debug mode with the Inspector.
-     *
-     * When enabled, you can access the inspector via getInspector()
-     * and use Ctrl+Shift+D to toggle debug output.
-     */
-    public function enableDebug(): self
-    {
-        $this->inspector = new Inspector($this);
-        $this->inspector->enable();
-
-        // Set up Ctrl+Shift+D to toggle inspector
-        $this->onKey(['d'], function (\Xocdr\Tui\Ext\Key $key) {
-            if ($key->ctrl && $key->shift && $this->inspector !== null) {
-                $this->inspector->toggle();
-                $this->rerender();
-            }
-        }, -50);
-
-        return $this;
-    }
-
-    /**
-     * Get the debug inspector.
-     */
-    public function getInspector(): ?Inspector
-    {
-        return $this->inspector;
-    }
-
-    /**
-     * Check if debug mode is enabled.
-     */
-    public function isDebugEnabled(): bool
-    {
-        return $this->inspector !== null && $this->inspector->isEnabled();
-    }
-
-    /**
-     * Get the root rendered node (for inspector tree traversal).
-     */
-    public function getRootNode(): mixed
-    {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'getRootNode')) {
-            return $extInstance->getRootNode();
-        }
-
-        return null;
-    }
-
-    // =========================================================================
-    // Terminal Control (delegated to TerminalManager)
-    // =========================================================================
-
-    /**
-     * Set the terminal window/tab title.
-     *
-     * Uses OSC 2 escape sequence. The title will be displayed in the
-     * terminal window title bar and/or tab.
-     *
-     * @param string $title The title to set
-     *
-     * @example
-     * $app->setWindowTitle('My App - Running');
-     * $app->setWindowTitle('Processing: 50%');
-     */
-    public function setWindowTitle(string $title): self
-    {
-        $this->terminalManager->setTitle($title);
-
-        return $this;
-    }
-
-    /**
-     * Reset the terminal window title to empty/default.
-     */
-    public function resetWindowTitle(): self
-    {
-        $this->terminalManager->resetTitle();
-
-        return $this;
-    }
-
-    /**
-     * Set the cursor shape.
-     *
-     * @param string $shape One of: 'default', 'block', 'block_blink',
-     *                      'underline', 'underline_blink', 'bar', 'bar_blink'
-     *
-     * @example
-     * $app->setCursorShape('bar');       // I-beam for text input
-     * $app->setCursorShape('block');     // Block for normal mode
-     * $app->setCursorShape('underline'); // Underline cursor
-     */
-    public function setCursorShape(string $shape): self
-    {
-        $this->terminalManager->setCursorShape($shape);
-
-        return $this;
-    }
-
-    /**
-     * Show the cursor.
-     */
-    public function showCursor(): self
-    {
-        $this->terminalManager->showCursor();
-
-        return $this;
-    }
-
-    /**
-     * Hide the cursor.
-     */
-    public function hideCursor(): self
-    {
-        $this->terminalManager->hideCursor();
-
-        return $this;
-    }
-
-    /**
-     * Get terminal capabilities.
-     *
-     * Returns an array with detected terminal type and supported features.
-     *
-     * @return array{
-     *     terminal: string,
-     *     name: string,
-     *     version: string|null,
-     *     color_depth: int,
-     *     capabilities: array<string, bool>
-     * }|null
-     *
-     * @example
-     * $caps = $app->getCapabilities();
-     * if ($caps['capabilities']['true_color']) {
-     *     // Use 24-bit colors
-     * }
-     */
-    public function getCapabilities(): ?array
-    {
-        return $this->terminalManager->getCapabilities();
-    }
-
-    /**
-     * Check if terminal has a specific capability.
-     *
-     * @param string $name Capability name (e.g., 'true_color', 'mouse', 'hyperlinks_osc8')
-     *
-     * @example
-     * if ($app->hasCapability('true_color')) {
-     *     // Use 24-bit colors
-     * }
-     * if ($app->hasCapability('hyperlinks_osc8')) {
-     *     // Use clickable hyperlinks
-     * }
-     */
-    public function hasCapability(string $name): bool
-    {
-        return $this->terminalManager->hasCapability($name);
-    }
-
-    // =========================================================================
-    // Size and Node Info
-    // =========================================================================
-
-    /**
-     * Get current terminal size.
-     *
-     * @return array{width: int, height: int, columns: int, rows: int}|null
-     */
-    public function getSize(): ?array
-    {
-        return $this->lifecycle->getSize();
-    }
-
-    /**
-     * Get info about the currently focused node.
-     *
-     * @return array<string, mixed>|null
-     */
-    public function getFocusedNode(): ?array
-    {
-        $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null) {
-            return $extInstance->getFocusedNode();
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the instance ID.
-     */
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    // =========================================================================
-    // Timer Management (delegated to TimerManager)
-    // =========================================================================
-
-    /**
-     * Add a timer that calls the callback at the specified interval.
-     *
-     * @param int $intervalMs Interval in milliseconds
-     * @param callable(): void $callback Callback to invoke
-     * @return int Timer ID for later removal
-     *
-     * @example
-     * // Update every 100ms
-     * $timerId = $instance->addTimer(100, fn() => $this->update());
-     *
-     * // Animation frame (60fps)
-     * $instance->addTimer(16, fn() => $this->animate());
-     */
-    public function addTimer(int $intervalMs, callable $callback): int
-    {
-        return $this->timerManager->addTimer($intervalMs, $callback);
-    }
-
-    /**
-     * Remove a timer by its ID.
-     *
-     * @param int $timerId Timer ID returned from addTimer()
-     */
-    public function removeTimer(int $timerId): void
-    {
-        $this->timerManager->removeTimer($timerId);
-    }
-
-    /**
-     * Set a tick handler that is called on every event loop iteration.
-     *
-     * Use this for polling external data sources, processing queues,
-     * or integrating with other event systems.
-     *
-     * @param callable(): void $handler Handler called each tick
-     *
-     * @example
-     * // Poll for new data each tick
-     * $instance->onTick(function () use ($stream) {
-     *     if ($data = $stream->read()) {
-     *         $this->processData($data);
-     *         $this->rerender();
-     *     }
-     * });
-     *
-     * // Integration with event loop
-     * $instance->onTick(function () use ($loop) {
-     *     $loop->futureTick(fn() => null); // Keep event loop running
-     * });
-     */
-    public function onTick(callable $handler): void
-    {
-        $this->timerManager->onTick($handler);
-    }
-
-    /**
-     * Create an interval that calls the callback repeatedly.
-     *
-     * Similar to JavaScript's setInterval(). Returns a timer ID
-     * that can be used with removeTimer() to stop the interval.
-     *
-     * @param int $intervalMs Interval in milliseconds
-     * @param callable(): void $callback Callback to invoke
-     * @return int Timer ID
-     */
-    public function setInterval(int $intervalMs, callable $callback): int
-    {
-        return $this->timerManager->setInterval($intervalMs, $callback);
-    }
-
-    /**
-     * Clear an interval timer.
-     *
-     * @param int $timerId Timer ID returned from setInterval()
-     */
-    public function clearInterval(int $timerId): void
-    {
-        $this->timerManager->clearInterval($timerId);
-    }
-
-    // =========================================================================
-    // Output Management (delegated to OutputManager)
-    // =========================================================================
-
-    /**
-     * Clear the terminal output.
-     *
-     * Clears the current terminal screen and resets the cursor position.
-     */
-    public function clear(): void
-    {
-        $this->outputManager->clear();
-    }
-
-    /**
-     * Get the last rendered output.
-     *
-     * Returns a string representation of the last rendered frame.
-     * Useful for testing and debugging.
-     */
-    public function getLastOutput(): string
-    {
-        return $this->outputManager->getLastOutput();
-    }
-
-    /**
-     * Set the last output (for testing).
-     *
-     * @internal
-     */
-    public function setLastOutput(string $output): void
-    {
-        $this->outputManager->setLastOutput($output);
-    }
-
-    /**
-     * Get captured console output from the last render.
-     *
-     * Returns any stray echo/print output that occurred during
-     * component rendering. Useful for debugging and testing.
-     *
-     * @return string|null Captured output or null if none
-     */
-    public function getCapturedOutput(): ?string
-    {
-        return $this->outputManager->getCapturedOutput();
-    }
-
-    /**
-     * Measure an element's dimensions by its ID.
-     *
-     * Returns the position and size of a rendered element.
-     * The element must have an id property set.
-     *
-     * @param string $id Element ID to measure
-     * @return array{x: int, y: int, width: int, height: int}|null Dimensions or null if not found
-     */
-    public function measureElement(string $id): ?array
-    {
-        return $this->outputManager->measureElement($id);
     }
 }

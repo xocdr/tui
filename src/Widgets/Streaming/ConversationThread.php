@@ -163,7 +163,7 @@ class ConversationThread extends Widget
         $headerParts = [];
 
         if ($this->showAvatars) {
-            $avatar = $isUser ? '=d' : '>';
+            $avatar = $isUser ? '●' : '◆';
             $headerParts[] = Text::create($avatar . ' ');
         }
 

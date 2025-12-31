@@ -31,37 +31,38 @@ composer require xocdr/tui
 ```php
 <?php
 
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Hooks\Hooks;
 
-$app = function () {
-    $hooks = new Hooks(Tui::getRuntime());
+class Counter extends UI
+{
+    public function build(): Component
+    {
+        [$count, $setCount] = $this->state(0);
 
-    [$count, $setCount] = $hooks->state(0);
-    ['exit' => $exit] = $hooks->app();
+        $this->onKeyPress(function ($input, $key) use ($setCount) {
+            if ($input === 'q' || $key->escape) {
+                $this->exit();
+            }
+            if ($input === ' ') {
+                $setCount(fn($c) => $c + 1);
+            }
+        });
 
-    $hooks->onInput(function ($key) use ($setCount, $exit) {
-        if ($key === 'q') {
-            $exit();
-        }
-        if ($key === ' ') {
-            $setCount(fn($c) => $c + 1);
-        }
-    });
+        return Box::create()
+            ->flexDirection('column')
+            ->padding(1)
+            ->border('round')
+            ->children([
+                Text::create("Count: {$count}")->bold(),
+                Text::create('Press SPACE to increment, Q to quit')->dim(),
+            ]);
+    }
+}
 
-    return Box::create()
-        ->flexDirection('column')
-        ->padding(1)
-        ->border('round')
-        ->children([
-            Text::create("Count: {$count}")->bold(),
-            Text::create('Press SPACE to increment, Q to quit')->dim(),
-        ]);
-};
-
-Tui::render($app)->waitUntilExit();
+(new Counter())->run();
 ```
 
 ## Components
@@ -317,85 +318,116 @@ class MyComponent implements HooksAwareInterface
 
 ## Events
 
-Listen to events on the application:
+Listen to events on the runtime via managers:
 
 ```php
-$app = Tui::render($myApp);
+$runtime = (new MyApp())->run();
 
-// Input events
-$app->onInput(function ($key, $nativeKey) {
+// Input events via InputManager
+$runtime->getInputManager()->onInput(function ($key, $nativeKey) {
     echo "Key pressed: $key";
 }, priority: 10);
 
-// Resize events
-$app->onResize(function ($event) {
+// Resize events via EventDispatcher
+$runtime->getEventDispatcher()->on('resize', function ($event) {
     echo "New size: {$event->width}x{$event->height}";
 });
 
-// Focus events
-$app->onFocus(function ($event) {
+// Focus events via EventDispatcher
+$runtime->getEventDispatcher()->on('focus', function ($event) {
     echo "Focus changed to: {$event->currentId}";
 });
 
 // Remove handler
-$handlerId = $app->onInput($handler);
-$app->off($handlerId);
+$handlerId = $runtime->getInputManager()->onInput($handler);
+$runtime->getEventDispatcher()->off($handlerId);
+```
+
+Within a UI class, use the convenience methods instead:
+
+```php
+class MyApp extends UI
+{
+    public function build(): Component
+    {
+        $this->onKeyPress(function ($input, $key) {
+            // Handle input
+        });
+
+        return Text::create('Hello');
+    }
+}
 ```
 
 ## Advanced Usage
 
-### Runtime Builder
+### Runtime Configuration
 
-Configure with fluent API:
-
-```php
-use Xocdr\Tui\Tui;
-
-$app = Tui::builder()
-    ->component($myApp)
-    ->fullscreen(true)
-    ->exitOnCtrlC(true)
-    ->eventDispatcher($customDispatcher)
-    ->hookContext($customHooks)
-    ->renderer($customRenderer)
-    ->start();
-```
-
-### Dependency Injection
-
-For testing or custom configurations:
+Configure with options array:
 
 ```php
 use Xocdr\Tui\Runtime;
-use Xocdr\Tui\Terminal\Events\EventDispatcher;
-use Xocdr\Tui\Hooks\HookContext;
-use Xocdr\Tui\Rendering\Render\ComponentRenderer;
-use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 
-$app = new Runtime(
+// Using UI class (recommended)
+$runtime = (new MyApp())->run(['fullscreen' => true]);
+
+// Direct Runtime instantiation
+$runtime = new Runtime(
     $component,
     ['fullscreen' => true],
-    new EventDispatcher(),
-    new HookContext(),
-    new ComponentRenderer(new ExtensionRenderTarget())
+    $customEventDispatcher,  // optional
+    $customHookContext,      // optional
+    $customRenderer          // optional
 );
+$runtime->start();
+$runtime->waitUntilExit();
+```
+
+### Manager Access
+
+Access specialized managers from the runtime:
+
+```php
+$runtime = (new MyApp())->run();
+
+// Timer management
+$runtime->getTimerManager()->addTimer(100, fn() => update());
+$runtime->getTimerManager()->setInterval(1000, fn() => tick());
+
+// Terminal control
+$runtime->getTerminalManager()->setTitle('My App');
+$runtime->getTerminalManager()->setCursorShape('bar');
+$runtime->getTerminalManager()->hideCursor();
+
+// Output management
+$runtime->getOutputManager()->clear();
+$dimensions = $runtime->getOutputManager()->measureElement('my-box');
+
+// Input handling
+$runtime->getInputManager()->onInput(fn($key, $native) => handle($key));
+$runtime->getInputManager()->disableTabNavigation();
 ```
 
 ### Testing Without C Extension
 
-Use mock implementations:
+Use MockInstance for testing:
 
 ```php
-use Xocdr\Tui\Tests\Mocks\MockRenderTarget;
-use Xocdr\Tui\Rendering\Render\ComponentRenderer;
+use Xocdr\Tui\Support\Testing\MockInstance;
+use Xocdr\Tui\Components\Text;
 
-$target = new MockRenderTarget();
-$renderer = new ComponentRenderer($target);
+$instance = new MockInstance(Text::create('Hello'), ['width' => 80]);
+$instance->start();
 
-$node = $renderer->render($component);
+// Get rendered output
+$this->assertEquals('Hello', $instance->getLastOutput());
 
-// Inspect created nodes
-$this->assertCount(2, $target->createdNodes);
+// Simulate input
+$instance->simulateInput('q');
+
+// Use managers directly
+$instance->getTimerManager()->addTimer(100, fn() => doSomething());
+$instance->getInputManager()->onInput(fn($key) => handle($key));
 ```
 
 ## Style Utilities
@@ -494,8 +526,8 @@ $chars = Border::getChars('round');
 Access terminal features via `TerminalManager`:
 
 ```php
-$app = Tui::render($myComponent);
-$terminal = $app->getTerminalManager();
+$runtime = (new MyApp())->run();
+$terminal = $runtime->getTerminalManager();
 
 // Window title
 $terminal->setTitle('My TUI App');

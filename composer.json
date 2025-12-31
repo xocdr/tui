@@ -11,7 +11,11 @@
     ],
     "require": {
         "php": "^8.4",
-        "ext-tui": "*"
+        "ext-tui": "*",
+        "intervention/image": "^3.11",
+        "league/commonmark": "^2.8",
+        "scrivo/highlight.php": "^9.18",
+        "sebastian/diff": "^7.0"
     },
     "require-dev": {
         "laravel/pint": "^1.26",

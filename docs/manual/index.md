@@ -15,7 +15,7 @@ Learn the fundamentals of building TUI applications.
 | Guide | Description |
 |-------|-------------|
 | [Components](components.md) | Box, Text, Fragment, and primitive components |
-| [Hooks](hooks.md) | State management with state, onRender, onInput |
+| [Hooks](hooks.md) | State management with state(), effect(), onKeyPress() |
 | [Styling](styling.md) | Colors, text attributes, borders |
 
 ## Widgets
@@ -57,11 +57,13 @@ Explore advanced features and capabilities.
 ### Component Hierarchy
 
 ```
-Tui::render($app)
-└── Widget (stateful)
+(new MyApp())->run()
+└── UI (extends UI, stateful)
     └── build() returns Component
         ├── Box (layout container)
         │   └── children: Component[]
+        ├── BoxColumn (vertical layout)
+        ├── BoxRow (horizontal layout)
         ├── Text (styled text)
         ├── Fragment (invisible grouping)
         ├── Spacer (flexible space)
@@ -71,28 +73,30 @@ Tui::render($app)
 
 ### Common Patterns
 
-**Creating a widget:**
+**Creating an app:**
 ```php
-class MyWidget extends Widget
+class MyApp extends UI
 {
     public function build(): Component
     {
-        [$state, $setState] = $this->hooks()->state('initial');
-        return Text::create($state);
+        [$state, $setState] = $this->state('initial');
+        return new Text($state);
     }
 }
+
+(new MyApp())->run();
 ```
 
 **Handling input:**
 ```php
-$this->hooks()->onInput(function($key, $keyInfo) use ($exit) {
-    if ($keyInfo->escape) $exit();
+$this->onKeyPress(function($input, $key) {
+    if ($key->escape) $this->exit();
 });
 ```
 
 **Using effects:**
 ```php
-$this->hooks()->onRender(function() {
+$this->effect(function() {
     // Side effect here
     return fn() => cleanup();
 }, []);  // Empty deps = run once

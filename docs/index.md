@@ -28,32 +28,37 @@ composer require xocdr/tui
 require 'vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Widget;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\UI;
 
-class Counter extends Widget
+class Counter extends UI
 {
     public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
-        ['exit' => $exit] = $this->hooks()->app();
+        [$count, $setCount] = $this->state(0);
 
-        $this->hooks()->onInput(function($key, $keyInfo) use ($setCount, $exit) {
-            if ($keyInfo->escape) $exit();
-            if ($key === '+') $setCount(fn($c) => $c + 1);
-            if ($key === '-') $setCount(fn($c) => $c - 1);
+        $this->onKeyPress(function($input, $key) use ($setCount) {
+            if ($key->escape) {
+                $this->exit();
+            } elseif ($input === '+') {
+                $setCount(fn($c) => $c + 1);
+            } elseif ($input === '-') {
+                $setCount(fn($c) => $c - 1);
+            }
         });
 
-        return Box::column([
-            Text::create("Count: {$count}")->bold()->cyan(),
-            Text::create('+/- to change, ESC to exit')->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text("Count: {$count}"))->bold()->cyan(),
+                (new Text('+/- to change, ESC to exit'))->dim(),
+            ]),
         ]);
     }
 }
 
-Tui::render(new Counter())->waitUntilExit();
+(new Counter())->run();
 ```
 
 ## Documentation Structure
@@ -67,11 +72,11 @@ Step-by-step guides for building TUI applications:
 
 - **Core Concepts**
   - [Components](manual/components.md) - Box, Text, Fragment, and primitives
-  - [Hooks](manual/hooks.md) - State management with state, onRender, onInput
+  - [Hooks](manual/hooks.md) - State management with state(), effect(), onKeyPress()
   - [Styling](manual/styling.md) - Colors, text attributes, borders
 
 - **Widgets**
-  - [Widget Overview](manual/widgets.md) - Creating stateful widgets
+  - [Widget Overview](manual/widgets.md) - Pre-built widgets (Table, Spinner, ProgressBar)
   - [Input Widgets](manual/widgets/input-widgets.md) - Input, SelectList, Autocomplete
   - [Display Widgets](manual/widgets/display-widgets.md) - TodoList, Tree, Tabs
   - [Feedback Widgets](manual/widgets/feedback-widgets.md) - Alert, Badge, Toast
@@ -87,7 +92,7 @@ Step-by-step guides for building TUI applications:
   - [Recording](manual/recording.md) - Session recording
 
 - **Testing**
-  - [Testing](manual/testing.md) - Testing components and widgets
+  - [Testing](manual/testing.md) - Testing components
 
 ### Reference (API Documentation)
 
@@ -105,11 +110,11 @@ Complete API reference:
 
 ## Features
 
-- **Component-Based** - Build UIs with composable Box, Text, and widget components
-- **Hooks** - React-style state management with state(), onRender(), onInput()
+- **Component-Based** - Build UIs with composable Box, Text, and primitive components
+- **Simple API** - Extend UI class with intuitive methods: state(), onKeyPress(), effect()
 - **Flexbox Layout** - Powered by Yoga engine via ext-tui
-- **Rich Styling** - Full color support including Tailwind palette
-- **Pre-built Widgets** - Input, SelectList, TodoList, Modal, and more
+- **Rich Styling** - Full color support including 141 CSS colors and Tailwind palette
+- **Pre-built Widgets** - Table, Spinner, ProgressBar, BusyBar, and more
 - **Drawing** - Canvas, Buffer, and Sprite for graphics
 - **Animation** - 28 easing functions, tweening, color gradients
 - **Focus Management** - Tab navigation and focus-by-id

@@ -1,41 +1,41 @@
 # Hooks
 
-Hooks provide state management and side effects in TUI components. The recommended approach is to extend the `Widget` class.
+The `UI` class provides built-in hooks for state management and side effects. These methods are available directly on the `UI` class.
 
 ## Getting Started
 
-Widgets extend the `Widget` base class and implement a `build()` method:
+Extend the `UI` class and implement a `build()` method:
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Widget;
+use Xocdr\Tui\UI;
 
-class MyWidget extends Widget
+class MyApp extends UI
 {
     public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
-        ['exit' => $exit] = $this->hooks()->app();
+        [$count, $setCount] = $this->state(0);
 
-        $this->hooks()->onInput(function($key, $keyInfo) use ($exit) {
-            if ($keyInfo->escape) {
-                $exit();
+        $this->onKeyPress(function($input, $key) {
+            if ($key->escape) {
+                $this->exit();
             }
         });
 
-        return Box::column([
-            Text::create("Count: {$count}"),
+        return new Box([
+            new BoxColumn([
+                new Text("Count: {$count}"),
+            ]),
         ]);
     }
 }
 
 // Usage
-Tui::render(new MyWidget())->waitUntilExit();
+(new MyApp())->run();
 ```
-
-> **Note:** The `Widget` class handles hooks setup internally. For advanced use cases, you can also implement `HooksAwareInterface` with `HooksAwareTrait` directly on any component.
 
 ---
 
@@ -46,7 +46,7 @@ Tui::render(new MyWidget())->waitUntilExit();
 Manage component state that persists across renders.
 
 ```php
-[$count, $setCount] = $this->hooks()->state(0);
+[$count, $setCount] = $this->state(0);
 
 // Update with value
 $setCount(5);
@@ -55,13 +55,13 @@ $setCount(5);
 $setCount(fn($c) => $c + 1);
 ```
 
-### onRender
+### effect
 
 Run side effects after render, with cleanup support.
 
 ```php
 // Run once on mount
-$this->hooks()->onRender(function() {
+$this->effect(function() {
     // Setup
     return function() {
         // Cleanup (optional)
@@ -69,29 +69,9 @@ $this->hooks()->onRender(function() {
 }, []);
 
 // Run when dependencies change
-$this->hooks()->onRender(function() use ($count) {
+$this->effect(function() use ($count) {
     // Effect code
 }, [$count]);
-```
-
-### memo
-
-Memoize expensive computations.
-
-```php
-$expensiveValue = $this->hooks()->memo(function() use ($data) {
-    return processData($data);
-}, [$data]);
-```
-
-### callback
-
-Memoize callbacks to prevent unnecessary re-renders.
-
-```php
-$handler = $this->hooks()->callback(function($event) use ($value) {
-    // Handle event
-}, [$value]);
 ```
 
 ### ref
@@ -99,58 +79,47 @@ $handler = $this->hooks()->callback(function($event) use ($value) {
 Create a mutable reference that persists across renders.
 
 ```php
-$inputRef = $this->hooks()->ref('');
+$inputRef = $this->ref('');
 $inputRef->current = 'new value';
-```
-
-### reducer
-
-Manage complex state with a reducer function.
-
-```php
-$reducer = function($state, $action) {
-    return match($action['type']) {
-        'increment' => ['count' => $state['count'] + 1],
-        'decrement' => ['count' => $state['count'] - 1],
-        default => $state,
-    };
-};
-
-[$state, $dispatch] = $this->hooks()->reducer($reducer, ['count' => 0]);
-
-$dispatch(['type' => 'increment']);
 ```
 
 ---
 
-## Input/Output Hooks
+## Input Hooks
 
-### onInput
+### onKeyPress
 
-Handle keyboard input.
+Handle keyboard input with character and key info.
 
 ```php
-$this->hooks()->onInput(function($key, $keyInfo) {
-    // $key is the character pressed
-    // $keyInfo is a \Xocdr\Tui\Ext\Key object with modifiers
+$this->onKeyPress(function($input, $key) {
+    // $input is the character pressed
+    // $key is a Key object with modifiers
 
-    if ($keyInfo->upArrow) {
+    if ($key->upArrow) {
         // Handle up arrow
     }
-    if ($keyInfo->escape) {
+    if ($key->escape) {
         // Handle ESC key
     }
 });
+```
 
-// With options
-$this->hooks()->onInput($handler, ['isActive' => $isFocused]);
+### onInput
+
+Lower-level input handling.
+
+```php
+$this->onInput(function($input, $key) {
+    // Same as onKeyPress
+});
 ```
 
 **Key Properties:**
 
 | Property | Description |
 |----------|-------------|
-| `$key` | Character pressed |
+| `$input` | Character pressed |
 | `upArrow` | Up arrow key |
 | `downArrow` | Down arrow key |
 | `leftArrow` | Left arrow key |
@@ -164,227 +133,90 @@ $this->hooks()->onInput($handler, ['isActive' => $isFocused]);
 | `meta` | Meta/Cmd modifier |
 | `shift` | Shift modifier |
 
-### app
+---
 
-Access application control functions.
+## Application Control
 
-```php
-['exit' => $exit] = $this->hooks()->app();
+### exit
 
-// Exit the application
-$exit(0);  // With exit code
-```
-
-### stdout
-
-Get terminal dimensions and write access.
+Exit the application.
 
 ```php
-$stdout = $this->hooks()->stdout();
-
-$columns = $stdout['columns'];  // Terminal width
-$rows = $stdout['rows'];        // Terminal height
-$stdout['write']('Direct output');
+$this->exit();     // Exit with code 0
+$this->exit(1);    // Exit with code 1
 ```
 
 ---
 
-## Focus Hooks
+## Timer Hooks
 
-### focus
-
-Track focus state of a component.
-
-```php
-['isFocused' => $isFocused, 'focus' => $focus] = $this->hooks()->focus([
-    'autoFocus' => true,  // Focus on mount
-    'isActive' => true,   // Is focusable
-]);
-
-if ($isFocused) {
-    // Render focused state
-}
-```
-
-### focusManager
-
-Navigate focus between components.
-
-```php
-$focusManager = $this->hooks()->focusManager();
-
-$focusManager['focusNext']();      // Focus next element
-$focusManager['focusPrevious']();  // Focus previous element
-```
-
----
-
-## Utility Hooks
-
-### context
-
-Access shared context values (dependency injection).
-
-```php
-$service = $this->hooks()->context(MyService::class);
-```
-
-### toggle
-
-Boolean state with convenient toggle function.
-
-```php
-[$isOpen, $toggle, $setOpen] = $this->hooks()->toggle(false);
-
-$toggle();      // Toggle value
-$setOpen(true); // Set directly
-```
-
-### counter
-
-Numeric counter with increment/decrement.
-
-```php
-$counter = $this->hooks()->counter(0);
-
-$counter['count'];       // Current value
-$counter['increment'](); // +1
-$counter['decrement'](); // -1
-$counter['reset']();     // Back to initial
-$counter['set'](10);     // Set directly
-```
-
-### list
-
-Manage a list of items.
-
-```php
-$list = $this->hooks()->list(['apple', 'banana']);
-
-$list['items'];              // Current items
-$list['add']('cherry');      // Add item
-$list['remove'](0);          // Remove by index
-$list['update'](1, 'grape'); // Update by index
-$list['clear']();            // Clear all
-$list['set'](['new list']);  // Replace all
-```
-
-### previous
-
-Get the previous value of a variable.
-
-```php
-[$count, $setCount] = $this->hooks()->state(0);
-$previousCount = $this->hooks()->previous($count);
-
-// $previousCount is null on first render, then previous value
-```
-
-### interval
+### every
 
 Run a callback at a fixed interval.
 
 ```php
-$this->hooks()->interval(function() {
+$this->every(1000, function() {
     // Called every 1000ms
-}, 1000);
-
-// Conditional interval
-$this->hooks()->interval($callback, 1000, $isActive);
+});
 ```
 
-### animation
+### after
 
-Manage animation state with tweening.
-
-```php
-$animation = $this->hooks()->animation(0, 100, 1000, 'out-cubic');
-
-$animation['value'];       // Current animated value
-$animation['isAnimating']; // Is animation running
-$animation['start']();     // Start animation
-$animation['reset']();     // Reset to initial
-```
-
-### canvas
-
-Create and manage a drawing canvas.
+Run a callback after a delay.
 
 ```php
-['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $this->hooks()->canvas(40, 12);
-
-$canvas->line(0, 0, 79, 47);
-$canvas->circle(40, 24, 15);
-
-$lines = $render();
+$this->after(2000, function() {
+    // Called once after 2000ms
+});
 ```
 
 ---
 
-## Widget Class (Recommended)
-
-The simplest way to use hooks is by extending the `Widget` class:
+## Complete Example
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Widget;
+use Xocdr\Tui\UI;
 
-class Counter extends Widget
+class Counter extends UI
 {
     public function build(): Component
     {
-        [$count, $setCount] = $this->hooks()->state(0);
+        [$count, $setCount] = $this->state(0);
 
-        $this->hooks()->onInput(function($key, $keyInfo) use ($setCount) {
-            if ($keyInfo->upArrow) {
+        $this->onKeyPress(function($input, $key) use ($setCount) {
+            if ($key->upArrow) {
                 $setCount(fn($c) => $c + 1);
             }
-            if ($keyInfo->downArrow) {
+            if ($key->downArrow) {
                 $setCount(fn($c) => $c - 1);
+            }
+            if ($key->escape) {
+                $this->exit();
             }
         });
 
-        return Box::column([
-            Text::create("Count: {$count}")->bold(),
-            Text::create('↑/↓ to change')->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text("Count: {$count}"))->bold(),
+                (new Text('↑/↓ to change, ESC to exit'))->dim(),
+            ]),
         ]);
     }
 }
+
+(new Counter())->run();
 ```
-
-See [Widgets](widgets.md) for more information on creating widgets.
-
-## HooksAware Interface (Advanced)
-
-For custom component classes that don't extend `Widget`, implement `HooksAwareInterface` and use `HooksAwareTrait`:
-
-```php
-use Xocdr\Tui\Components\Component;
-use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Hooks\HooksAwareTrait;
-
-class CustomComponent implements Component, HooksAwareInterface
-{
-    use HooksAwareTrait;
-
-    public function render(): mixed
-    {
-        [$value, $setValue] = $this->hooks()->state('');
-        // ...
-    }
-}
-```
-
-The `Hooks` class implements `HooksInterface` for mocking in tests.
 
 ---
 
 ## See Also
 
-- [Widgets](widgets.md) - Creating stateful widgets
+- [Getting Started](getting-started.md) - First steps with TUI
 - [Components](components.md) - UI components
-- [Testing](testing.md) - Testing widgets with MockHooks
+- [Testing](testing.md) - Testing apps
 - [Animation](animation.md) - Animation utilities
 - [Reference: Hooks](../reference/hooks.md) - Full hooks API reference
