@@ -42,7 +42,7 @@ class HookRegistryTest extends TestCase
     public function testGetCurrentThrowsWithoutContext(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Hooks can only be called during component rendering');
+        $this->expectExceptionMessage('was called outside of component rendering context');
 
         HookRegistry::getCurrent();
     }

@@ -6,7 +6,10 @@ namespace Xocdr\Tui;
 
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
+use Xocdr\Tui\Hooks\HookRegistry;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
+use Xocdr\Tui\Support\Exceptions\ExtensionNotLoadedException;
+use Xocdr\Tui\Terminal\TerminalInfo;
 
 /**
  * Base class for terminal user interfaces.
@@ -25,7 +28,7 @@ use Xocdr\Tui\Hooks\HooksAwareTrait;
  *     }
  * }
  *
- * HelloWorld::run();
+ * (new HelloWorld())->run();
  * ```
  *
  * @example With State
@@ -49,7 +52,7 @@ use Xocdr\Tui\Hooks\HooksAwareTrait;
  *     }
  * }
  *
- * Counter::run();
+ * (new Counter())->run();
  * ```
  *
  * @example With Effects
@@ -72,6 +75,11 @@ use Xocdr\Tui\Hooks\HooksAwareTrait;
 abstract class UI implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
+
+    /**
+     * The runtime instance for this UI.
+     */
+    private ?Runtime $runtime = null;
 
     /**
      * Build the user interface.
@@ -248,7 +256,7 @@ abstract class UI implements Component, HooksAwareInterface
     }
 
     // =========================================================================
-    // Application Control
+    // Runtime Control
     // =========================================================================
 
     /**
@@ -268,11 +276,11 @@ abstract class UI implements Component, HooksAwareInterface
     }
 
     /**
-     * Get the application instance.
+     * Get the runtime instance.
      *
-     * Provides access to lower-level application functionality.
+     * Provides access to lower-level runtime functionality.
      *
-     * @return array<string, mixed> Application context
+     * @return array<string, mixed> Runtime context
      */
     protected function app(): array
     {
@@ -280,60 +288,65 @@ abstract class UI implements Component, HooksAwareInterface
     }
 
     // =========================================================================
-    // Static Runners
+    // Application Runner
     // =========================================================================
 
     /**
-     * Create and run this UI.
+     * Run this UI application.
      *
-     * This is the simplest way to start your application.
+     * Creates a Runtime, starts the render loop, and waits until exit.
      *
-     * @param UI|array<string, mixed>|null $instanceOrOptions Either a UI instance or render options
-     * @param array<string, mixed> $options Render options (when first param is an instance)
-     * @return Application The running application
+     * @param array<string, mixed> $options Render options
+     * @return Runtime The runtime instance
+     *
+     * @throws ExtensionNotLoadedException If ext-tui is not loaded
      *
      * @example
-     * // Simple usage
-     * MyApp::run();
-     *
-     * // With constructor arguments
-     * MyApp::run(new MyApp($arg1, $arg2));
+     * $app = new MyApp();
+     * $app->run();
      *
      * // With options
-     * MyApp::run(['debug' => true]);
+     * $app = new MyApp();
+     * $app->run(['debug' => true]);
      */
-    public static function run(UI|array|null $instanceOrOptions = null, array $options = []): Application
+    public function run(array $options = []): Runtime
     {
-        if (!Tui::isInteractive()) {
+        // Ensure extension is loaded
+        if (!extension_loaded('tui')) {
+            throw new ExtensionNotLoadedException();
+        }
+
+        // Check for interactive terminal
+        if (!TerminalInfo::isInteractive()) {
             fwrite(STDERR, "Error: This application requires an interactive terminal (TTY).\n");
             exit(1);
         }
 
-        // Handle different call signatures
-        if ($instanceOrOptions instanceof UI) {
-            $instance = $instanceOrOptions;
-        } elseif (is_array($instanceOrOptions)) {
-            $instance = new static();
-            $options = $instanceOrOptions;
-        } else {
-            $instance = new static();
+        // Create the runtime
+        $this->runtime = new Runtime($this, $options);
+
+        // Set as current runtime for hooks access
+        Runtime::setCurrent($this->runtime);
+
+        try {
+            $this->runtime->start();
+            $this->runtime->waitUntilExit();
+        } finally {
+            // Cleanup
+            Runtime::setCurrent(null);
+            HookRegistry::removeContext($this->runtime->getId());
         }
 
-        $app = Tui::render($instance, $options);
-        $app->waitUntilExit();
-
-        return $app;
+        return $this->runtime;
     }
 
     /**
-     * Create the UI instance without starting it.
+     * Get the runtime instance.
      *
-     * Useful for testing or when you need more control.
-     *
-     * @return static
+     * @return Runtime|null The runtime, or null if not running
      */
-    public static function create(): static
+    public function runtime(): ?Runtime
     {
-        return new static();
+        return $this->runtime;
     }
 }

@@ -18,10 +18,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 use Xocdr\Tui\Widgets\Table;
 
@@ -63,32 +62,35 @@ class TableDemo extends UI
         $lines1 = $this->table1->toLines();
         $lines2 = $this->table2->toLines();
 
+        $children = [
+            (new Text('Table Component Demo'))->styles('cyan bold'),
+            new Text(''),
+            (new Text('Single border:'))->dim(),
+        ];
+
         // Render first table with bold header
-        $table1Texts = [];
         foreach ($lines1 as $i => $line) {
-            $text = Text::create($line);
+            $text = new Text($line);
             if ($i === 1) { // Header row
-                $text = $text->bold();
+                $text->bold();
             }
-            $table1Texts[] = $text;
+            $children[] = $text;
         }
 
-        // Render second table (plain)
-        $table2Texts = array_map(fn ($line) => Text::create($line), $lines2);
+        $children[] = new Text('');
+        $children[] = (new Text('Double border:'))->dim();
 
-        return Box::column([
-            Text::create('Table Component Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
-            Text::create('Single border:')->dim(),
-            ...$table1Texts,
-            Text::create(''),
-            Text::create('Double border:')->dim(),
-            ...$table2Texts,
-            Text::create(''),
-            Text::create('Features: headers, alignment, border styles, colors')->dim(),
-            Text::create('Press ESC to exit.')->dim(),
-        ]);
+        // Render second table (plain)
+        foreach ($lines2 as $line) {
+            $children[] = new Text($line);
+        }
+
+        $children[] = new Text('');
+        $children[] = (new Text('Features: headers, alignment, border styles, colors'))->dim();
+        $children[] = (new Text('Press ESC to exit.'))->dim();
+
+        return new BoxColumn($children);
     }
 }
 
-TableDemo::run(new TableDemo($table1, $table2));
+(new TableDemo($table1, $table2))->run();

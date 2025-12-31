@@ -98,16 +98,25 @@ class SpriteTest extends TestCase
         $this->assertSame('idle', $sprite->getAnimation());
     }
 
-    public function testSetFrame(): void
+    public function testPlayStop(): void
     {
         $sprite = $this->createTestSprite();
 
-        $sprite->setFrame(1);
-        $this->assertSame(1, $sprite->getFrame());
+        $this->assertTrue($sprite->isPlaying());
 
-        // Out of bounds should clamp
-        $sprite->setFrame(10);
-        $this->assertSame(1, $sprite->getFrame()); // Still at last valid frame
+        $sprite->stop();
+        $this->assertFalse($sprite->isPlaying());
+
+        // When stopped, update shouldn't advance frame
+        $sprite->update(150);
+        $this->assertSame(0, $sprite->getFrame());
+
+        $sprite->play();
+        $this->assertTrue($sprite->isPlaying());
+
+        // Now update should advance frame
+        $sprite->update(150);
+        $this->assertSame(1, $sprite->getFrame());
     }
 
     public function testPosition(): void

@@ -8,12 +8,34 @@ namespace Xocdr\Tui\Contracts;
  * Interface for terminal control features.
  *
  * Provides a unified interface for:
+ * - Terminal size and environment detection
  * - Window title control
  * - Cursor shape and visibility
  * - Terminal capability detection
  */
 interface TerminalManagerInterface
 {
+    // =========================================================================
+    // Terminal Info
+    // =========================================================================
+
+    /**
+     * Get terminal dimensions.
+     *
+     * @return array{width: int, height: int}
+     */
+    public function getSize(): array;
+
+    /**
+     * Check if running in an interactive terminal (TTY).
+     */
+    public function isInteractive(): bool;
+
+    /**
+     * Check if running in a CI environment.
+     */
+    public function isCi(): bool;
+
     // =========================================================================
     // Window Title
     // =========================================================================

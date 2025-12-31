@@ -16,6 +16,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
@@ -46,12 +47,10 @@ class FocusDemo extends UI
         $menuItems = [];
         foreach ($items as $index => $label) {
             $isFocused = $index === $focusIndex;
-
-            $text = Text::create(($isFocused ? '> ' : '  ') . $label);
+            $text = new Text(($isFocused ? '> ' : '  ') . $label);
             if ($isFocused) {
                 $text->bold()->color(Color::Cyan);
             }
-
             $menuItems[] = $text;
         }
 
@@ -59,47 +58,42 @@ class FocusDemo extends UI
         $boxedItems = [];
         foreach ($items as $index => $label) {
             $isFocused = $index === $focusIndex;
-
-            $text = Text::create($label);
+            $text = new Text($label);
             if ($isFocused) {
                 $text->bold()->color(Color::Cyan);
             }
 
-            $box = Box::create()
-                ->padding(1)
-                ->children([$text]);
-
+            $box = (new Box([$text]))->padding(1);
             if ($isFocused) {
                 $box->border('round')->borderColor('#00ffff');
             } else {
                 $box->border('single')->borderColor('#444444');
             }
-
             $boxedItems[] = $box;
         }
 
-        return Box::column([
-            Text::create('=== Focus Management Demo ===')->bold()->color(Color::Cyan),
-            Text::create('Navigate with Tab/Arrow keys, q to quit')->dim(),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('=== Focus Management Demo ==='))->bold()->color(Color::Cyan),
+                (new Text('Navigate with Tab/Arrow keys, q to quit'))->dim(),
+                new Newline(),
 
-            // Single box menu (cleaner approach)
-            Text::create('Menu (single box):')->dim(),
-            Box::create()
-                ->border('single')
-                ->borderColor('#00ffff')
-                ->padding(1)
-                ->children([Box::column($menuItems)]),
-            Newline::create(),
+                // Single box menu (cleaner approach)
+                (new Text('Menu (single box):'))->dim(),
+                (new Box([
+                    new BoxColumn($menuItems),
+                ]))->border('single')->borderColor('#00ffff')->padding(1),
+                new Newline(),
 
-            // Individual boxes (alternative approach)
-            Text::create('Menu (individual boxes):')->dim(),
-            Box::column($boxedItems)->gap(1),
-            Newline::create(),
+                // Individual boxes (alternative approach)
+                (new Text('Menu (individual boxes):'))->dim(),
+                (new BoxColumn($boxedItems))->gap(1),
+                new Newline(),
 
-            Text::create('Selected: ' . $items[$focusIndex])->color(Color::Green),
+                (new Text('Selected: ' . $items[$focusIndex]))->color(Color::Green),
+            ]),
         ]);
     }
 }
 
-FocusDemo::run();
+(new FocusDemo())->run();

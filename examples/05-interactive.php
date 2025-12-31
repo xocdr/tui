@@ -17,11 +17,11 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Tui;
 use Xocdr\Tui\UI;
 
 class InteractiveDemo extends UI
@@ -90,62 +90,57 @@ class InteractiveDemo extends UI
             }
         });
 
-        // Format modifier display
-        $ctrlColor = $modifierState['ctrl'] ? Color::Green : Color::Red;
-        $altColor = $modifierState['alt'] ? Color::Green : Color::Red;
-        $shiftColor = $modifierState['shift'] ? Color::Green : Color::Red;
-        $metaColor = $modifierState['meta'] ? Color::Green : Color::Red;
+        return new Box([
+            new BoxColumn([
+                (new Text('=== Interactive Input Demo ==='))->styles('cyan bold'),
+                new Text('Press any key to see its representation.'),
+                (new Text('Press "q" or ESC to exit.'))->dim(),
+                new Newline(),
 
-        return Box::column([
-            Text::create('=== Interactive Input Demo ===')->bold()->color(Color::Cyan),
-            Text::create('Press any key to see its representation.'),
-            Text::create('Press "q" or ESC to exit.')->dim(),
-            Newline::create(),
+                new BoxRow([
+                    (new Text('Last key: '))->bold(),
+                    (new Text($lastKey))->styles('green'),
+                ]),
+                new BoxRow([
+                    (new Text('Key count: '))->bold(),
+                    (new Text((string) $keyCount))->styles('yellow'),
+                ]),
+                new Newline(),
 
-            Box::row([
-                Text::create('Last key: ')->bold(),
-                Text::create($lastKey)->color(Color::Green),
-            ]),
+                (new Text('Key details:'))->bold(),
+                new BoxRow([
+                    (new Text('  Raw input: '))->dim(),
+                    (new Text($rawInput !== '' ? "'" . $rawInput . "'" : '(empty)'))->styles('magenta'),
+                ]),
+                new BoxRow([
+                    (new Text('  Key name:  '))->dim(),
+                    (new Text($keyName !== '' ? $keyName : '(none)'))->styles('cyan'),
+                ]),
+                new Newline(),
 
-            Box::row([
-                Text::create('Key count: ')->bold(),
-                Text::create((string) $keyCount)->color(Color::Yellow),
-            ]),
-            Newline::create(),
+                (new Text('Modifier flags:'))->bold(),
+                new BoxRow([
+                    (new Text('  CTRL:  '))->dim(),
+                    (new Text($modifierState['ctrl'] ? 'YES' : 'no'))->styles($modifierState['ctrl'] ? 'green' : 'red'),
+                    (new Text('   ALT:   '))->dim(),
+                    (new Text($modifierState['alt'] ? 'YES' : 'no'))->styles($modifierState['alt'] ? 'green' : 'red'),
+                ]),
+                new BoxRow([
+                    (new Text('  SHIFT: '))->dim(),
+                    (new Text($modifierState['shift'] ? 'YES' : 'no'))->styles($modifierState['shift'] ? 'green' : 'red'),
+                    (new Text('   META:  '))->dim(),
+                    (new Text($modifierState['meta'] ? 'YES' : 'no'))->styles($modifierState['meta'] ? 'green' : 'red'),
+                ]),
+                new Newline(),
 
-            Text::create('Key details:')->bold(),
-            Box::row([
-                Text::create('  Raw input: ')->dim(),
-                Text::create($rawInput !== '' ? "'" . $rawInput . "'" : '(empty)')->color(Color::Magenta),
+                (new Text('Try these combinations:'))->dim(),
+                (new Text('  - Ctrl+A, Ctrl+C, Ctrl+L'))->dim(),
+                (new Text('  - Arrow keys (UP, DOWN, LEFT, RIGHT)'))->dim(),
+                (new Text('  - Tab, Enter, Escape, Backspace'))->dim(),
+                (new Text('  - Shift+Arrow (may show SHIFT flag)'))->dim(),
             ]),
-            Box::row([
-                Text::create('  Key name:  ')->dim(),
-                Text::create($keyName !== '' ? $keyName : '(none)')->color(Color::Cyan),
-            ]),
-            Newline::create(),
-
-            Text::create('Modifier flags:')->bold(),
-            Box::row([
-                Text::create('  CTRL:  ')->dim(),
-                Text::create($modifierState['ctrl'] ? 'YES' : 'no')->color($ctrlColor),
-                Text::create('   ALT:   ')->dim(),
-                Text::create($modifierState['alt'] ? 'YES' : 'no')->color($altColor),
-            ]),
-            Box::row([
-                Text::create('  SHIFT: ')->dim(),
-                Text::create($modifierState['shift'] ? 'YES' : 'no')->color($shiftColor),
-                Text::create('   META:  ')->dim(),
-                Text::create($modifierState['meta'] ? 'YES' : 'no')->color($metaColor),
-            ]),
-            Newline::create(),
-
-            Text::create('Try these combinations:')->dim(),
-            Text::create('  - Ctrl+A, Ctrl+C, Ctrl+L')->dim(),
-            Text::create('  - Arrow keys (UP, DOWN, LEFT, RIGHT)')->dim(),
-            Text::create('  - Tab, Enter, Escape, Backspace')->dim(),
-            Text::create('  - Shift+Arrow (may show SHIFT flag)')->dim(),
         ]);
     }
 }
 
-Tui::render(new InteractiveDemo(), ['exitOnCtrlC' => false])->waitUntilExit();
+(new InteractiveDemo())->run(['exitOnCtrlC' => false]);

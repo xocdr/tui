@@ -11,6 +11,7 @@ use Xocdr\Tui\Contracts\SpriteInterface;
  *
  * Supports multiple animations with frame timing, position control,
  * horizontal flipping, and AABB collision detection.
+ * Animation is controlled via play()/stop() methods.
  *
  * @example
  * $sprite = Sprite::create([
@@ -25,7 +26,11 @@ use Xocdr\Tui\Contracts\SpriteInterface;
  * ]);
  * $sprite->setPosition(10, 5);
  * $sprite->setAnimation('walk');
- * $sprite->update(16); // Advance by 16ms
+ * $sprite->update(16); // Advance by 16ms (only if playing)
+ *
+ * // Control animation
+ * $sprite->stop();  // Pause animation
+ * $sprite->play();  // Resume animation
  */
 class Sprite implements SpriteInterface
 {
@@ -50,6 +55,8 @@ class Sprite implements SpriteInterface
     private bool $visible = true;
 
     private bool $loop = true;
+
+    private bool $playing = true;
 
     private bool $useNative;
 
@@ -101,8 +108,13 @@ class Sprite implements SpriteInterface
 
     public function update(int $deltaMs): void
     {
+        if (!$this->playing) {
+            return;
+        }
+
         if ($this->useNative && $this->native !== null) {
             tui_sprite_update($this->native, $deltaMs);
+
             return;
         }
 
@@ -161,32 +173,31 @@ class Sprite implements SpriteInterface
     }
 
     /**
-     * Set the current frame index.
+     * Start the animation.
      */
-    public function setFrame(int $frame): void
+    public function play(): self
     {
-        $frames = $this->getCurrentFrames();
-        if ($frame >= 0 && $frame < count($frames)) {
-            $this->currentFrame = $frame;
-            $this->frameTime = 0;
-        }
+        $this->playing = true;
+
+        return $this;
     }
 
     /**
-     * Advance to the next frame.
+     * Stop the animation.
      */
-    public function advance(): void
+    public function stop(): self
     {
-        $frames = $this->getCurrentFrames();
-        if (empty($frames)) {
-            return;
-        }
+        $this->playing = false;
 
-        $this->currentFrame++;
-        if ($this->currentFrame >= count($frames)) {
-            $this->currentFrame = $this->loop ? 0 : count($frames) - 1;
-        }
-        $this->frameTime = 0;
+        return $this;
+    }
+
+    /**
+     * Check if animation is playing.
+     */
+    public function isPlaying(): bool
+    {
+        return $this->playing;
     }
 
     public function setPosition(int $x, int $y): void

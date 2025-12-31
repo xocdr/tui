@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Terminal\Input;
 
 use Xocdr\Tui\Contracts\EventDispatcherInterface;
 use Xocdr\Tui\Contracts\InputManagerInterface;
-use Xocdr\Tui\Rendering\Lifecycle\ApplicationLifecycle;
+use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
 use Xocdr\Tui\Terminal\Events\InputEvent;
 
 /**
@@ -29,7 +29,7 @@ class InputManager implements InputManagerInterface
 
     public function __construct(
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly ApplicationLifecycle $lifecycle
+        private readonly RuntimeLifecycle $lifecycle
     ) {
     }
 

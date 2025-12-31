@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Components;
 
-use Xocdr\Tui\Application;
+use Xocdr\Tui\Runtime;
 
 /**
  * Base class for stateful components with OOP-style state management.
@@ -61,9 +61,9 @@ abstract class StatefulComponent implements Component
     protected array $props = [];
 
     /**
-     * The Application this component is attached to.
+     * The Runtime this component is attached to.
      */
-    private ?Application $application = null;
+    private ?Runtime $runtime = null;
 
     /**
      * Whether the component has been mounted.
@@ -159,11 +159,11 @@ abstract class StatefulComponent implements Component
     }
 
     /**
-     * Attach to an Application for rendering and events.
+     * Attach to a Runtime for rendering and events.
      */
-    public function attachTo(Application $application): self
+    public function attachTo(Runtime $runtime): self
     {
-        $this->application = $application;
+        $this->runtime = $runtime;
 
         if (!$this->mounted) {
             $this->mounted = true;
@@ -174,7 +174,7 @@ abstract class StatefulComponent implements Component
     }
 
     /**
-     * Detach from the Application.
+     * Detach from the Runtime.
      */
     public function detach(): void
     {
@@ -185,19 +185,19 @@ abstract class StatefulComponent implements Component
 
         // Clean up any timers
         foreach ($this->timerIds as $timerId) {
-            $this->application?->removeTimer($timerId);
+            $this->runtime?->removeTimer($timerId);
         }
         $this->timerIds = [];
 
-        $this->application = null;
+        $this->runtime = null;
     }
 
     /**
-     * Get the attached Application.
+     * Get the attached Runtime.
      */
-    protected function getApplication(): ?Application
+    protected function getRuntime(): ?Runtime
     {
-        return $this->application;
+        return $this->runtime;
     }
 
     /**
@@ -205,7 +205,7 @@ abstract class StatefulComponent implements Component
      */
     protected function rerender(): void
     {
-        $this->application?->rerender();
+        $this->runtime?->rerender();
     }
 
     /**
@@ -217,11 +217,11 @@ abstract class StatefulComponent implements Component
      */
     protected function addTimer(int $intervalMs, callable $callback): int
     {
-        if ($this->application === null) {
+        if ($this->runtime === null) {
             return -1;
         }
 
-        $timerId = $this->application->addTimer($intervalMs, $callback);
+        $timerId = $this->runtime->addTimer($intervalMs, $callback);
         $this->timerIds[] = $timerId;
 
         return $timerId;
@@ -232,7 +232,7 @@ abstract class StatefulComponent implements Component
      */
     protected function removeTimer(int $timerId): void
     {
-        $this->application?->removeTimer($timerId);
+        $this->runtime?->removeTimer($timerId);
         $this->timerIds = array_filter($this->timerIds, fn ($id) => $id !== $timerId);
     }
 

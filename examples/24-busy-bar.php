@@ -21,6 +21,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Ext\Color as ExtColor;
@@ -73,9 +75,9 @@ function renderHslBar(int $width, int $frame, string $fromColor, string $toColor
         $l = 0.2 + $hsl['l'] * 0.5 + $intensity * 0.3;
         $finalColor = Color::hslToHex($hsl['h'], $hsl['s'], min(1.0, $l));
 
-        $blocks[] = Text::create('━')->color($finalColor);
+        $blocks[] = (new Text('━'))->color($finalColor);
     }
-    return Box::row($blocks);
+    return new BoxRow($blocks);
 }
 
 /**
@@ -128,9 +130,9 @@ function renderRgbBar(int $width, int $frame, array $colors, bool $loop = true):
         $b = (int) ($rgb['b'] * $darken);
         $finalColor = Color::rgbToHex($r, $g, $b);
 
-        $blocks[] = Text::create('━')->color($finalColor);
+        $blocks[] = (new Text('━'))->color($finalColor);
     }
-    return Box::row($blocks);
+    return new BoxRow($blocks);
 }
 
 /**
@@ -175,9 +177,9 @@ function renderPaletteBar(int $width, int $frame, string $fromPalette, int $from
         $l = 0.2 + $hsl['l'] * 0.5 + $intensity * 0.3;
         $finalColor = Color::hslToHex($hsl['h'], $hsl['s'], min(1.0, $l));
 
-        $blocks[] = Text::create('━')->color($finalColor);
+        $blocks[] = (new Text('━'))->color($finalColor);
     }
-    return Box::row($blocks);
+    return new BoxRow($blocks);
 }
 
 class BusyBarDemo extends UI
@@ -203,47 +205,49 @@ class BusyBarDemo extends UI
         $purpleGradient = ['#220033', '#440066', '#6600aa', '#aa00ff', '#6600aa', '#440066'];
         $fireGradient = ['#330000', '#660000', '#cc3300', '#ff6600', '#ffcc00', '#ff6600', '#cc3300'];
 
-        return Box::column([
-            Text::create('Busy Bar Demo')->bold()->color(ExtColor::Cyan),
-            Text::create('Two gradient modes: HSL (color wheel) and RGB (color stops)')->dim(),
-            Text::create(''),
+        return new Box([
+            new BoxColumn([
+                (new Text('Busy Bar Demo'))->bold()->color(ExtColor::Cyan),
+                (new Text('Two gradient modes: HSL (color wheel) and RGB (color stops)'))->dim(),
+                new Text(''),
 
-            // HSL Mode - From/To colors with rainbow interpolation
-            Text::create('HSL Mode (from-to with color wheel interpolation):')->bold(),
-            Text::create('  Red -> Blue:'),
-            Box::create()->padding(0, 2)->children([renderHslBar(50, $frame, 'red', 'blue')]),
-            Text::create('  Cyan -> Magenta:'),
-            Box::create()->padding(0, 2)->children([renderHslBar(50, -$frame, 'cyan', 'magenta')]),
-            Text::create('  #ff6600 -> #00ff66:'),
-            Box::create()->padding(0, 2)->children([renderHslBar(50, $frame * 2, '#ff6600', '#00ff66')]),
-            Text::create(''),
+                // HSL Mode - From/To colors with rainbow interpolation
+                (new Text('HSL Mode (from-to with color wheel interpolation):'))->bold(),
+                new Text('  Red -> Blue:'),
+                (new Box([renderHslBar(50, $frame, 'red', 'blue')]))->paddingX(2),
+                new Text('  Cyan -> Magenta:'),
+                (new Box([renderHslBar(50, -$frame, 'cyan', 'magenta')]))->paddingX(2),
+                new Text('  #ff6600 -> #00ff66:'),
+                (new Box([renderHslBar(50, $frame * 2, '#ff6600', '#00ff66')]))->paddingX(2),
+                new Text(''),
 
-            // RGB Mode - Array of colors
-            Text::create('RGB Mode (array of color stops with interpolation):')->bold(),
-            Text::create('  Cyan:'),
-            Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $cyanGradient)]),
-            Text::create('  Rainbow:'),
-            Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame * 2, $rainbowGradient)]),
-            Text::create('  Purple:'),
-            Box::create()->padding(0, 2)->children([renderRgbBar(50, -$frame, $purpleGradient)]),
-            Text::create('  Fire:'),
-            Box::create()->padding(0, 2)->children([renderRgbBar(50, $frame, $fireGradient)]),
-            Text::create(''),
+                // RGB Mode - Array of colors
+                (new Text('RGB Mode (array of color stops with interpolation):'))->bold(),
+                new Text('  Cyan:'),
+                (new Box([renderRgbBar(50, $frame, $cyanGradient)]))->paddingX(2),
+                new Text('  Rainbow:'),
+                (new Box([renderRgbBar(50, $frame * 2, $rainbowGradient)]))->paddingX(2),
+                new Text('  Purple:'),
+                (new Box([renderRgbBar(50, -$frame, $purpleGradient)]))->paddingX(2),
+                new Text('  Fire:'),
+                (new Box([renderRgbBar(50, $frame, $fireGradient)]))->paddingX(2),
+                new Text(''),
 
-            // Palette Mode - Using Tailwind palette colors
-            Text::create('Palette Mode (Tailwind colors with Gradient::from() builder):')->bold(),
-            Text::create('  red-500 -> blue-500:'),
-            Box::create()->padding(0, 2)->children([renderPaletteBar(50, $frame, 'red', 500, 'blue', 500)]),
-            Text::create('  emerald-300 -> violet-600:'),
-            Box::create()->padding(0, 2)->children([renderPaletteBar(50, -$frame, 'emerald', 300, 'violet', 600)]),
-            Text::create('  amber-400 -> rose-500:'),
-            Box::create()->padding(0, 2)->children([renderPaletteBar(50, $frame * 2, 'amber', 400, 'rose', 500)]),
-            Text::create(''),
+                // Palette Mode - Using Tailwind palette colors
+                (new Text('Palette Mode (Tailwind colors with Gradient::from() builder):'))->bold(),
+                new Text('  red-500 -> blue-500:'),
+                (new Box([renderPaletteBar(50, $frame, 'red', 500, 'blue', 500)]))->paddingX(2),
+                new Text('  emerald-300 -> violet-600:'),
+                (new Box([renderPaletteBar(50, -$frame, 'emerald', 300, 'violet', 600)]))->paddingX(2),
+                new Text('  amber-400 -> rose-500:'),
+                (new Box([renderPaletteBar(50, $frame * 2, 'amber', 400, 'rose', 500)]))->paddingX(2),
+                new Text(''),
 
-            Text::create('Press ESC to exit.')->dim(),
-            Text::create("Frame: {$frame}")->dim(),
+                (new Text('Press ESC to exit.'))->dim(),
+                (new Text("Frame: {$frame}"))->dim(),
+            ]),
         ]);
     }
 }
 
-BusyBarDemo::run();
+(new BusyBarDemo())->run();

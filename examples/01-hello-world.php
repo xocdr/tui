@@ -18,9 +18,9 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 
 class HelloWorld extends UI
@@ -33,12 +33,14 @@ class HelloWorld extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Hello, TUI!')->bold()->color(Color::Green),
-            Text::create('Welcome to the PHP Terminal UI library.'),
-            Text::create('Press ESC to exit.')->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Hello, TUI!'))->styles('green bold'),
+                new Text('Welcome to the PHP Terminal UI library.'),
+                (new Text('Press ESC to exit.'))->dim(),
+            ]),
         ]);
     }
 }
 
-HelloWorld::run();
+(new HelloWorld())->run();

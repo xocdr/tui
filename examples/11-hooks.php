@@ -22,10 +22,11 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Hooks\HooksAwareTrait;
 use Xocdr\Tui\UI;
 
@@ -50,16 +51,16 @@ class StateDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('state()')->bold()->color(Color::Cyan),
-            Text::create('Basic reactive state management')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Count: '),
-                Text::create((string) $count)->bold()->color(Color::Green),
+        return new BoxColumn([
+            (new Text('state()'))->styles('cyan bold'),
+            (new Text('Basic reactive state management'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('Count: '),
+                (new Text((string) $count))->styles('green bold'),
             ]),
-            Text::create(''),
-            Text::create('Up/Down arrows to change')->dim(),
+            new Text(''),
+            (new Text('Up/Down arrows to change'))->dim(),
         ]);
     }
 }
@@ -79,18 +80,18 @@ class ToggleDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('toggle()')->bold()->color(Color::Cyan),
-            Text::create('Boolean state with toggle helper')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Status: '),
+        return new BoxColumn([
+            (new Text('toggle()'))->styles('cyan bold'),
+            (new Text('Boolean state with toggle helper'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('Status: '),
                 $isOn
-                    ? Text::create('ON')->bold()->color(Color::Green)
-                    : Text::create('OFF')->bold()->color(Color::Red),
+                    ? (new Text('ON'))->styles('green bold')
+                    : (new Text('OFF'))->styles('red bold'),
             ]),
-            Text::create(''),
-            Text::create('Space to toggle')->dim(),
+            new Text(''),
+            (new Text('Space to toggle'))->dim(),
         ]);
     }
 }
@@ -114,16 +115,16 @@ class CounterDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('counter()')->bold()->color(Color::Cyan),
-            Text::create('Numeric counter with increment/decrement/reset')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Value: '),
-                Text::create((string) $counter['count'])->bold()->color(Color::Yellow),
+        return new BoxColumn([
+            (new Text('counter()'))->styles('cyan bold'),
+            (new Text('Numeric counter with increment/decrement/reset'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('Value: '),
+                (new Text((string) $counter['count']))->styles('yellow bold'),
             ]),
-            Text::create(''),
-            Text::create('Up/Down or +/- to change, R to reset')->dim(),
+            new Text(''),
+            (new Text('Up/Down or +/- to change, R to reset'))->dim(),
         ]);
     }
 }
@@ -153,13 +154,13 @@ class ListDemo implements Component, HooksAwareInterface
             ? '(empty)'
             : implode(', ', $list['items']);
 
-        return Box::create()->children([
-            Text::create('list()')->bold()->color(Color::Cyan),
-            Text::create('Array management with add/remove/clear')->dim(),
-            Text::create(''),
-            Text::create('Items: ' . $itemsDisplay),
-            Text::create(''),
-            Text::create('A=add, D=remove last, C=clear')->dim(),
+        return new BoxColumn([
+            (new Text('list()'))->styles('cyan bold'),
+            (new Text('Array management with add/remove/clear'))->dim(),
+            new Text(''),
+            new Text('Items: ' . $itemsDisplay),
+            new Text(''),
+            (new Text('A=add, D=remove last, C=clear'))->dim(),
         ]);
     }
 }
@@ -182,20 +183,20 @@ class RefDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('ref()')->bold()->color(Color::Cyan),
-            Text::create('Mutable value that persists without re-render')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('State count: '),
-                Text::create((string) $count)->bold()->color(Color::Green),
+        return new BoxColumn([
+            (new Text('ref()'))->styles('cyan bold'),
+            (new Text('Mutable value that persists without re-render'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('State count: '),
+                (new Text((string) $count))->styles('green bold'),
             ]),
-            Box::row([
-                Text::create('Render count: '),
-                Text::create((string) $renderCount->current)->bold()->color(Color::Magenta),
+            new BoxRow([
+                new Text('Render count: '),
+                (new Text((string) $renderCount->current))->styles('magenta bold'),
             ]),
-            Text::create(''),
-            Text::create('Up arrow increments state')->dim(),
+            new Text(''),
+            (new Text('Up arrow increments state'))->dim(),
         ]);
     }
 }
@@ -219,22 +220,20 @@ class PreviousDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('previous()')->bold()->color(Color::Cyan),
-            Text::create('Track the previous value of state')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Current: '),
-                Text::create((string) $value)->bold()->color(Color::Green),
+        return new BoxColumn([
+            (new Text('previous()'))->styles('cyan bold'),
+            (new Text('Track the previous value of state'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('Current: '),
+                (new Text((string) $value))->styles('green bold'),
             ]),
-            Box::row([
-                Text::create('Previous: '),
-                Text::create($previousValue !== null ? (string) $previousValue : 'null')
-                    ->bold()
-                    ->color(Color::Yellow),
+            new BoxRow([
+                new Text('Previous: '),
+                (new Text($previousValue !== null ? (string) $previousValue : 'null'))->styles('yellow bold'),
             ]),
-            Text::create(''),
-            Text::create('Up/Down arrows to change')->dim(),
+            new Text(''),
+            (new Text('Up/Down arrows to change'))->dim(),
         ]);
     }
 }
@@ -266,20 +265,20 @@ class MemoDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('memo()')->bold()->color(Color::Cyan),
-            Text::create('Memoize expensive computations')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Input: '),
-                Text::create((string) $input)->bold()->color(Color::Green),
+        return new BoxColumn([
+            (new Text('memo()'))->styles('cyan bold'),
+            (new Text('Memoize expensive computations'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('Input: '),
+                (new Text((string) $input))->styles('green bold'),
             ]),
-            Box::row([
-                Text::create('Factorial: '),
-                Text::create((string) $expensive)->bold()->color(Color::Yellow),
+            new BoxRow([
+                new Text('Factorial: '),
+                (new Text((string) $expensive))->styles('yellow bold'),
             ]),
-            Text::create(''),
-            Text::create('Up/Down to change input (1-12)')->dim(),
+            new Text(''),
+            (new Text('Up/Down to change input (1-12)'))->dim(),
         ]);
     }
 }
@@ -304,22 +303,22 @@ class IntervalDemo implements Component, HooksAwareInterface
             }
         });
 
-        return Box::create()->children([
-            Text::create('interval()')->bold()->color(Color::Cyan),
-            Text::create('Execute callback at regular intervals')->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Elapsed: '),
-                Text::create($seconds . 's')->bold()->color(Color::Green),
+        return new BoxColumn([
+            (new Text('interval()'))->styles('cyan bold'),
+            (new Text('Execute callback at regular intervals'))->dim(),
+            new Text(''),
+            new BoxRow([
+                new Text('Elapsed: '),
+                (new Text($seconds . 's'))->styles('green bold'),
             ]),
-            Box::row([
-                Text::create('Status: '),
+            new BoxRow([
+                new Text('Status: '),
                 $isRunning
-                    ? Text::create('Running')->color(Color::Green)
-                    : Text::create('Paused')->color(Color::Yellow),
+                    ? (new Text('Running'))->styles('green')
+                    : (new Text('Paused'))->styles('yellow'),
             ]),
-            Text::create(''),
-            Text::create('Space to pause/resume')->dim(),
+            new Text(''),
+            (new Text('Space to pause/resume'))->dim(),
         ]);
     }
 }
@@ -371,8 +370,8 @@ class HooksShowcase extends UI
         $tabs = [];
         foreach ($this->demoKeys as $i => $key) {
             $isActive = $i === $activeIndex;
-            $text = Text::create(" {$key} ")
-                ->color($isActive ? Color::Cyan : Color::White)
+            $text = (new Text(" {$key} "))
+                ->styles($isActive ? 'cyan' : 'white')
                 ->bgColor($isActive ? '#1e3a5f' : null);
             if ($isActive) {
                 $text->bold();
@@ -380,27 +379,23 @@ class HooksShowcase extends UI
             $tabs[] = $text;
         }
 
-        return Box::column([
+        return new BoxColumn([
             // Header
-            Text::create('Hooks Showcase')->bold()->color(Color::Cyan),
-            Text::create('Tab/Arrows to switch demos, ESC to exit')->dim(),
-            Text::create(''),
+            (new Text('Hooks Showcase'))->styles('cyan bold'),
+            (new Text('Tab/Arrows to switch demos, ESC to exit'))->dim(),
+            new Text(''),
 
             // Tab bar
-            Box::row($tabs),
-            Text::create(''),
+            new BoxRow($tabs),
+            new Text(''),
 
             // Active demo in a box - each demo has its own isolated hook context!
-            Box::create()
-                ->border('round')
-                ->borderColor(Color::Cyan)
-                ->padding(1)
-                ->children([$activeDemo]),
+            (new Box([$activeDemo]))->border('round')->borderColor('#22d3ee')->padding(1),
 
-            Text::create(''),
-            Text::create('Additional hooks: reducer(), context(), animation(), canvas(), clipboard(), focus(), stdout(), app()')->dim(),
+            new Text(''),
+            (new Text('Additional hooks: reducer(), context(), animation(), canvas(), clipboard(), focus(), stdout(), app()'))->dim(),
         ]);
     }
 }
 
-HooksShowcase::run();
+(new HooksShowcase())->run();

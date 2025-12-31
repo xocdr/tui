@@ -292,10 +292,22 @@ Tui::render(new GreetingApp())->waitUntilExit();
 
 ## Next Steps
 
+**Core Concepts:**
 - [Components](components.md) - All available components
 - [Widgets](widgets.md) - Creating stateful widgets with hooks
 - [Hooks](hooks.md) - State management and effects
 - [Styling](styling.md) - Colors and text attributes
+
+**Pre-built Widgets:**
+- [Widget Manual](widgets/index.md) - Pre-built widget library
+- [Input Widgets](widgets/input-widgets.md) - Input, SelectList, Form
+- [Display Widgets](widgets/display-widgets.md) - TodoList, Tree, Tabs
+
+**Advanced Topics:**
 - [Drawing](drawing.md) - Canvas and shape drawing
 - [Animation](animation.md) - Easing, tweens, and gradients
 - [Testing](testing.md) - Testing components and widgets
+
+**Reference:**
+- [Classes Reference](../reference/classes.md) - Complete API documentation
+- [Widget Reference](../reference/widgets/index.md) - Widget API reference

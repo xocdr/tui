@@ -19,11 +19,12 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 
 class BoxLayoutsDemo extends UI
@@ -36,87 +37,77 @@ class BoxLayoutsDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('=== Box Layouts Demo ===')->bold()->color(Color::Cyan),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('=== Box Layouts Demo ==='))->styles('cyan bold'),
+                new Newline(),
 
-            // Row layout
-            Text::create('Row Layout:')->bold(),
-            Box::row([
-                Text::create('[Item 1]')->color(Color::Green),
-                Text::create('[Item 2]')->color(Color::Yellow),
-                Text::create('[Item 3]')->color(Color::Red),
-            ]),
-            Newline::create(),
-
-            // Column layout
-            Text::create('Column Layout:')->bold(),
-            Box::column([
-                Text::create('[Item A]')->color(Color::Green),
-                Text::create('[Item B]')->color(Color::Yellow),
-                Text::create('[Item C]')->color(Color::Red),
-            ]),
-            Newline::create(),
-
-            // With spacer
-            Text::create('Row with Spacer (pushes right item):')->bold(),
-            Box::row([
-                Text::create('[Left]')->color(Color::Green),
-                Spacer::create(),
-                Text::create('[Right]')->color(Color::Red),
-            ])->width(40),
-            Newline::create(),
-
-            // With different padding values
-            Text::create('Padding Comparison:')->bold(),
-            Box::row([
-                Box::create()
-                    ->padding(0)
-                    ->border('single')
-                    ->children([Text::create('pad=0')]),
-                Box::create()
-                    ->padding(1)
-                    ->border('single')
-                    ->children([Text::create('pad=1')]),
-                Box::create()
-                    ->padding(2)
-                    ->border('single')
-                    ->children([Text::create('pad=2')]),
-                Box::create()
-                    ->padding(3)
-                    ->border('single')
-                    ->children([Text::create('pad=3')]),
-            ])->gap(2),
-            Newline::create(),
-
-            // With gap
-            Text::create('Row with Gap (2):')->bold(),
-            Box::row([
-                Text::create('[A]')->color(Color::Green),
-                Text::create('[B]')->color(Color::Yellow),
-                Text::create('[C]')->color(Color::Red),
-            ])->gap(2),
-            Newline::create(),
-
-            // Nested boxes
-            Text::create('Nested Boxes:')->bold(),
-            Box::row([
-                Box::column([
-                    Text::create('Left Column')->bold(),
-                    Text::create('  - Item 1'),
-                    Text::create('  - Item 2'),
+                // Row layout
+                (new Text('Row Layout:'))->bold(),
+                new BoxRow([
+                    (new Text('[Item 1]'))->styles('green'),
+                    (new Text('[Item 2]'))->styles('yellow'),
+                    (new Text('[Item 3]'))->styles('red'),
                 ]),
-                Box::create()->width(4), // spacer
-                Box::column([
-                    Text::create('Right Column')->bold(),
-                    Text::create('  - Item A'),
-                    Text::create('  - Item B'),
+                new Newline(),
+
+                // Column layout
+                (new Text('Column Layout:'))->bold(),
+                new BoxColumn([
+                    (new Text('[Item A]'))->styles('green'),
+                    (new Text('[Item B]'))->styles('yellow'),
+                    (new Text('[Item C]'))->styles('red'),
                 ]),
+                new Newline(),
+
+                // With spacer
+                (new Text('Row with Spacer (pushes right item):'))->bold(),
+                (new BoxRow([
+                    (new Text('[Left]'))->styles('green'),
+                    Spacer::create(),
+                    (new Text('[Right]'))->styles('red'),
+                ]))->width(40),
+                new Newline(),
+
+                // With different padding values
+                (new Text('Padding Comparison:'))->bold(),
+                (new BoxRow([
+                    (new Box([new Text('pad=0')]))->padding(0)->border('single'),
+                    (new Box([new Text('pad=1')]))->padding(1)->border('single'),
+                    (new Box([new Text('pad=2')]))->padding(2)->border('single'),
+                    (new Box([new Text('pad=3')]))->padding(3)->border('single'),
+                ]))->gap(2),
+                new Newline(),
+
+                // With gap
+                (new Text('Row with Gap (2):'))->bold(),
+                (new BoxRow([
+                    (new Text('[A]'))->styles('green'),
+                    (new Text('[B]'))->styles('yellow'),
+                    (new Text('[C]'))->styles('red'),
+                ]))->gap(2),
+                new Newline(),
+
+                // Nested boxes
+                (new Text('Nested Boxes:'))->bold(),
+                new BoxRow([
+                    new BoxColumn([
+                        (new Text('Left Column'))->bold(),
+                        new Text('  - Item 1'),
+                        new Text('  - Item 2'),
+                    ]),
+                    (new Box())->width(4), // spacer
+                    new BoxColumn([
+                        (new Text('Right Column'))->bold(),
+                        new Text('  - Item A'),
+                        new Text('  - Item B'),
+                    ]),
+                ]),
+                new Newline(),
+                (new Text('Press ESC to exit.'))->dim(),
             ]),
-            Newline::create(),
-            Text::create('Press ESC to exit.')->dim(),
         ]);
     }
 }
 
-BoxLayoutsDemo::run();
+(new BoxLayoutsDemo())->run();

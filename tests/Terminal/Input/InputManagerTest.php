@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Tests\Terminal\Input;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Contracts\InputManagerInterface;
-use Xocdr\Tui\Rendering\Lifecycle\ApplicationLifecycle;
+use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Terminal\Input\InputManager;
 
@@ -14,14 +14,14 @@ class InputManagerTest extends TestCase
 {
     private EventDispatcher $eventDispatcher;
 
-    private ApplicationLifecycle $lifecycle;
+    private RuntimeLifecycle $lifecycle;
 
     private InputManager $inputManager;
 
     protected function setUp(): void
     {
         $this->eventDispatcher = new EventDispatcher();
-        $this->lifecycle = new ApplicationLifecycle();
+        $this->lifecycle = new RuntimeLifecycle();
         $this->inputManager = new InputManager($this->eventDispatcher, $this->lifecycle);
     }
 

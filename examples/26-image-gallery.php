@@ -20,6 +20,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Image;
 use Xocdr\Tui\Components\Text;
@@ -93,38 +95,37 @@ class ImageGallery extends UI
         $currentImage = $this->images[$index];
         $isSupported = Image::isSupported();
 
-        return Box::column([
-            // Header
-            Box::row([
-                Text::create('Image Gallery')->bold()->color(Color::Cyan),
-                Box::create()->flexGrow(1),
-                Text::create(sprintf('[%d/%d]', $index + 1, $imageCount))->dim(),
-            ]),
-
-            Text::create(''),
-
-            // Image display area
-            Box::create()
-                ->border('round')
-                ->padding(1)
-                ->children([
-                    $this->renderImage($currentImage),
+        return new Box([
+            new BoxColumn([
+                // Header
+                new BoxRow([
+                    (new Text('Image Gallery'))->bold()->color(Color::Cyan),
+                    (new Box())->flexGrow(1),
+                    (new Text(sprintf('[%d/%d]', $index + 1, $imageCount)))->dim(),
                 ]),
 
-            Text::create(''),
+                new Text(''),
 
-            // Image info (toggleable)
-            $showInfo ? $this->renderImageInfo($currentImage, $isSupported) : Text::create(''),
+                // Image display area
+                (new Box([
+                    $this->renderImage($currentImage),
+                ]))->border('round')->padding(1),
 
-            // Controls
-            Text::create(''),
-            Box::row([
-                Text::create('←/→')->bold()->dim(),
-                Text::create(' Navigate  ')->dim(),
-                Text::create('i')->bold()->dim(),
-                Text::create(' Toggle info  ')->dim(),
-                Text::create('ESC')->bold()->dim(),
-                Text::create(' Exit')->dim(),
+                new Text(''),
+
+                // Image info (toggleable)
+                $showInfo ? $this->renderImageInfo($currentImage, $isSupported) : new Text(''),
+
+                // Controls
+                new Text(''),
+                new BoxRow([
+                    (new Text('←/→'))->bold()->dim(),
+                    (new Text(' Navigate  '))->dim(),
+                    (new Text('i'))->bold()->dim(),
+                    (new Text(' Toggle info  '))->dim(),
+                    (new Text('ESC'))->bold()->dim(),
+                    (new Text(' Exit'))->dim(),
+                ]),
             ]),
         ]);
     }
@@ -148,31 +149,31 @@ class ImageGallery extends UI
     /**
      * @param array{name: string, path?: string, url?: string, description: string} $imageData
      */
-    private function renderImageInfo(array $imageData, bool $graphicsSupported): Box
+    private function renderImageInfo(array $imageData, bool $graphicsSupported): BoxColumn
     {
         $source = $imageData['url'] ?? $imageData['path'] ?? 'N/A';
         $sourceType = isset($imageData['url']) ? 'URL' : 'File';
 
-        return Box::column([
-            Text::create($imageData['name'])->bold(),
-            Text::create($imageData['description'])->dim(),
-            Text::create(''),
-            Box::row([
-                Text::create('Source: ')->dim(),
-                Text::create($sourceType),
+        return new BoxColumn([
+            (new Text($imageData['name']))->bold(),
+            (new Text($imageData['description']))->dim(),
+            new Text(''),
+            new BoxRow([
+                (new Text('Source: '))->dim(),
+                new Text($sourceType),
             ]),
-            Box::row([
-                Text::create('Path: ')->dim(),
-                Text::create(strlen($source) > 40 ? '...' . substr($source, -37) : $source),
+            new BoxRow([
+                (new Text('Path: '))->dim(),
+                new Text(strlen($source) > 40 ? '...' . substr($source, -37) : $source),
             ]),
-            Box::row([
-                Text::create('Graphics: ')->dim(),
+            new BoxRow([
+                (new Text('Graphics: '))->dim(),
                 $graphicsSupported
-                    ? Text::create('Kitty protocol')->color(Color::Green)
-                    : Text::create('Fallback mode')->color(Color::Yellow),
+                    ? (new Text('Kitty protocol'))->color(Color::Green)
+                    : (new Text('Fallback mode'))->color(Color::Yellow),
             ]),
         ]);
     }
 }
 
-ImageGallery::run(new ImageGallery($sampleImages));
+(new ImageGallery($sampleImages))->run();

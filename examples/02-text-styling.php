@@ -21,10 +21,11 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Color as ColorUtil;
 use Xocdr\Tui\Styling\Text\TextUtils;
 use Xocdr\Tui\UI;
@@ -61,217 +62,224 @@ class TextStylingDemo extends UI
 
         $sectionNames = ['Decorations', 'Colors', 'Styles API', 'Text Utils'];
 
-        return Box::column([
-            Text::create('Text & Styling Demo')->bold()->color(Color::Cyan),
-            Box::row([
-                ...array_map(
-                    fn ($name, $i) => Text::create(" [{$name}] ")
-                        ->styles($i === $section ? 'bold text-cyan-400 bg-slate-800' : 'dim'),
-                    $sectionNames,
-                    array_keys($sectionNames)
-                ),
-            ]),
-            Text::create('Use N/P or arrows to navigate sections. ESC to exit.')->dim(),
-            Newline::create(),
-            $sections[$section],
-        ]);
-    }
+        $tabs = new BoxRow();
+        foreach ($sectionNames as $i => $name) {
+            $tabs->append(
+                (new Text(" [{$name}] "))->styles($i === $section ? 'bold text-cyan-400 bg-slate-800' : 'dim'),
+                'tab-' . $i
+            );
+        }
 
-    private function renderDecorations(): Box
-    {
-        return Box::column([
-            Text::create('Text Decorations:')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Text::create('Bold text')->bold(),
-                Text::create('Italic text')->italic(),
-                Text::create('Underlined text')->underline(),
-                Text::create('Dim text')->dim(),
-                Text::create('Inverse text')->inverse(),
-                Text::create('Strikethrough text')->strikethrough(),
-                Text::create('Combined: Bold + Italic + Underline')->bold()->italic()->underline(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Text & Styling Demo'))->styles('cyan bold'),
+                $tabs,
+                (new Text('Use N/P or arrows to navigate sections. ESC to exit.'))->dim(),
+                new Newline(),
+                $sections[$section],
             ]),
         ]);
     }
 
-    private function renderColors(): Box
+    private function renderDecorations(): BoxColumn
     {
-        return Box::column([
+        return new BoxColumn([
+            (new Text('Text Decorations:'))->styles('yellow bold'),
+            (new BoxColumn([
+                (new Text('Bold text'))->bold(),
+                (new Text('Italic text'))->italic(),
+                (new Text('Underlined text'))->underline(),
+                (new Text('Dim text'))->dim(),
+                (new Text('Inverse text'))->inverse(),
+                (new Text('Strikethrough text'))->strikethrough(),
+                (new Text('Combined: Bold + Italic + Underline'))->styles('bold italic underline'),
+            ]))->padding(0, 2),
+        ]);
+    }
+
+    private function renderColors(): BoxColumn
+    {
+        return new BoxColumn([
             // Color Enum
-            Text::create('Color Enum (basic colors):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('Red ')->color(Color::Red),
-                    Text::create('Green ')->color(Color::Green),
-                    Text::create('Blue ')->color(Color::Blue),
-                    Text::create('Yellow ')->color(Color::Yellow),
-                    Text::create('Cyan ')->color(Color::Cyan),
-                    Text::create('Magenta ')->color(Color::Magenta),
+            (new Text('Color Enum (basic colors):'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('Red '))->styles('red'),
+                    (new Text('Green '))->styles('green'),
+                    (new Text('Blue '))->styles('blue'),
+                    (new Text('Yellow '))->styles('yellow'),
+                    (new Text('Cyan '))->styles('cyan'),
+                    (new Text('Magenta '))->styles('magenta'),
                 ]),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // CSS Colors
-            Text::create('CSS Named Colors (141 colors):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('Coral ')->color(Color::Coral),
-                    Text::create('Tomato ')->color(Color::Tomato),
-                    Text::create('Gold ')->color(Color::Gold),
-                    Text::create('Orchid ')->color(Color::Orchid),
-                    Text::create('Turquoise ')->color(Color::Turquoise),
-                    Text::create('Salmon ')->color(Color::Salmon),
+            (new Text('CSS Named Colors (141 colors):'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('Coral '))->styles('coral'),
+                    (new Text('Tomato '))->styles('tomato'),
+                    (new Text('Gold '))->styles('gold'),
+                    (new Text('Orchid '))->styles('orchid'),
+                    (new Text('Turquoise '))->styles('turquoise'),
+                    (new Text('Salmon '))->styles('salmon'),
                 ]),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Tailwind Palette
-            Text::create('Tailwind Palette (with shades):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('blue-300 ')->color('blue', 300),
-                    Text::create('blue-500 ')->color('blue', 500),
-                    Text::create('blue-700 ')->color('blue', 700),
-                    Text::create('blue-900 ')->color('blue', 900),
+            (new Text('Tailwind Palette (with shades):'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('blue-300 '))->styles('blue-300'),
+                    (new Text('blue-500 '))->styles('blue-500'),
+                    (new Text('blue-700 '))->styles('blue-700'),
+                    (new Text('blue-900 '))->styles('blue-900'),
                 ]),
-                Box::row([
-                    Text::create('emerald-300 ')->color('emerald', 300),
-                    Text::create('emerald-500 ')->color('emerald', 500),
-                    Text::create('rose-500 ')->color('rose', 500),
-                    Text::create('violet-500 ')->color('violet', 500),
+                new BoxRow([
+                    (new Text('emerald-300 '))->styles('emerald-300'),
+                    (new Text('emerald-500 '))->styles('emerald-500'),
+                    (new Text('rose-500 '))->styles('rose-500'),
+                    (new Text('violet-500 '))->styles('violet-500'),
                 ]),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Custom Colors
-            Text::create('Custom Colors (defineColor):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('brand ')->styles('brand'),
-                    Text::create('accent ')->styles('accent'),
-                    Text::create('warning ')->styles('warning'),
+            (new Text('Custom Colors (defineColor):'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('brand '))->styles('brand'),
+                    (new Text('accent '))->styles('accent'),
+                    (new Text('warning '))->styles('warning'),
                 ]),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Background Colors
-            Text::create('Background Colors:')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create(' White on Red ')->color('#ffffff')->bgColor('#ef4444'),
-                    Text::create(' Black on Yellow ')->color('#000000')->bgColor('#fbbf24'),
-                    Text::create(' White on Blue ')->color('#ffffff')->bgColor('#3b82f6'),
+            (new Text('Background Colors:'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text(' White on Red '))->styles('text-white bg-red-500'),
+                    (new Text(' Black on Yellow '))->styles('text-black bg-yellow-400'),
+                    (new Text(' White on Blue '))->styles('text-white bg-blue-500'),
                 ]),
-            ]),
+            ]))->padding(0, 2),
         ]);
     }
 
-    private function renderStyles(): Box
+    private function renderStyles(): BoxColumn
     {
         $isActive = true;
 
-        return Box::column([
+        return new BoxColumn([
             // Basic styles() usage
-            Text::create('Tailwind-like ->styles() API:')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Text::create('bold text-green-500')->styles('bold text-green-500'),
-                Text::create('italic underline text-blue-500')->styles('italic underline text-blue-500'),
-                Text::create('text-rose-500 bg-slate-900')->styles('text-rose-500 bg-slate-900'),
-            ]),
-            Newline::create(),
+            (new Text('Tailwind-like ->styles() API:'))->styles('yellow bold'),
+            (new BoxColumn([
+                (new Text('bold text-green-500'))->styles('bold text-green-500'),
+                (new Text('italic underline text-blue-500'))->styles('italic underline text-blue-500'),
+                (new Text('text-rose-500 bg-slate-900'))->styles('text-rose-500 bg-slate-900'),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Bare colors
-            Text::create('Bare Color Shorthand:')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('->styles(\'red\') ')->styles('red'),
-                    Text::create('->styles(\'green-500\') ')->styles('green-500'),
-                    Text::create('->styles(\'coral\') ')->styles('coral'),
+            (new Text('Bare Color Shorthand:'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('->styles(\'red\') '))->styles('red'),
+                    (new Text('->styles(\'green-500\') '))->styles('green-500'),
+                    (new Text('->styles(\'coral\') '))->styles('coral'),
                 ]),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Dynamic styles with callables
-            Text::create('Dynamic Styles (callables):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Text::create('$isActive = true')
+            (new Text('Dynamic Styles (callables):'))->styles('yellow bold'),
+            (new BoxColumn([
+                (new Text('$isActive = true'))
                     ->styles(fn () => $isActive ? 'text-green-500 bold' : 'text-red-500 dim'),
-                Text::create('Conditional styling based on state')->dim(),
-            ]),
-            Newline::create(),
+                (new Text('Conditional styling based on state'))->dim(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Mixed arguments
-            Text::create('Mixed Arguments:')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Text::create('->styles(\'bold\', \'italic\', [\'text-blue-500\'])')
+            (new Text('Mixed Arguments:'))->styles('yellow bold'),
+            (new BoxColumn([
+                (new Text('->styles(\'bold\', \'italic\', [\'text-blue-500\'])'))
                     ->styles('bold', 'italic', ['text-blue-500']),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Box styles
-            Text::create('Box ->styles():')->bold()->color(Color::Yellow),
-            Box::create()->styles('border border-round border-cyan-500 bg-slate-900 p-1')->children([
-                Text::create('border border-round border-cyan-500 bg-slate-900 p-1'),
-            ]),
+            (new Text('Box ->styles():'))->styles('yellow bold'),
+            (new Box([
+                new Text('border border-round border-cyan-500 bg-slate-900 p-1'),
+            ]))->styles('border border-round border-cyan-500 bg-slate-900 p-1'),
         ]);
     }
 
-    private function renderUtils(): Box
+    private function renderUtils(): BoxColumn
     {
         $longText = 'The quick brown fox jumps over the lazy dog.';
         $wrapped = TextUtils::wrap($longText, 25);
 
-        return Box::column([
+        $wrappedLines = [];
+        foreach ($wrapped as $line) {
+            $wrappedLines[] = new Text($line);
+        }
+        $wrappedBox = (new BoxColumn($wrappedLines))->padding(0, 2)->border('round')->borderColor('#666666');
+
+        return new BoxColumn([
             // Width measurement
-            Text::create('String Width (Unicode-aware):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('"Hello" = ')->dim(),
-                    Text::create((string) TextUtils::width('Hello'))->color(Color::Green),
-                    Text::create(' cells'),
+            (new Text('String Width (Unicode-aware):'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('"Hello" = '))->dim(),
+                    (new Text((string) TextUtils::width('Hello')))->styles('green'),
+                    new Text(' cells'),
                 ]),
-                Box::row([
-                    Text::create('"世界" = ')->dim(),
-                    Text::create((string) TextUtils::width('世界'))->color(Color::Green),
-                    Text::create(' cells (double-width)'),
+                new BoxRow([
+                    (new Text('"世界" = '))->dim(),
+                    (new Text((string) TextUtils::width('世界')))->styles('green'),
+                    new Text(' cells (double-width)'),
                 ]),
-            ]),
-            Newline::create(),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Wrapping
-            Text::create('Text Wrapping (25 chars):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->border('round')->borderColor('#666666')->children([
-                ...array_map(fn ($line) => Text::create($line), $wrapped),
-            ]),
-            Newline::create(),
+            (new Text('Text Wrapping (25 chars):'))->styles('yellow bold'),
+            $wrappedBox,
+            new Newline(),
 
             // Truncation
-            Text::create('Truncation:')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Text::create('"' . TextUtils::truncate($longText, 30) . '"'),
-            ]),
-            Newline::create(),
+            (new Text('Truncation:'))->styles('yellow bold'),
+            (new BoxColumn([
+                new Text('"' . TextUtils::truncate($longText, 30) . '"'),
+            ]))->padding(0, 2),
+            new Newline(),
 
             // Alignment
-            Text::create('Alignment (20 chars):')->bold()->color(Color::Yellow),
-            Box::create()->padding(0, 2)->children([
-                Box::row([
-                    Text::create('Left:   │')->dim(),
-                    Text::create(TextUtils::left('Hello', 20))->color(Color::Cyan),
-                    Text::create('│'),
+            (new Text('Alignment (20 chars):'))->styles('yellow bold'),
+            (new BoxColumn([
+                new BoxRow([
+                    (new Text('Left:   │'))->dim(),
+                    (new Text(TextUtils::left('Hello', 20)))->styles('cyan'),
+                    new Text('│'),
                 ]),
-                Box::row([
-                    Text::create('Right:  │')->dim(),
-                    Text::create(TextUtils::right('Hello', 20))->color(Color::Cyan),
-                    Text::create('│'),
+                new BoxRow([
+                    (new Text('Right:  │'))->dim(),
+                    (new Text(TextUtils::right('Hello', 20)))->styles('cyan'),
+                    new Text('│'),
                 ]),
-                Box::row([
-                    Text::create('Center: │')->dim(),
-                    Text::create(TextUtils::center('Hello', 20))->color(Color::Cyan),
-                    Text::create('│'),
+                new BoxRow([
+                    (new Text('Center: │'))->dim(),
+                    (new Text(TextUtils::center('Hello', 20)))->styles('cyan'),
+                    new Text('│'),
                 ]),
-            ]),
+            ]))->padding(0, 2),
         ]);
     }
 }
 
-TextStylingDemo::run();
+(new TextStylingDemo())->run();

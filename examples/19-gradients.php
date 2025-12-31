@@ -20,9 +20,10 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\UI;
 
@@ -44,15 +45,15 @@ $builder = Gradient::from('emerald', 300)
     ->hsl()  // Use HSL interpolation for smoother color transitions
     ->build();
 
-// Helper to render a gradient bar using Box::row with colored blocks
-function renderGradientBar(Gradient $gradient, int $width): Box
+// Helper to render a gradient bar using BoxRow with colored blocks
+function renderGradientBar(Gradient $gradient, int $width): BoxRow
 {
-    $blocks = [];
+    $chars = [];
     for ($i = 0; $i < $width; $i++) {
         $color = $gradient->getColor($i);
-        $blocks[] = Text::create('█')->color($color);
+        $chars[] = (new Text('█'))->color($color);
     }
-    return Box::row($blocks);
+    return new BoxRow($chars);
 }
 
 class GradientsDemo extends UI
@@ -76,34 +77,34 @@ class GradientsDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Color Gradients Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
-            Text::create('Rainbow Gradient:')->bold(),
+        return new BoxColumn([
+            (new Text('Color Gradients Demo'))->styles('cyan bold'),
+            new Text(''),
+            (new Text('Rainbow Gradient:'))->bold(),
             renderGradientBar($this->rainbow, $this->width),
-            Text::create(''),
-            Text::create('Heatmap Gradient:')->bold(),
+            new Text(''),
+            (new Text('Heatmap Gradient:'))->bold(),
             renderGradientBar($this->heatmap, $this->width),
-            Text::create(''),
-            Text::create('Grayscale Gradient:')->bold(),
+            new Text(''),
+            (new Text('Grayscale Gradient:'))->bold(),
             renderGradientBar($this->grayscale, $this->width),
-            Text::create(''),
-            Text::create('Custom Gradient (pink -> green -> blue):')->bold(),
+            new Text(''),
+            (new Text('Custom Gradient (pink -> green -> blue):'))->bold(),
             renderGradientBar($this->custom, $this->width),
-            Text::create(''),
-            Text::create('Palette Gradient (red-500 -> blue-500):')->bold(),
+            new Text(''),
+            (new Text('Palette Gradient (red-500 -> blue-500):'))->bold(),
             renderGradientBar($this->palette, $this->width),
-            Text::create(''),
-            Text::create('Builder Gradient (emerald-300 -> violet-600, HSL):')->bold(),
+            new Text(''),
+            (new Text('Builder Gradient (emerald-300 -> violet-600, HSL):'))->bold(),
             renderGradientBar($this->builder, $this->width),
-            Text::create(''),
-            Text::create("First color: {$this->rainbow->getColor(0)}")->dim(),
-            Text::create("Middle color: {$this->rainbow->at(0.5)}")->dim(),
-            Text::create("Last color: {$this->rainbow->getColor($this->width - 1)}")->dim(),
-            Text::create(''),
-            Text::create('Press ESC to exit.')->dim(),
+            new Text(''),
+            (new Text("First color: {$this->rainbow->getColor(0)}"))->dim(),
+            (new Text("Middle color: {$this->rainbow->at(0.5)}"))->dim(),
+            (new Text("Last color: {$this->rainbow->getColor($this->width - 1)}"))->dim(),
+            new Text(''),
+            (new Text('Press ESC to exit.'))->dim(),
         ]);
     }
 }
 
-GradientsDemo::run(new GradientsDemo($width, $rainbow, $heatmap, $grayscale, $custom, $palette, $builder));
+(new GradientsDemo($width, $rainbow, $heatmap, $grayscale, $custom, $palette, $builder))->run();

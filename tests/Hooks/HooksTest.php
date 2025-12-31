@@ -214,7 +214,7 @@ class HooksTest extends TestCase
     public function testContextReturnsRegisteredValue(): void
     {
         // Register a test value in the container
-        $container = \Xocdr\Tui\Tui::getContainer();
+        $container = \Xocdr\Tui\Container::getInstance();
         $testValue = new \stdClass();
         $testValue->name = 'test';
         $container->singleton('TestContext', $testValue);
@@ -230,7 +230,7 @@ class HooksTest extends TestCase
 
     public function testContextReturnsNullForUnregistered(): void
     {
-        $container = \Xocdr\Tui\Tui::getContainer();
+        $container = \Xocdr\Tui\Container::getInstance();
         $container->clear();
 
         $hooks = new Hooks();

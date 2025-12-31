@@ -12,12 +12,13 @@ use Xocdr\Tui\Components\Text;
  * Example counter component demonstrating StatefulComponent usage.
  *
  * @example
- * $counter = Counter::create(['initial' => 10]);
- * $instance = Tui::render($counter);
- *
- * // Handle input
- * $instance->onKey(Key::UP, fn() => $counter->increment());
- * $instance->onKey(Key::DOWN, fn() => $counter->decrement());
+ * // Use Counter within a UI class
+ * class MyApp extends UI {
+ *     public function build(): Component {
+ *         return Counter::create(['initial' => 10]);
+ *     }
+ * }
+ * (new MyApp())->run();
  */
 class Counter extends StatefulComponent
 {

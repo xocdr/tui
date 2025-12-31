@@ -432,6 +432,11 @@ $this->hooks()->onRender(function () {
 
 ## See Also
 
+- [Widget Manual](widgets/index.md) - Pre-built widget library
+  - [Input Widgets](widgets/input-widgets.md) - Input, SelectList, Form
+  - [Display Widgets](widgets/display-widgets.md) - TodoList, Tree, Tabs
+  - [Feedback Widgets](widgets/feedback-widgets.md) - Alert, Badge, Toast
+- [Widget API Reference](../reference/widgets/index.md) - Complete widget API
 - [Components](components.md) - Primitive components
 - [Hooks](hooks.md) - Complete hooks reference
 - [Testing](testing.md) - Testing components and widgets

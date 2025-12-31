@@ -17,10 +17,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Drawing\Buffer;
 use Xocdr\Tui\UI;
 
@@ -61,15 +60,21 @@ class DrawingBufferDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Drawing Buffer Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
-            ...array_map(fn ($line) => Text::create($line), $this->lines),
-            Text::create(''),
-            Text::create('Shapes: rect, circle, triangle, lines')->dim(),
-            Text::create('Press ESC to exit.')->dim(),
-        ]);
+        $children = [
+            (new Text('Drawing Buffer Demo'))->styles('cyan bold'),
+            new Text(''),
+        ];
+
+        foreach ($this->lines as $line) {
+            $children[] = new Text($line);
+        }
+
+        $children[] = new Text('');
+        $children[] = (new Text('Shapes: rect, circle, triangle, lines'))->dim();
+        $children[] = (new Text('Press ESC to exit.'))->dim();
+
+        return new BoxColumn($children);
     }
 }
 
-DrawingBufferDemo::run();
+(new DrawingBufferDemo())->run();

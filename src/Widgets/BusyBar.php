@@ -13,15 +13,19 @@ use Xocdr\Tui\Styling\Animation\Gradient;
 /**
  * Indeterminate/busy progress bar widget.
  *
- * Displays an animated progress bar for operations with unknown duration.
+ * Displays a self-animating progress bar for operations with unknown duration.
+ * Animation is controlled via play()/stop() methods.
  *
  * @example
+ * // Auto-animating busy bar
  * $busy = BusyBar::create()
  *     ->width(30)
- *     ->style('pulse');
+ *     ->style('pulse')
+ *     ->speed(50);
  *
- * // In render loop:
- * $busy->advance();
+ * // Control animation
+ * $busy->stop();  // Pause animation
+ * $busy->play();  // Resume animation
  *
  * // Gradient style with custom colors
  * $busy = BusyBar::create()
@@ -51,6 +55,10 @@ class BusyBar extends Widget
     private Color|string|null $color = null;
 
     private ?Gradient $gradient = null;
+
+    private bool $playing = true;
+
+    private int $intervalMs = 50;
 
     /**
      * Create a new busy bar.
@@ -123,31 +131,39 @@ class BusyBar extends Widget
     }
 
     /**
-     * Advance to the next frame.
+     * Start the animation.
      */
-    public function advance(): self
+    public function play(): self
     {
-        $this->frame++;
+        $this->playing = true;
 
         return $this;
     }
 
     /**
-     * Set the current frame.
+     * Stop the animation.
      */
-    public function setFrame(int $frame): self
+    public function stop(): self
     {
-        $this->frame = $frame;
+        $this->playing = false;
 
         return $this;
     }
 
     /**
-     * Reset to the first frame.
+     * Check if animation is playing.
      */
-    public function reset(): self
+    public function isPlaying(): bool
     {
-        $this->frame = 0;
+        return $this->playing;
+    }
+
+    /**
+     * Set the animation speed (interval in milliseconds).
+     */
+    public function speed(int $ms): self
+    {
+        $this->intervalMs = max(1, $ms);
 
         return $this;
     }
@@ -169,11 +185,32 @@ class BusyBar extends Widget
     /**
      * Build the busy bar component.
      *
+     * Uses hooks for self-animation when playing.
      * For gradient/rainbow styles, returns a Fragment with colored segments.
      * For other styles, returns a Text component.
      */
     public function build(): Component
     {
+        $hooks = $this->hooks();
+
+        // Use hook state for frame - syncs to $this->frame
+        [$frame, $setFrame] = $hooks->state($this->frame);
+
+        // Self-animate using interval hook when playing
+        if ($this->playing) {
+            $hooks->interval(function () use ($setFrame) {
+                $setFrame(function ($f) {
+                    $newFrame = $f + 1;
+                    $this->frame = $newFrame;
+
+                    return $newFrame;
+                });
+            }, $this->intervalMs);
+        }
+
+        // Sync current frame to property
+        $this->frame = $frame;
+
         return match ($this->style) {
             self::STYLE_GRADIENT => $this->renderGradient(),
             self::STYLE_RAINBOW => $this->renderRainbow(),

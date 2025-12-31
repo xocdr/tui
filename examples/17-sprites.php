@@ -6,7 +6,8 @@
  *
  * Demonstrates:
  * - Creating sprites with multiple animations
- * - Updating animation frames
+ * - Automatic animation using interval
+ * - Play/stop control
  * - Controlling sprite position and visibility
  *
  * Run in your terminal: php examples/17-sprites.php
@@ -17,10 +18,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Drawing\Sprite;
 use Xocdr\Tui\UI;
 
@@ -49,17 +49,27 @@ class SpritesDemo extends UI
 
     public function build(): Component
     {
-        [$frame, $setFrame] = $this->state(0);
         [$animation, $setAnimation] = $this->state('idle');
+        [$_, $forceRender] = $this->state(0);
 
         $sprite = $this->sprite;
 
-        $this->onKeyPress(function ($input, $key) use ($setFrame, $setAnimation, $sprite) {
+        // Auto-animate using interval
+        $this->interval(function () use ($sprite, $forceRender) {
+            $sprite->update(50);
+            $forceRender(fn ($n) => $n + 1);
+        }, 50);
+
+        $this->onKeyPress(function ($input, $key) use ($setAnimation, $sprite) {
             if ($key->escape) {
                 $this->exit();
             } elseif ($input === ' ') {
-                $sprite->advance();
-                $setFrame(fn ($f) => $f + 1);
+                // Toggle play/pause
+                if ($sprite->isPlaying()) {
+                    $sprite->stop();
+                } else {
+                    $sprite->play();
+                }
             } elseif ($input === 'w') {
                 $sprite->setAnimation('walk');
                 $setAnimation('walk');
@@ -70,22 +80,29 @@ class SpritesDemo extends UI
         });
 
         $lines = $sprite->render();
+        $status = $sprite->isPlaying() ? 'Playing' : 'Paused';
 
-        return Box::column([
-            Text::create('Sprite Animation Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
-            ...array_map(fn ($line) => Text::create($line), $lines),
-            Text::create(''),
-            Text::create("Animation: {$animation} | Frame: {$frame}")->dim(),
-            Text::create(''),
-            Text::create('Controls:')->bold(),
-            Text::create('  SPACE - Advance frame'),
-            Text::create('  W     - Walk animation'),
-            Text::create('  I     - Idle animation'),
-            Text::create(''),
-            Text::create('Press ESC to exit.')->dim(),
-        ]);
+        $children = [
+            (new Text('Sprite Animation Demo'))->styles('cyan bold'),
+            new Text(''),
+        ];
+
+        foreach ($lines as $line) {
+            $children[] = new Text($line);
+        }
+
+        $children[] = new Text('');
+        $children[] = (new Text("Animation: {$animation} | Frame: {$sprite->getFrame()} | {$status}"))->dim();
+        $children[] = new Text('');
+        $children[] = (new Text('Controls:'))->bold();
+        $children[] = new Text('  SPACE - Toggle play/pause');
+        $children[] = new Text('  W     - Walk animation');
+        $children[] = new Text('  I     - Idle animation');
+        $children[] = new Text('');
+        $children[] = (new Text('Press ESC to exit.'))->dim();
+
+        return new BoxColumn($children);
     }
 }
 
-SpritesDemo::run();
+(new SpritesDemo())->run();

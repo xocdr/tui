@@ -23,6 +23,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\UI;
@@ -105,18 +107,18 @@ class ClaudeCodeTodosDemo extends UI
         // Current spinner frame
         $spinner = $spinnerFrames[$spinnerFrame % count($spinnerFrames)];
 
-        // Build rows
-        $rows = [];
+        // Build the UI
+        $column = new BoxColumn();
 
         // Title line: [spinner] Active task text... (dimmed info)
-        $rows[] = Box::row([
-            Text::create($spinner . ' ')->rgb(227, 133, 90),  // Orange spinner
-            Text::create($inProgressText . '...')->rgb(227, 133, 90),  // Orange text
-            Text::create(' (esc to interrupt · ctrl+t to hide todos · 5m 38s · ↓ 1.7k tokens)')->dim(),
-        ]);
+        $column->append(
+            (new BoxRow())
+                ->append((new Text($spinner . ' '))->rgb(227, 133, 90))  // Orange spinner
+                ->append((new Text($inProgressText . '...'))->rgb(227, 133, 90))  // Orange text
+                ->append((new Text(' (esc to interrupt · ctrl+t to hide todos · 5m 38s · ↓ 1.7k tokens)'))->dim())
+        );
 
         // Todo items with tree connector
-        $todoCount = count($todos);
         foreach ($todos as $index => $todo) {
             $isFirst = $index === 0;
             $isSelected = $index === $selectedIndex;
@@ -127,9 +129,9 @@ class ClaudeCodeTodosDemo extends UI
             $connector = $isFirst ? '└ ' : '  ';
 
             // Build the row components
-            $connectorText = Text::create($connector)->dim();
-            $iconText = Text::create($icon . ' ');
-            $contentText = Text::create($todo['text']);
+            $connectorText = (new Text($connector))->dim();
+            $iconText = new Text($icon . ' ');
+            $contentText = new Text($todo['text']);
 
             // Apply styling
             if ($status === 'completed') {
@@ -139,11 +141,16 @@ class ClaudeCodeTodosDemo extends UI
                 $contentText->bold();
             }
 
-            $rows[] = Box::row([$connectorText, $iconText, $contentText]);
+            $column->append(
+                (new BoxRow())
+                    ->append($connectorText)
+                    ->append($iconText)
+                    ->append($contentText)
+            );
         }
 
-        return Box::column($rows);
+        return (new Box())->append($column);
     }
 }
 
-ClaudeCodeTodosDemo::run();
+(new ClaudeCodeTodosDemo())->run();

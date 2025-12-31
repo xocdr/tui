@@ -17,10 +17,12 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\Container;
 use Xocdr\Tui\UI;
 
 /**
@@ -62,7 +64,7 @@ final readonly class UserContext
 }
 
 // Register contexts in the container
-$container = Tui::getContainer();
+$container = Container::getInstance();
 $container->singleton(ThemeContext::class, new ThemeContext());
 $container->singleton(UserContext::class, new UserContext(
     name: 'Developer',
@@ -91,49 +93,38 @@ class ContextDemo extends UI
 
         $levelColor = $theme?->getColorForLevel($level) ?? '#ffffff';
 
-        return Box::column([
-            Text::create('=== Context Demo ===')
-                ->bold()
-                ->color($theme?->primaryColor ?? '#00ffff'),
-            Text::create('Shared state across components')->dim(),
-            Newline::create(),
+        return new BoxColumn([
+            (new Text('=== Context Demo ==='))->bold()->color($theme?->primaryColor ?? '#00ffff'),
+            (new Text('Shared state across components'))->dim(),
+            new Newline(),
 
             // User info from context
-            Box::create()
-                ->border($theme?->borderStyle ?? 'single')
-                ->borderColor('#888888')
-                ->padding(1)
-                ->children([
-                    Text::create('User Context:')->bold(),
-                    Text::create('Name: ' . ($user?->name ?? 'Unknown'))
-                        ->color($theme?->primaryColor ?? '#00ffff'),
-                    Text::create('Role: ' . ($user?->role ?? 'guest'))->dim(),
-                ]),
-            Newline::create(),
+            (new BoxColumn([
+                (new Text('User Context:'))->bold(),
+                (new Text('Name: ' . ($user?->name ?? 'Unknown')))->color($theme?->primaryColor ?? '#00ffff'),
+                (new Text('Role: ' . ($user?->role ?? 'guest')))->dim(),
+            ]))->border($theme?->borderStyle ?? 'single')->borderColor('#888888')->padding(1),
+            new Newline(),
 
             // Theme-aware level display - color changes based on level
-            Box::create()
-                ->border($theme?->borderStyle ?? 'single')
-                ->borderColor('#888888')
-                ->padding(1)
-                ->children([
-                    Text::create('Level Monitor:')->bold(),
-                    Box::row([
-                        Text::create('Value: '),
-                        Text::create((string) $level)->bold()->color($levelColor),
-                    ]),
-                    Text::create(
-                        $level >= 10 ? 'Status: CRITICAL' :
-                        ($level >= 5 ? 'Status: Warning' : 'Status: Normal')
-                    )->color($levelColor),
+            (new BoxColumn([
+                (new Text('Level Monitor:'))->bold(),
+                new BoxRow([
+                    new Text('Value: '),
+                    (new Text((string) $level))->bold()->color($levelColor),
                 ]),
-            Newline::create(),
+                (new Text(
+                    $level >= 10 ? 'Status: CRITICAL' :
+                    ($level >= 5 ? 'Status: Warning' : 'Status: Normal')
+                ))->color($levelColor),
+            ]))->border($theme?->borderStyle ?? 'single')->borderColor('#888888')->padding(1),
+            new Newline(),
 
-            Text::create('Controls:')->bold(),
-            Text::create('  Up/Down - Change level'),
-            Text::create('  q       - Quit'),
+            (new Text('Controls:'))->bold(),
+            new Text('  Up/Down - Change level'),
+            new Text('  q       - Quit'),
         ]);
     }
 }
 
-ContextDemo::run();
+(new ContextDemo())->run();

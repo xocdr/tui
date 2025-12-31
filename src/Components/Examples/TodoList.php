@@ -12,13 +12,13 @@ use Xocdr\Tui\Components\Text;
  * Example todo list component demonstrating StatefulComponent usage.
  *
  * @example
- * $todos = TodoList::create(['title' => 'My Tasks']);
- * $instance = Tui::render($todos);
- *
- * $instance->onKey(Key::UP, fn() => $todos->moveUp());
- * $instance->onKey(Key::DOWN, fn() => $todos->moveDown());
- * $instance->onKey(Key::SPACE, fn() => $todos->toggleCurrent());
- * $instance->onKey('d', fn() => $todos->deleteCurrent());
+ * // Use TodoList within a UI class
+ * class MyApp extends UI {
+ *     public function build(): Component {
+ *         return TodoList::create(['title' => 'My Tasks']);
+ *     }
+ * }
+ * (new MyApp())->run();
  */
 class TodoList extends StatefulComponent
 {

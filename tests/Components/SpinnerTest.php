@@ -50,45 +50,6 @@ class SpinnerTest extends TestCase
         $this->assertSame(10, $count); // dots has 10 frames
     }
 
-    public function testAdvance(): void
-    {
-        $spinner = Spinner::create(Spinner::TYPE_DOTS);
-
-        $frame1 = $spinner->getFrame();
-        $spinner->advance();
-        $frame2 = $spinner->getFrame();
-
-        $this->assertNotSame($frame1, $frame2);
-    }
-
-    public function testSetFrame(): void
-    {
-        $spinner = Spinner::create(Spinner::TYPE_DOTS);
-
-        $spinner->setFrame(5);
-
-        // Get frame after setting
-        $spinner->setFrame(0);
-        $frame0 = $spinner->getFrame();
-
-        $spinner->setFrame(1);
-        $frame1 = $spinner->getFrame();
-
-        $this->assertNotSame($frame0, $frame1);
-    }
-
-    public function testReset(): void
-    {
-        $spinner = Spinner::create();
-
-        $spinner->advance()->advance()->advance();
-        $spinner->reset();
-
-        // After reset, should be at first frame
-        $initial = Spinner::create();
-        $this->assertSame($initial->getFrame(), $spinner->getFrame());
-    }
-
     public function testLabel(): void
     {
         $spinner = Spinner::create()
@@ -150,18 +111,4 @@ class SpinnerTest extends TestCase
         }
     }
 
-    public function testFrameWrapsAround(): void
-    {
-        $spinner = Spinner::create(Spinner::TYPE_LINE);
-        $count = $spinner->getFrameCount();
-
-        // Advance past the frame count
-        for ($i = 0; $i < $count + 2; $i++) {
-            $spinner->advance();
-        }
-
-        // Should still return a valid frame
-        $frame = $spinner->getFrame();
-        $this->assertNotEmpty($frame);
-    }
 }

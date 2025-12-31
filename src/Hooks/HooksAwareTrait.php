@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Hooks;
 
 use Xocdr\Tui\Contracts\HooksInterface;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\Runtime;
 
 /**
  * Trait providing hooks access for components.
@@ -57,7 +57,7 @@ trait HooksAwareTrait
     public function getHooks(): HooksInterface
     {
         if ($this->hooks === null) {
-            $app = Tui::getApplication();
+            $app = Runtime::current();
 
             // Create component-specific context
             if ($this->componentContext === null) {

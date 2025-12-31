@@ -16,11 +16,10 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 
 class RefDemo extends UI
@@ -51,31 +50,27 @@ class RefDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('=== Ref Demo ===')->bold()->color(Color::Cyan),
-            Text::create('Mutable references that persist across renders')->dim(),
-            Newline::create(),
+        return new BoxColumn([
+            (new Text('=== Ref Demo ==='))->styles('cyan bold'),
+            (new Text('Mutable references that persist across renders'))->dim(),
+            new Newline(),
 
-            Box::create()
-                ->border('round')
-                ->borderColor('#888888')
-                ->padding(1)
-                ->children([
-                    Text::create('Current count: ' . $count)->color(Color::Green),
-                    Text::create('Previous count: ' . ($previousCount->current ?? '(none)'))->dim(),
-                    Text::create('Render count: ' . $renderCount->current)->color(Color::Yellow),
-                ]),
-            Newline::create(),
+            (new BoxColumn([
+                (new Text('Current count: ' . $count))->styles('green'),
+                (new Text('Previous count: ' . ($previousCount->current ?? '(none)')))->dim(),
+                (new Text('Render count: ' . $renderCount->current))->styles('yellow'),
+            ]))->border('round')->borderColor('#888888')->padding(1),
+            new Newline(),
 
-            Text::create('Note: Render count increments because count changes.')->dim(),
-            Text::create('But mutating refs directly would not cause re-render.')->dim(),
-            Newline::create(),
+            (new Text('Note: Render count increments because count changes.'))->dim(),
+            (new Text('But mutating refs directly would not cause re-render.'))->dim(),
+            new Newline(),
 
-            Text::create('Controls:')->bold(),
-            Text::create('  Up/Down - Change count'),
-            Text::create('  q       - Quit'),
+            (new Text('Controls:'))->bold(),
+            new Text('  Up/Down - Change count'),
+            new Text('  q       - Quit'),
         ]);
     }
 }
 
-RefDemo::run();
+(new RefDemo())->run();

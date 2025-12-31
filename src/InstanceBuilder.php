@@ -14,9 +14,9 @@ use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 /**
- * Fluent builder for creating Application objects.
+ * Fluent builder for creating Runtime objects.
  *
- * Provides a clean API for configuring TUI applications
+ * Provides a clean API for configuring TUI runtimes
  * with dependency injection support.
  */
 class InstanceBuilder
@@ -114,15 +114,15 @@ class InstanceBuilder
     }
 
     /**
-     * Build the Application.
+     * Build the Runtime.
      */
-    public function build(): Application
+    public function build(): Runtime
     {
         if ($this->component === null) {
             throw new \RuntimeException('Component is required');
         }
 
-        return new Application(
+        return new Runtime(
             $this->component,
             $this->options,
             $this->eventDispatcher,
@@ -132,14 +132,14 @@ class InstanceBuilder
     }
 
     /**
-     * Build and start the Application.
+     * Build and start the Runtime.
      */
-    public function start(): Application
+    public function start(): Runtime
     {
-        $app = $this->build();
-        $app->start();
+        $runtime = $this->build();
+        $runtime->start();
 
-        return $app;
+        return $runtime;
     }
 
     /**

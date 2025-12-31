@@ -154,20 +154,29 @@ function notifyUser(string $message, bool $urgent = false) {
 ### Timer Alert
 
 ```php
-$component = function () {
-    [$timeLeft, $setTimeLeft] = useState(60);
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Terminal\Notification;
+use Xocdr\Tui\Widgets\Widget;
 
-    useInterval(function () use ($timeLeft, $setTimeLeft) {
-        if ($timeLeft > 0) {
-            $setTimeLeft($timeLeft - 1);
-        } elseif ($timeLeft === 0) {
-            Notification::alert('Timer finished!');
-            $setTimeLeft(-1); // Prevent repeated alerts
-        }
-    }, 1000);
+class TimerWidget extends Widget
+{
+    public function build(): Component
+    {
+        [$timeLeft, $setTimeLeft] = $this->hooks()->state(60);
 
-    return Text::create("Time left: {$timeLeft}s");
-};
+        $this->hooks()->interval(function () use ($timeLeft, $setTimeLeft) {
+            if ($timeLeft > 0) {
+                $setTimeLeft($timeLeft - 1);
+            } elseif ($timeLeft === 0) {
+                Notification::alert('Timer finished!');
+                $setTimeLeft(-1); // Prevent repeated alerts
+            }
+        }, 1000);
+
+        return Text::create("Time left: {$timeLeft}s");
+    }
+}
 ```
 
 ## OSC Sequences Reference

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Support\Debug;
 
-use Xocdr\Tui\Application;
+use Xocdr\Tui\Runtime;
 use Xocdr\Tui\Support\Telemetry\Metrics;
 
 /**
@@ -14,8 +14,8 @@ use Xocdr\Tui\Support\Telemetry\Metrics;
  * and performance metrics during development.
  *
  * @example
- * $app = Tui::render(new MyComponent());
- * $inspector = new Inspector($app);
+ * // Within a UI class
+ * $inspector = new Inspector($this->runtime());
  * $inspector->enable();
  *
  * // Get component tree
@@ -30,7 +30,7 @@ use Xocdr\Tui\Support\Telemetry\Metrics;
  */
 class Inspector
 {
-    private Application $app;
+    private Runtime $runtime;
 
     private Metrics $metrics;
 
@@ -47,9 +47,9 @@ class Inspector
 
     private int $maxStateChanges = 100;
 
-    public function __construct(Application $app, ?Metrics $metrics = null)
+    public function __construct(Runtime $runtime, ?Metrics $metrics = null)
     {
-        $this->app = $app;
+        $this->runtime = $runtime;
         $this->metrics = $metrics ?? new Metrics();
     }
 
@@ -106,7 +106,7 @@ class Inspector
             return [];
         }
 
-        $root = $this->app->getRootNode();
+        $root = $this->runtime->getRootNode();
         if ($root === null) {
             return [];
         }

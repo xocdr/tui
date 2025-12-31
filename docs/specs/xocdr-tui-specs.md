@@ -63,7 +63,7 @@ echo "Interactive: " . (Tui::isInteractive() ? 'yes' : 'no') . "\n";
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Application Code                         │
+│                     Runtime Code                         │
 │  Components │ Hooks │ Event Handlers │ Drawing               │
 └────┬────────────────────────────────────────────────────────┘
      │
@@ -71,7 +71,7 @@ echo "Interactive: " . (Tui::isInteractive() ? 'yes' : 'no') . "\n";
 │                   xocdr/tui PHP Library                      │
 ├─────────────────────────────────────────────────────────────┤
 │ Tui (Facade)      │ Static entry point                       │
-│ Instance          │ Application lifecycle                    │
+│ Instance          │ Runtime lifecycle                    │
 │ Components/       │ Box, Text, Table, Spinner, etc.          │
 │ Hooks/            │ state, onRender, onInput, etc.           │
 │ Events/           │ EventDispatcher, InputEvent, etc.        │
@@ -124,7 +124,7 @@ The ext-tui C extension provides classes and functions:
 
 ```
 src/
-├── Application/           # Manager classes for Application
+├── Runtime/           # Manager classes for Runtime
 │   ├── TimerManager.php   # Timer and interval management
 │   └── OutputManager.php  # Terminal output operations
 ├── Components/            # UI components
@@ -161,7 +161,7 @@ src/
 │   └── HooksAwareTrait.php  # Trait for hook-enabled components
 ├── Rendering/             # Rendering subsystem
 │   ├── Lifecycle/
-│   │   └── ApplicationLifecycle.php  # App lifecycle management
+│   │   └── RuntimeLifecycle.php  # App lifecycle management
 │   ├── Render/
 │   │   ├── ComponentRenderer.php
 │   │   ├── ExtensionRenderTarget.php
@@ -221,7 +221,7 @@ src/
 │   ├── ProgressBar.php    # Progress indicator
 │   ├── BusyBar.php        # Indeterminate progress
 │   └── DebugPanel.php     # Debug overlay
-├── Application.php        # Application wrapper with manager getters
+├── Runtime.php        # Runtime wrapper with manager getters
 ├── InstanceBuilder.php    # Fluent builder
 ├── Container.php          # DI container
 └── Tui.php               # Static facade
@@ -235,12 +235,12 @@ src/
 
 | Namespace | Purpose |
 |-----------|---------|
-| `Xocdr\Tui` | Main entry point, Application, and Container |
-| `Xocdr\Tui\Application` | Manager classes (TimerManager, OutputManager) |
+| `Xocdr\Tui` | Main entry point, Runtime, and Container |
+| `Xocdr\Tui\Runtime` | Manager classes (TimerManager, OutputManager) |
 | `Xocdr\Tui\Components` | UI components (Box, Text, etc.) |
 | `Xocdr\Tui\Contracts` | Interfaces for dependency injection |
 | `Xocdr\Tui\Hooks` | State management hooks |
-| `Xocdr\Tui\Rendering\Lifecycle` | Application lifecycle management |
+| `Xocdr\Tui\Rendering\Lifecycle` | Runtime lifecycle management |
 | `Xocdr\Tui\Rendering\Render` | Component-to-node rendering |
 | `Xocdr\Tui\Rendering\Focus` | Focus management service |
 | `Xocdr\Tui\Styling\Style` | Colors, styling, borders |
@@ -1116,7 +1116,7 @@ $hooks->onInput(function($key, $nativeKey) {
 $hooks->onInput($handler, ['isActive' => $isFocused]);
 ```
 
-### Application Control
+### Runtime Control
 
 #### app
 
@@ -2179,7 +2179,7 @@ All major classes have corresponding interfaces for dependency injection and tes
 | `HookContextInterface` | `HookContext` | Hook state |
 | `HooksInterface` | `Hooks` | Hooks service |
 | `HooksAwareInterface` | `HooksAwareTrait` | Hook-enabled components |
-| `InstanceInterface` | `Application` | Application instance |
+| `InstanceInterface` | `Runtime` | Runtime instance |
 | `TimerManagerInterface` | `TimerManager` | Timer and interval management |
 | `OutputManagerInterface` | `OutputManager` | Terminal output operations |
 | `InputManagerInterface` | `InputManager` | Keyboard input handling |
@@ -2204,7 +2204,7 @@ use Xocdr\Tui\Widgets\Spinner;
 use Xocdr\Tui\Hooks\Hooks;
 
 $app = function () {
-    $hooks = new Hooks(Tui::getApplication());
+    $hooks = new Hooks(Tui::getRuntime());
 
     // State
     [$count, $setCount] = $hooks->state(0);

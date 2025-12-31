@@ -129,13 +129,20 @@ $roleInt = Accessibility::roleFromString('dialog');
 The `animation()` hook automatically respects reduced motion:
 
 ```php
-use function Xocdr\Tui\Hooks\animation;
+use Xocdr\Tui\Widgets\Widget;
 
-$fade = animation(0, 1.0, 500);
+class FadeInWidget extends Widget
+{
+    public function build(): Component
+    {
+        $fade = $this->hooks()->animation(0, 1.0, 500);
 
-if ($fade['prefersReducedMotion']) {
-    // Animation completed instantly
-    echo "Skipped animation for accessibility";
+        if ($fade['prefersReducedMotion']) {
+            // Animation completed instantly
+        }
+
+        // Use $fade['value'] for opacity...
+    }
 }
 ```
 
@@ -143,7 +150,7 @@ To override this behavior:
 
 ```php
 // Force animation even with reduced motion preference
-$fade = animation(0, 1.0, 500, 'linear', false);
+$fade = $this->hooks()->animation(0, 1.0, 500, 'linear', false);
 ```
 
 ## Best Practices
@@ -169,30 +176,40 @@ $fade = animation(0, 1.0, 500, 'linear', false);
 ## Example: Accessible Dialog
 
 ```php
-$dialog = function () {
-    [$isOpen, $setIsOpen] = useState(false);
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Terminal\Accessibility;
+use Xocdr\Tui\Widgets\Widget;
 
-    useEffect(function () use ($isOpen) {
-        if ($isOpen) {
-            Accessibility::announce('Dialog opened');
+class AccessibleDialog extends Widget
+{
+    public function build(): Component
+    {
+        [$isOpen, $setIsOpen] = $this->hooks()->state(false);
+
+        $this->hooks()->onRender(function () use ($isOpen) {
+            if ($isOpen) {
+                Accessibility::announce('Dialog opened');
+            }
+        }, [$isOpen]);
+
+        if (!$isOpen) {
+            return Text::create('');
         }
-    }, [$isOpen]);
 
-    if (!$isOpen) {
-        return null;
+        $instant = Accessibility::prefersReducedMotion();
+        $animation = $this->hooks()->animation(0, 1, 200);
+        $opacity = $instant ? 1.0 : $animation['value'];
+
+        return Box::create()
+            ->border('round')
+            ->children([
+                Text::create('Confirm Action')->bold(),
+                Text::create('Are you sure you want to proceed?'),
+            ]);
     }
-
-    $instant = Accessibility::prefersReducedMotion();
-    $opacity = $instant ? 1.0 : animation(0, 1, 200)['value'];
-
-    return Box::create()
-        ->opacity($opacity)
-        ->border('rounded')
-        ->children([
-            Text::create('Confirm Action')->bold(),
-            Text::create('Are you sure you want to proceed?'),
-        ]);
-};
+}
 ```
 
 ## Environment Variables

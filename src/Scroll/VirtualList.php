@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Scroll;
 
+use Xocdr\Tui\Contracts\DestroyableInterface;
+
 /**
  * Virtual list for efficient rendering of large datasets.
  *
@@ -26,10 +28,12 @@ namespace Xocdr\Tui\Scroll;
  * $vlist->scrollItems(1);  // Arrow down
  * $vlist->pageDown();      // Page down
  */
-class VirtualList
+class VirtualList implements DestroyableInterface
 {
     /** @var resource|null The native virtual list resource */
     private mixed $resource = null;
+
+    private bool $destroyed = false;
 
     private int $itemCount;
 
@@ -81,6 +85,12 @@ class VirtualList
      */
     public function destroy(): void
     {
+        if ($this->destroyed) {
+            return;
+        }
+
+        $this->destroyed = true;
+
         if ($this->resource !== null && function_exists('tui_virtual_destroy')) {
             try {
                 tui_virtual_destroy($this->resource);
@@ -89,6 +99,14 @@ class VirtualList
                 $this->resource = null;
             }
         }
+    }
+
+    /**
+     * Check if this instance has been destroyed.
+     */
+    public function isDestroyed(): bool
+    {
+        return $this->destroyed;
     }
 
     /**

@@ -43,6 +43,18 @@ class Box extends AbstractContainerComponent
 
     /**
      * Create a new Box instance.
+     *
+     * @param array<Component|string> $children Initial children
+     */
+    public function __construct(array $children = [])
+    {
+        foreach ($children as $child) {
+            $this->append($child);
+        }
+    }
+
+    /**
+     * Create a new Box instance.
      */
     public static function create(): self
     {
@@ -50,7 +62,7 @@ class Box extends AbstractContainerComponent
     }
 
     /**
-     * Create a column-direction Box.
+     * Create a column-direction Box (static factory).
      *
      * @param array<Component|string> $children
      */
@@ -60,13 +72,83 @@ class Box extends AbstractContainerComponent
     }
 
     /**
-     * Create a row-direction Box.
+     * Create a row-direction Box (static factory).
      *
      * @param array<Component|string> $children
      */
     public static function row(array $children = []): self
     {
         return self::create()->flexDirection('row')->children($children);
+    }
+
+    /**
+     * Set this box to column direction (instance method).
+     *
+     * @return $this
+     */
+    public function asColumn(): self
+    {
+        return $this->flexDirection('column');
+    }
+
+    /**
+     * Set this box to row direction (instance method).
+     *
+     * @return $this
+     */
+    public function asRow(): self
+    {
+        return $this->flexDirection('row');
+    }
+
+    /**
+     * Add a row container as a child and return it for chaining.
+     *
+     * @param array<Component|string>|string|null $childrenOrKey Array of children, or optional key for widget instance persistence
+     * @param string|null $key Optional key when first param is an array
+     * @return BoxRow The new row Box (for chaining children onto it)
+     */
+    public function addRow(array|string|null $childrenOrKey = null, ?string $key = null): BoxRow
+    {
+        $row = new BoxRow();
+
+        // Determine if first param is children array or key
+        if (is_array($childrenOrKey)) {
+            foreach ($childrenOrKey as $child) {
+                $row->append($child);
+            }
+            $this->append($row, $key);
+        } else {
+            // First param is key (or null)
+            $this->append($row, $childrenOrKey);
+        }
+
+        return $row;
+    }
+
+    /**
+     * Add a column container as a child and return it for chaining.
+     *
+     * @param array<Component|string>|string|null $childrenOrKey Array of children, or optional key for widget instance persistence
+     * @param string|null $key Optional key when first param is an array
+     * @return BoxColumn The new column Box (for chaining children onto it)
+     */
+    public function addColumn(array|string|null $childrenOrKey = null, ?string $key = null): BoxColumn
+    {
+        $column = new BoxColumn();
+
+        // Determine if first param is children array or key
+        if (is_array($childrenOrKey)) {
+            foreach ($childrenOrKey as $child) {
+                $column->append($child);
+            }
+            $this->append($column, $key);
+        } else {
+            // First param is key (or null)
+            $this->append($column, $childrenOrKey);
+        }
+
+        return $column;
     }
 
     // Tailwind-like utility classes
@@ -519,16 +601,25 @@ class Box extends AbstractContainerComponent
         return $this;
     }
 
+    /** Maximum allowed spacing value to prevent layout issues */
+    private const MAX_SPACING = 1000;
+
     /**
-     * Validate spacing value is non-negative.
+     * Validate spacing value is within bounds.
      *
-     * @throws \InvalidArgumentException If value is negative
+     * @throws \InvalidArgumentException If value is negative or exceeds maximum
      */
     private function validateSpacing(int $value, string $property): int
     {
         if ($value < 0) {
             throw new \InvalidArgumentException(
                 sprintf('%s cannot be negative, got %d', $property, $value)
+            );
+        }
+
+        if ($value > self::MAX_SPACING) {
+            throw new \InvalidArgumentException(
+                sprintf('%s exceeds maximum of %d, got %d', $property, self::MAX_SPACING, $value)
             );
         }
 
@@ -896,6 +987,10 @@ class Box extends AbstractContainerComponent
                 $style['borderTitleStyle'] = $this->borderTitleStyle;
             }
         }
+
+        // Remove bgColor - Box doesn't support background colors in the C extension
+        // Background colors are only supported on Text components
+        unset($style['bgColor']);
 
         $box = new \Xocdr\Tui\Ext\Box($style);
 

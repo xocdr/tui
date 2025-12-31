@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Debug;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Application;
+use Xocdr\Tui\Runtime;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Debug\Inspector;
@@ -15,13 +15,13 @@ class InspectorTest extends TestCase
 {
     private Inspector $inspector;
 
-    private Application $app;
+    private Runtime $runtime;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->app = $this->createMock(Application::class);
-        $this->inspector = new Inspector($this->app);
+        $this->runtime = $this->createMock(Runtime::class);
+        $this->inspector = new Inspector($this->runtime);
     }
 
     protected function tearDown(): void
@@ -62,7 +62,7 @@ class InspectorTest extends TestCase
     public function testMetricsInstanceCanBeInjected(): void
     {
         $customMetrics = new Metrics();
-        $inspector = new Inspector($this->app, $customMetrics);
+        $inspector = new Inspector($this->runtime, $customMetrics);
 
         $this->assertSame($customMetrics, $inspector->metrics());
     }
@@ -172,7 +172,7 @@ class InspectorTest extends TestCase
 
     public function testDumpTreeReturnsEmptyMessageWhenNoTree(): void
     {
-        $this->app->method('getRootNode')->willReturn(null);
+        $this->runtime->method('getRootNode')->willReturn(null);
         $this->inspector->enable();
 
         $dump = $this->inspector->dumpTree();
@@ -185,7 +185,7 @@ class InspectorTest extends TestCase
         $text = Text::create('Hello');
         $box = Box::column([$text]);
 
-        $this->app->method('getRootNode')->willReturn($box);
+        $this->runtime->method('getRootNode')->willReturn($box);
         $this->inspector->enable();
 
         $dump = $this->inspector->dumpTree();

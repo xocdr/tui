@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Rendering\Focus;
 
-use Xocdr\Tui\Application;
+use Xocdr\Tui\Runtime;
 
 /**
  * Manages focus navigation between focusable elements.
@@ -25,7 +25,7 @@ class FocusManager
     private ?string $currentFocusId = null;
 
     public function __construct(
-        private readonly Application $app
+        private readonly Runtime $app
     ) {
     }
 

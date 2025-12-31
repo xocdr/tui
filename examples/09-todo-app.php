@@ -23,11 +23,12 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 
 class TodoApp extends UI
@@ -102,121 +103,116 @@ class TodoApp extends UI
         $unicodeList = $this->buildTodoList($todos, $selectedIndex, $this->unicodeIcons, 'Unicode Icons');
         $emojiList = $this->buildTodoList($todos, $selectedIndex, $this->emojiIcons, 'Emoji Icons');
 
-        return Box::column([
-            Text::create('Todo App - Icon Comparison')->bold()->color(Color::Magenta),
-            Text::create('Both lists are synced - changes apply to both')->dim(),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Todo App - Icon Comparison'))->styles('magenta bold'),
+                (new Text('Both lists are synced - changes apply to both'))->dim(),
+                new Newline(),
 
-            // Side by side lists
-            Box::row([
-                $unicodeList,
-                Box::create()->width(3), // Spacer
-                $emojiList,
-            ]),
-            Newline::create(),
+                // Side by side lists
+                new BoxRow([
+                    $unicodeList,
+                    (new Box())->width(3), // Spacer
+                    $emojiList,
+                ]),
+                new Newline(),
 
-            // Legend
-            Text::create('Status Legend:')->bold(),
-            Box::row([
-                Text::create('□/🔲 ')->color(Color::Gray),
-                Text::create('pending  ')->color(Color::Gray),
-                Text::create('◐/🔄 ')->color(Color::Yellow),
-                Text::create('in_progress  ')->color(Color::Yellow),
-                Text::create('▣/🟢 ')->color(Color::Green),
-                Text::create('completed  ')->color(Color::Green),
-                Text::create('⊘/🔴 ')->color(Color::Red),
-                Text::create('blocked  ')->color(Color::Red),
-                Text::create('◔/🟡 ')->color(Color::Cyan),
-                Text::create('waiting')->color(Color::Cyan),
-            ]),
-            Newline::create(),
+                // Legend
+                (new Text('Status Legend:'))->bold(),
+                new BoxRow([
+                    (new Text('□/🔲 '))->styles('gray'),
+                    (new Text('pending  '))->styles('gray'),
+                    (new Text('◐/🔄 '))->styles('yellow'),
+                    (new Text('in_progress  '))->styles('yellow'),
+                    (new Text('▣/🟢 '))->styles('green'),
+                    (new Text('completed  '))->styles('green'),
+                    (new Text('⊘/🔴 '))->styles('red'),
+                    (new Text('blocked  '))->styles('red'),
+                    (new Text('◔/🟡 '))->styles('cyan'),
+                    (new Text('waiting'))->styles('cyan'),
+                ]),
+                new Newline(),
 
-            // Controls
-            Text::create('Controls:')->bold(),
-            Box::row([
-                Text::create('Up/Down')->color(Color::Cyan),
-                Text::create(' Navigate  '),
-                Text::create('Space')->color(Color::Cyan),
-                Text::create(' Cycle Status  '),
-            ]),
-            Box::row([
-                Text::create('a')->color(Color::Cyan),
-                Text::create(' Add  '),
-                Text::create('d')->color(Color::Cyan),
-                Text::create(' Delete  '),
-                Text::create('q')->color(Color::Cyan),
-                Text::create(' Quit'),
+                // Controls
+                (new Text('Controls:'))->bold(),
+                new BoxRow([
+                    (new Text('Up/Down'))->styles('cyan'),
+                    new Text(' Navigate  '),
+                    (new Text('Space'))->styles('cyan'),
+                    new Text(' Cycle Status  '),
+                ]),
+                new BoxRow([
+                    (new Text('a'))->styles('cyan'),
+                    new Text(' Add  '),
+                    (new Text('d'))->styles('cyan'),
+                    new Text(' Delete  '),
+                    (new Text('q'))->styles('cyan'),
+                    new Text(' Quit'),
+                ]),
             ]),
         ]);
     }
 
-    private function buildTodoList(array $todos, int $selectedIndex, array $icons, string $title): Box
+    private function buildTodoList(array $todos, int $selectedIndex, array $icons, string $title): BoxColumn
     {
-        $todoItems = [];
-        foreach ($todos as $index => $todo) {
-            $isSelected = $index === $selectedIndex;
-            $status = $todo['status'];
-            $icon = $icons[$status] ?? '?';
+        $listItems = [];
 
-            // Build row with separate components so strikethrough only applies to text
-            $prefixText = Text::create($isSelected ? '> ' : '  ');
-            $iconText = Text::create($icon . ' ');
-            $contentText = Text::create($todo['text']);
+        if (empty($todos)) {
+            $listItems[] = (new Text('No todos yet!'))->dim();
+        } else {
+            foreach ($todos as $index => $todo) {
+                $isSelected = $index === $selectedIndex;
+                $status = $todo['status'];
+                $icon = $icons[$status] ?? '?';
 
-            // Style based on status
-            $color = match ($status) {
-                'completed' => 'green',
-                'in_progress' => 'yellow',
-                'blocked' => 'red',
-                'waiting' => 'cyan',
-                default => null,
-            };
+                // Build row with separate components so strikethrough only applies to text
+                $prefixText = new Text($isSelected ? '> ' : '  ');
+                $iconText = new Text($icon . ' ');
+                $contentText = new Text($todo['text']);
 
-            if ($status === 'completed') {
-                $iconText->dim()->color(Color::Green);
-                $contentText->dim()->strikethrough();
-            } elseif ($isSelected) {
-                $prefixText->bold()->color(Color::Cyan);
-                $iconText->bold()->color(Color::Cyan);
-                $contentText->bold()->color(Color::Cyan);
-            } elseif ($color) {
-                // Use Color enum for status colors
-                $colorEnum = match ($color) {
-                    'green' => Color::Green,
-                    'yellow' => Color::Yellow,
-                    'red' => Color::Red,
-                    'cyan' => Color::Cyan,
+                // Style based on status
+                $color = match ($status) {
+                    'completed' => 'green',
+                    'in_progress' => 'yellow',
+                    'blocked' => 'red',
+                    'waiting' => 'cyan',
                     default => null,
                 };
-                if ($colorEnum !== null) {
-                    $iconText->color($colorEnum);
-                }
-            }
 
-            $todoItems[] = Box::row([$prefixText, $iconText, $contentText]);
+                if ($status === 'completed') {
+                    $iconText->styles('green dim');
+                    $contentText->styles('dim strikethrough');
+                } elseif ($isSelected) {
+                    $prefixText->styles('cyan bold');
+                    $iconText->styles('cyan bold');
+                    $contentText->styles('cyan bold');
+                } elseif ($color) {
+                    $iconText->styles($color);
+                }
+
+                $listItems[] = new BoxRow([
+                    $prefixText,
+                    $iconText,
+                    $contentText,
+                ]);
+            }
         }
+
+        $listBox = (new BoxColumn($listItems))->border('round')->padding(1)->width(35);
 
         // Count completed
         $completed = count(array_filter($todos, fn ($t) => $t['status'] === 'completed'));
         $total = count($todos);
 
-        return Box::column([
-            Box::row([
-                Text::create($title)->bold()->color(Color::Cyan),
+        return new BoxColumn([
+            (new BoxRow([
+                (new Text($title))->styles('cyan bold'),
                 Spacer::create(),
-                Text::create("[$completed/$total]")->dim(),
-            ])->width(35),
-            Box::create()
-                ->border('round')
-                ->padding(1)
-                ->width(35)
-                ->children(
-                    empty($todoItems)
-                        ? [Text::create('No todos yet!')->dim()]
-                        : $todoItems
-                ),
+                (new Text("[$completed/$total]"))->dim(),
+            ]))->width(35),
+            $listBox,
         ]);
     }
 }
 
-TodoApp::run();
+(new TodoApp())->run();

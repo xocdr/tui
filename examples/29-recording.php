@@ -18,6 +18,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
@@ -115,37 +117,39 @@ class RecordingDemo extends UI
 
         $statusColor = $isRecording ? Color::Red : Color::Green;
 
-        return Box::column([
-            Text::create('Screen Recording Demo')->bold()->underline(),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Screen Recording Demo'))->bold()->underline(),
+                new Newline(),
 
-            Box::row([
-                Text::create('Status: ')->bold(),
-                Text::create($status)->color($statusColor),
-                $isRecording ? Text::create(' [REC]')->color(Color::Red)->bold() : null,
+                new BoxRow([
+                    (new Text('Status: '))->bold(),
+                    (new Text($status))->color($statusColor),
+                    $isRecording ? (new Text(' [REC]'))->color(Color::Red)->bold() : null,
+                ]),
+
+                new BoxRow([
+                    (new Text('Frames: '))->bold(),
+                    (new Text((string) $frameCount))->color(Color::Cyan),
+                ]),
+
+                new Newline(),
+
+                (new Text('Controls:'))->bold(),
+                new Newline(),
+                (new Text('  [r] Start recording'))->dim(),
+                (new Text('  [c] Capture frame'))->dim(),
+                (new Text('  [p] Pause/Resume'))->dim(),
+                (new Text('  [s] Stop and save'))->dim(),
+
+                new Newline(),
+                (new Text('Recordings are saved as asciicast v2 format (.cast)'))->dim()->italic(),
+                (new Text('Play with: asciinema play recording.cast'))->dim()->italic(),
+                new Newline(),
+                (new Text('Press q or ESC to exit'))->dim(),
             ]),
-
-            Box::row([
-                Text::create('Frames: ')->bold(),
-                Text::create((string) $frameCount)->color(Color::Cyan),
-            ]),
-
-            Newline::create(),
-
-            Text::create('Controls:')->bold(),
-            Newline::create(),
-            Text::create('  [r] Start recording')->dim(),
-            Text::create('  [c] Capture frame')->dim(),
-            Text::create('  [p] Pause/Resume')->dim(),
-            Text::create('  [s] Stop and save')->dim(),
-
-            Newline::create(),
-            Text::create('Recordings are saved as asciicast v2 format (.cast)')->dim()->italic(),
-            Text::create('Play with: asciinema play recording.cast')->dim()->italic(),
-            Newline::create(),
-            Text::create('Press q or ESC to exit')->dim(),
         ]);
     }
 }
 
-RecordingDemo::run();
+(new RecordingDemo())->run();

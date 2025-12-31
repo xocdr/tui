@@ -224,14 +224,39 @@ class Text implements Component
             return in_array(strtolower($matches[1]), ColorUtil::paletteNames());
         }
 
-        // CSS color name
+        // CSS color name (red, green, blue, coral, etc.)
         if (ColorUtil::css($value) !== null) {
             return true;
         }
 
-        // Palette name (without shade)
+        // Palette name without shade (slate, emerald, rose, etc.)
         return in_array(strtolower($value), ColorUtil::paletteNames());
     }
+
+    /**
+     * Mapping of basic color names to their closest Tailwind palette equivalents.
+     * These are calculated by finding the palette shade with minimum Euclidean
+     * distance to the CSS color value in RGB space.
+     *
+     * CSS red (#ff0000) -> red-600 (#dc2626) - distance 64.1
+     * CSS green (#008000) -> green-800 (#166534) - distance 62.6
+     * CSS blue (#0000ff) -> blue-700 (#1d4ed8) - distance 91.9
+     * CSS yellow (#ffff00) -> yellow-400 (#facc15) - distance 55.4
+     * CSS cyan (#00ffff) -> cyan-400 (#22d3ee) - distance 58.1
+     * CSS magenta (#ff00ff) -> fuchsia-500 (#d946ef) - distance 81.2
+     * CSS gray (#808080) -> gray-500 (#6b7280) - distance 25.2
+     */
+    private const COLOR_TO_PALETTE = [
+        'red' => ['red', 600],
+        'green' => ['green', 800],
+        'blue' => ['blue', 700],
+        'yellow' => ['yellow', 400],
+        'cyan' => ['cyan', 400],
+        'magenta' => ['fuchsia', 500],
+        'gray' => ['gray', 500],
+        'white' => ['white', null],  // CSS white #ffffff
+        'black' => ['black', null],  // CSS black #000000
+    ];
 
     /**
      * Apply a color utility to a specific style property.
@@ -261,14 +286,26 @@ class Text implements Component
             }
         }
 
-        // Try as palette name (prioritize over CSS names)
-        // Uses defaultShade() which finds the closest match to CSS color if applicable
-        if (in_array(strtolower($colorPart), ColorUtil::paletteNames())) {
+        // Check basic color name mapping (red, green, blue, etc. -> palette shades)
+        $lowerColor = strtolower($colorPart);
+        if (isset(self::COLOR_TO_PALETTE[$lowerColor])) {
+            [$palette, $shade] = self::COLOR_TO_PALETTE[$lowerColor];
+            if ($shade === null) {
+                // Use CSS color directly (white, black)
+                $this->style[$property] = ColorUtil::css($lowerColor);
+            } else {
+                $this->style[$property] = ColorUtil::palette($palette, $shade);
+            }
+            return;
+        }
+
+        // Try as palette name (for non-CSS colors like slate, emerald, rose, etc.)
+        if (in_array($lowerColor, ColorUtil::paletteNames())) {
             $this->style[$property] = ColorUtil::palette($colorPart);
             return;
         }
 
-        // Try as CSS color name (coral, salmon, etc.)
+        // Try as CSS color name (coral, salmon, tomato, etc.)
         $cssHex = ColorUtil::css($colorPart);
         if ($cssHex !== null) {
             $this->style[$property] = $cssHex;
@@ -349,8 +386,17 @@ class Text implements Component
             return ColorUtil::palette($paletteName, $shade);
         }
 
-        // Color enum without shade - use enum value (backward compatible)
+        // Color enum without shade - use mapped palette shade for consistency with styles()
         if ($color instanceof Color) {
+            $colorName = strtolower($color->name);
+            if (isset(self::COLOR_TO_PALETTE[$colorName])) {
+                [$palette, $paletteShade] = self::COLOR_TO_PALETTE[$colorName];
+                if ($paletteShade === null) {
+                    return $color->value;  // Use CSS value for white/black
+                }
+                return ColorUtil::palette($palette, $paletteShade);
+            }
+            // For other Color enum values (coral, salmon, etc.), use their CSS hex
             return $color->value;
         }
 

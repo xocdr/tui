@@ -35,6 +35,7 @@ class Color
      * @return array{r: int, g: int, b: int}
      *
      * @throws \InvalidArgumentException If hex format is invalid
+     * @throws \RuntimeException If the C extension returns an unexpected type
      */
     public static function hexToRgb(string $hex): array
     {
@@ -482,11 +483,261 @@ class Color
     private static array $customColors = [];
 
     /**
+     * Vibrancy color palette.
+     * Structure: family => shade => vibrancy => hex
+     * 18 families × 11 shades × 3 vibrancies = 594 colors
+     * @var array<string, array<int, array<string, string>>>
+     */
+    private static array $vibrancyPalette = [
+        'gray' => [
+            50 => ['dim' => '#f7f7f7', 'normal' => '#f7f7f7', 'bright' => '#f7f7f7'],
+            100 => ['dim' => '#f0f0f0', 'normal' => '#f0f0f0', 'bright' => '#f0f0f0'],
+            200 => ['dim' => '#dbdbdb', 'normal' => '#dbdbdb', 'bright' => '#dbdbdb'],
+            300 => ['dim' => '#bdbdbd', 'normal' => '#bdbdbd', 'bright' => '#bdbdbd'],
+            400 => ['dim' => '#999999', 'normal' => '#999999', 'bright' => '#999999'],
+            500 => ['dim' => '#7a7a7a', 'normal' => '#7a7a7a', 'bright' => '#7a7a7a'],
+            600 => ['dim' => '#616161', 'normal' => '#616161', 'bright' => '#616161'],
+            700 => ['dim' => '#474747', 'normal' => '#474747', 'bright' => '#474747'],
+            800 => ['dim' => '#2e2e2e', 'normal' => '#2e2e2e', 'bright' => '#2e2e2e'],
+            900 => ['dim' => '#1a1a1a', 'normal' => '#1a1a1a', 'bright' => '#1a1a1a'],
+            950 => ['dim' => '#0d0d0d', 'normal' => '#0d0d0d', 'bright' => '#0d0d0d'],
+        ],
+        'red' => [
+            50 => ['dim' => '#f9f6f6', 'normal' => '#f9f5f5', 'bright' => '#faf5f5'],
+            100 => ['dim' => '#f2eded', 'normal' => '#f3ecec', 'bright' => '#f5eaea'],
+            200 => ['dim' => '#e4d3d3', 'normal' => '#e8cece', 'bright' => '#edc9c9'],
+            300 => ['dim' => '#cdacac', 'normal' => '#db9f9f', 'bright' => '#eb8e8e'],
+            400 => ['dim' => '#b77b7b', 'normal' => '#d16161', 'bright' => '#f04242'],
+            500 => ['dim' => '#a55050', 'normal' => '#ca2b2b', 'bright' => '#f50000'],
+            600 => ['dim' => '#833f3f', 'normal' => '#a02222', 'bright' => '#c20000'],
+            700 => ['dim' => '#5d3232', 'normal' => '#6f2020', 'bright' => '#840b0b'],
+            800 => ['dim' => '#3c2020', 'normal' => '#471515', 'bright' => '#550707'],
+            900 => ['dim' => '#1f1414', 'normal' => '#231010', 'bright' => '#290a0a'],
+            950 => ['dim' => '#0f0a0a', 'normal' => '#120808', 'bright' => '#140505'],
+        ],
+        'orange' => [
+            50 => ['dim' => '#f9f7f6', 'normal' => '#f9f7f5', 'bright' => '#faf7f5'],
+            100 => ['dim' => '#f2f0ed', 'normal' => '#f3f0ec', 'bright' => '#f5f0ea'],
+            200 => ['dim' => '#e4dbd3', 'normal' => '#e8dbce', 'bright' => '#eddbc9'],
+            300 => ['dim' => '#cdbdac', 'normal' => '#dbbd9f', 'bright' => '#ebbd8e'],
+            400 => ['dim' => '#b7997b', 'normal' => '#d19961', 'bright' => '#f09942'],
+            500 => ['dim' => '#a57a50', 'normal' => '#ca7a2b', 'bright' => '#f57a00'],
+            600 => ['dim' => '#83613f', 'normal' => '#a06122', 'bright' => '#c26100'],
+            700 => ['dim' => '#5d4732', 'normal' => '#6f4720', 'bright' => '#84470b'],
+            800 => ['dim' => '#3c2e20', 'normal' => '#472e15', 'bright' => '#552e07'],
+            900 => ['dim' => '#1f1a14', 'normal' => '#231a10', 'bright' => '#291a0a'],
+            950 => ['dim' => '#0f0d0a', 'normal' => '#120d08', 'bright' => '#140d05'],
+        ],
+        'amber' => [
+            50 => ['dim' => '#f9f8f6', 'normal' => '#f9f8f5', 'bright' => '#faf9f5'],
+            100 => ['dim' => '#f2f1ed', 'normal' => '#f3f2ec', 'bright' => '#f5f2ea'],
+            200 => ['dim' => '#e4e0d3', 'normal' => '#e8e2ce', 'bright' => '#ede4c9'],
+            300 => ['dim' => '#ccc4ad', 'normal' => '#d9cba0', 'bright' => '#e9d391'],
+            400 => ['dim' => '#b6a77c', 'normal' => '#cfb463', 'bright' => '#ebc247'],
+            500 => ['dim' => '#a38f52', 'normal' => '#c6a02f', 'bright' => '#efb506'],
+            600 => ['dim' => '#817141', 'normal' => '#9d7f25', 'bright' => '#bd8f05'],
+            700 => ['dim' => '#5c5133', 'normal' => '#6d5a22', 'bright' => '#81640e'],
+            800 => ['dim' => '#3b3421', 'normal' => '#463a16', 'bright' => '#534009'],
+            900 => ['dim' => '#1f1c14', 'normal' => '#231e10', 'bright' => '#28210b'],
+            950 => ['dim' => '#0f0e0a', 'normal' => '#110f08', 'bright' => '#141005'],
+        ],
+        'yellow' => [
+            50 => ['dim' => '#f9f8f6', 'normal' => '#f9f9f5', 'bright' => '#fafaf5'],
+            100 => ['dim' => '#f2f2ed', 'normal' => '#f3f3ec', 'bright' => '#f5f4ea'],
+            200 => ['dim' => '#e4e2d3', 'normal' => '#e8e6ce', 'bright' => '#edeac9'],
+            300 => ['dim' => '#cccaad', 'normal' => '#d9d5a0', 'bright' => '#e9e191'],
+            400 => ['dim' => '#b6b17c', 'normal' => '#cfc663', 'bright' => '#ebde47'],
+            500 => ['dim' => '#a39c52', 'normal' => '#c6b92f', 'bright' => '#efdb06'],
+            600 => ['dim' => '#817c41', 'normal' => '#9d9325', 'bright' => '#bdae05'],
+            700 => ['dim' => '#5c5833', 'normal' => '#6d6722', 'bright' => '#81770e'],
+            800 => ['dim' => '#3b3921', 'normal' => '#464216', 'bright' => '#534d09'],
+            900 => ['dim' => '#1f1e14', 'normal' => '#232110', 'bright' => '#28260b'],
+            950 => ['dim' => '#0f0f0a', 'normal' => '#111108', 'bright' => '#141305'],
+        ],
+        'lime' => [
+            50 => ['dim' => '#f8f9f6', 'normal' => '#f8f9f5', 'bright' => '#f8faf5'],
+            100 => ['dim' => '#f0f2ed', 'normal' => '#f0f3ec', 'bright' => '#f1f5ea'],
+            200 => ['dim' => '#dde4d3', 'normal' => '#dde8ce', 'bright' => '#deedc9'],
+            300 => ['dim' => '#bfcbaf', 'normal' => '#c1d6a3', 'bright' => '#c3e495'],
+            400 => ['dim' => '#9db37f', 'normal' => '#a1c969', 'bright' => '#a5e34f'],
+            500 => ['dim' => '#809f56', 'normal' => '#86be37', 'bright' => '#8ce212'],
+            600 => ['dim' => '#667e44', 'normal' => '#6a962b', 'bright' => '#6fb30f'],
+            700 => ['dim' => '#4a5935', 'normal' => '#4d6926', 'bright' => '#507b14'],
+            800 => ['dim' => '#303a22', 'normal' => '#314318', 'bright' => '#334f0d'],
+            900 => ['dim' => '#1a1e15', 'normal' => '#1b2211', 'bright' => '#1c270c'],
+            950 => ['dim' => '#0d0f0a', 'normal' => '#0d1109', 'bright' => '#0e1306'],
+        ],
+        'green' => [
+            50 => ['dim' => '#f6f9f7', 'normal' => '#f5f9f6', 'bright' => '#f5faf6'],
+            100 => ['dim' => '#edf2ee', 'normal' => '#ecf3ed', 'bright' => '#eaf5ec'],
+            200 => ['dim' => '#d3e4d6', 'normal' => '#cee8d3', 'bright' => '#c9edcf'],
+            300 => ['dim' => '#b1c9b5', 'normal' => '#a6d3ae', 'bright' => '#9ae0a5'],
+            400 => ['dim' => '#82b08a', 'normal' => '#6fc37d', 'bright' => '#58da6e'],
+            500 => ['dim' => '#5a9b65', 'normal' => '#3fb653', 'bright' => '#1fd63d'],
+            600 => ['dim' => '#477a50', 'normal' => '#329041', 'bright' => '#18aa30'],
+            700 => ['dim' => '#37573d', 'normal' => '#2a6534', 'bright' => '#1a7529'],
+            800 => ['dim' => '#243827', 'normal' => '#1b4121', 'bright' => '#114b1a'],
+            900 => ['dim' => '#151e17', 'normal' => '#122115', 'bright' => '#0e2512'],
+            950 => ['dim' => '#0b0f0b', 'normal' => '#09100a', 'bright' => '#071209'],
+        ],
+        'emerald' => [
+            50 => ['dim' => '#f6f9f8', 'normal' => '#f5f9f8', 'bright' => '#f5faf8'],
+            100 => ['dim' => '#edf2f0', 'normal' => '#ecf3f1', 'bright' => '#eaf5f1'],
+            200 => ['dim' => '#d3e4de', 'normal' => '#cee8e0', 'bright' => '#c9ede1'],
+            300 => ['dim' => '#b1c9c1', 'normal' => '#a6d3c4', 'bright' => '#9ae0c8'],
+            400 => ['dim' => '#82b0a1', 'normal' => '#6fc3a7', 'bright' => '#58daaf'],
+            500 => ['dim' => '#5a9b85', 'normal' => '#3fb68e', 'bright' => '#1fd699'],
+            600 => ['dim' => '#477a69', 'normal' => '#329071', 'bright' => '#18aa79'],
+            700 => ['dim' => '#37574d', 'normal' => '#2a6551', 'bright' => '#1a7557'],
+            800 => ['dim' => '#243831', 'normal' => '#1b4134', 'bright' => '#114b38'],
+            900 => ['dim' => '#151e1b', 'normal' => '#12211c', 'bright' => '#0e251d'],
+            950 => ['dim' => '#0b0f0d', 'normal' => '#09100e', 'bright' => '#07120f'],
+        ],
+        'teal' => [
+            50 => ['dim' => '#f6f9f8', 'normal' => '#f5f9f9', 'bright' => '#f5fafa'],
+            100 => ['dim' => '#edf2f2', 'normal' => '#ecf3f3', 'bright' => '#eaf5f5'],
+            200 => ['dim' => '#d3e4e3', 'normal' => '#cee8e7', 'bright' => '#c9edec'],
+            300 => ['dim' => '#b1c8c7', 'normal' => '#a8d2d0', 'bright' => '#9cdddb'],
+            400 => ['dim' => '#84aead', 'normal' => '#72c0be', 'bright' => '#5cd6d2'],
+            500 => ['dim' => '#5c9896', 'normal' => '#43b2ae', 'bright' => '#25d0ca'],
+            600 => ['dim' => '#497977', 'normal' => '#358d8a', 'bright' => '#1da5a0'],
+            700 => ['dim' => '#395655', 'normal' => '#2c6361', 'bright' => '#1d726f'],
+            800 => ['dim' => '#243737', 'normal' => '#1c403e', 'bright' => '#134947'],
+            900 => ['dim' => '#161d1d', 'normal' => '#132020', 'bright' => '#0f2423'],
+            950 => ['dim' => '#0b0f0e', 'normal' => '#091010', 'bright' => '#071212'],
+        ],
+        'cyan' => [
+            50 => ['dim' => '#f6f8f9', 'normal' => '#f5f9f9', 'bright' => '#f5f9fa'],
+            100 => ['dim' => '#edf1f2', 'normal' => '#ecf2f3', 'bright' => '#eaf3f5'],
+            200 => ['dim' => '#d3e1e4', 'normal' => '#cee4e8', 'bright' => '#c9e7ed'],
+            300 => ['dim' => '#aec6cb', 'normal' => '#a2cfd8', 'bright' => '#93d9e6'],
+            400 => ['dim' => '#7eabb4', 'normal' => '#66bbcc', 'bright' => '#4bcde7'],
+            500 => ['dim' => '#5494a1', 'normal' => '#33aac2', 'bright' => '#0cc4e9'],
+            600 => ['dim' => '#42757f', 'normal' => '#28879a', 'bright' => '#0a9bb8'],
+            700 => ['dim' => '#34545b', 'normal' => '#245f6b', 'bright' => '#116c7e'],
+            800 => ['dim' => '#22363a', 'normal' => '#173d45', 'bright' => '#0b4551'],
+            900 => ['dim' => '#151d1e', 'normal' => '#111f22', 'bright' => '#0c2327'],
+            950 => ['dim' => '#0a0e0f', 'normal' => '#081011', 'bright' => '#061114'],
+        ],
+        'sky' => [
+            50 => ['dim' => '#f6f8f9', 'normal' => '#f5f8f9', 'bright' => '#f5f8fa'],
+            100 => ['dim' => '#edf0f2', 'normal' => '#ecf1f3', 'bright' => '#eaf1f5'],
+            200 => ['dim' => '#d3dee4', 'normal' => '#cee0e8', 'bright' => '#c9e1ed'],
+            300 => ['dim' => '#afc1cb', 'normal' => '#a3c5d6', 'bright' => '#95cae4'],
+            400 => ['dim' => '#7fa2b3', 'normal' => '#69a9c9', 'bright' => '#4fb2e3'],
+            500 => ['dim' => '#56879f', 'normal' => '#3791be', 'bright' => '#129de2'],
+            600 => ['dim' => '#446b7e', 'normal' => '#2b7396', 'bright' => '#0f7cb3'],
+            700 => ['dim' => '#354d59', 'normal' => '#265369', 'bright' => '#14597b'],
+            800 => ['dim' => '#22323a', 'normal' => '#183543', 'bright' => '#0d394f'],
+            900 => ['dim' => '#151b1e', 'normal' => '#111c22', 'bright' => '#0c1e27'],
+            950 => ['dim' => '#0a0e0f', 'normal' => '#090e11', 'bright' => '#060f13'],
+        ],
+        'blue' => [
+            50 => ['dim' => '#f6f7f9', 'normal' => '#f5f7f9', 'bright' => '#f5f6fa'],
+            100 => ['dim' => '#edeff2', 'normal' => '#eceef3', 'bright' => '#eaeef5'],
+            200 => ['dim' => '#d3d8e4', 'normal' => '#ced7e8', 'bright' => '#c9d5ed'],
+            300 => ['dim' => '#acb7cd', 'normal' => '#9fb3db', 'bright' => '#8eadeb'],
+            400 => ['dim' => '#7b8fb7', 'normal' => '#6186d1', 'bright' => '#427cf0'],
+            500 => ['dim' => '#506ca5', 'normal' => '#2b60ca', 'bright' => '#0052f5'],
+            600 => ['dim' => '#3f5683', 'normal' => '#224ca0', 'bright' => '#0041c2'],
+            700 => ['dim' => '#32405d', 'normal' => '#203a6f', 'bright' => '#0b3384'],
+            800 => ['dim' => '#20293c', 'normal' => '#152547', 'bright' => '#072155'],
+            900 => ['dim' => '#14181f', 'normal' => '#101623', 'bright' => '#0a1429'],
+            950 => ['dim' => '#0a0c0f', 'normal' => '#080b12', 'bright' => '#050a14'],
+        ],
+        'indigo' => [
+            50 => ['dim' => '#f6f6f9', 'normal' => '#f6f5f9', 'bright' => '#f5f5fa'],
+            100 => ['dim' => '#eeedf2', 'normal' => '#edecf3', 'bright' => '#ebeaf5'],
+            200 => ['dim' => '#d4d3e4', 'normal' => '#d1cee8', 'bright' => '#ccc9ed'],
+            300 => ['dim' => '#b4b2c7', 'normal' => '#aca9d0', 'bright' => '#a49fdb'],
+            400 => ['dim' => '#8985ad', 'normal' => '#7a74be', 'bright' => '#6a61d1'],
+            500 => ['dim' => '#635f96', 'normal' => '#4f47ae', 'bright' => '#382bca'],
+            600 => ['dim' => '#4f4b77', 'normal' => '#3f388a', 'bright' => '#2c22a0'],
+            700 => ['dim' => '#3c3a55', 'normal' => '#322e61', 'bright' => '#27206f'],
+            800 => ['dim' => '#272537', 'normal' => '#201d3e', 'bright' => '#191547'],
+            900 => ['dim' => '#17161d', 'normal' => '#141320', 'bright' => '#111023'],
+            950 => ['dim' => '#0b0b0e', 'normal' => '#0a0a10', 'bright' => '#090812'],
+        ],
+        'violet' => [
+            50 => ['dim' => '#f7f6f9', 'normal' => '#f7f5f9', 'bright' => '#f7f5fa'],
+            100 => ['dim' => '#f0edf2', 'normal' => '#f0ecf3', 'bright' => '#f0eaf5'],
+            200 => ['dim' => '#dbd3e4', 'normal' => '#dbcee8', 'bright' => '#dbc9ed'],
+            300 => ['dim' => '#bdb0ca', 'normal' => '#bda5d5', 'bright' => '#bd98e2'],
+            400 => ['dim' => '#9981b1', 'normal' => '#996cc6', 'bright' => '#9954de'],
+            500 => ['dim' => '#7a589d', 'normal' => '#7a3bba', 'bright' => '#7a18dc'],
+            600 => ['dim' => '#61467c', 'normal' => '#612f93', 'bright' => '#6113ae'],
+            700 => ['dim' => '#473658', 'normal' => '#472867', 'bright' => '#471778'],
+            800 => ['dim' => '#2e2339', 'normal' => '#2e1a42', 'bright' => '#2e0f4d'],
+            900 => ['dim' => '#19151e', 'normal' => '#191221', 'bright' => '#190d26'],
+            950 => ['dim' => '#0d0b0f', 'normal' => '#0d0911', 'bright' => '#0d0713'],
+        ],
+        'purple' => [
+            50 => ['dim' => '#f8f6f9', 'normal' => '#f9f5f9', 'bright' => '#f9f5fa'],
+            100 => ['dim' => '#f1edf2', 'normal' => '#f2ecf3', 'bright' => '#f3eaf5'],
+            200 => ['dim' => '#e1d3e4', 'normal' => '#e4cee8', 'bright' => '#e7c9ed'],
+            300 => ['dim' => '#c5b1c9', 'normal' => '#cca6d3', 'bright' => '#d49ae0'],
+            400 => ['dim' => '#a882b0', 'normal' => '#b56fc3', 'bright' => '#c458da'],
+            500 => ['dim' => '#905a9b', 'normal' => '#a23fb6', 'bright' => '#b81fd6'],
+            600 => ['dim' => '#72477a', 'normal' => '#803290', 'bright' => '#9118aa'],
+            700 => ['dim' => '#523757', 'normal' => '#5b2a65', 'bright' => '#661a75'],
+            800 => ['dim' => '#352438', 'normal' => '#3b1b41', 'bright' => '#41114b'],
+            900 => ['dim' => '#1c151e', 'normal' => '#1e1221', 'bright' => '#210e25'],
+            950 => ['dim' => '#0e0b0f', 'normal' => '#0f0910', 'bright' => '#110712'],
+        ],
+        'fuchsia' => [
+            50 => ['dim' => '#f9f6f8', 'normal' => '#f9f5f8', 'bright' => '#faf5f9'],
+            100 => ['dim' => '#f2edf1', 'normal' => '#f3ecf2', 'bright' => '#f5eaf2'],
+            200 => ['dim' => '#e4d3e0', 'normal' => '#e8cee2', 'bright' => '#edc9e4'],
+            300 => ['dim' => '#cbaec4', 'normal' => '#d8a2ca', 'bright' => '#e693d2'],
+            400 => ['dim' => '#b47ea7', 'normal' => '#cc66b2', 'bright' => '#e74bc0'],
+            500 => ['dim' => '#a1548e', 'normal' => '#c2339e', 'bright' => '#e90cb1'],
+            600 => ['dim' => '#7f4270', 'normal' => '#9a287d', 'bright' => '#b80a8d'],
+            700 => ['dim' => '#5b3451', 'normal' => '#6b2459', 'bright' => '#7e1163'],
+            800 => ['dim' => '#3a2234', 'normal' => '#451739', 'bright' => '#510b3f'],
+            900 => ['dim' => '#1e151c', 'normal' => '#22111e', 'bright' => '#270c20'],
+            950 => ['dim' => '#0f0a0e', 'normal' => '#11080f', 'bright' => '#140610'],
+        ],
+        'pink' => [
+            50 => ['dim' => '#f9f6f7', 'normal' => '#f9f5f7', 'bright' => '#faf5f6'],
+            100 => ['dim' => '#f2edef', 'normal' => '#f3ecee', 'bright' => '#f5eaee'],
+            200 => ['dim' => '#e4d3d8', 'normal' => '#e8ced7', 'bright' => '#edc9d5'],
+            300 => ['dim' => '#cab0b8', 'normal' => '#d5a5b5', 'bright' => '#e298b0'],
+            400 => ['dim' => '#b18191', 'normal' => '#c66c8a', 'bright' => '#de5482'],
+            500 => ['dim' => '#9d586f', 'normal' => '#ba3b65', 'bright' => '#dc185a'],
+            600 => ['dim' => '#7c4658', 'normal' => '#932f50', 'bright' => '#ae1347'],
+            700 => ['dim' => '#583642', 'normal' => '#67283d', 'bright' => '#781737'],
+            800 => ['dim' => '#39232a', 'normal' => '#421a27', 'bright' => '#4d0f23'],
+            900 => ['dim' => '#1e1518', 'normal' => '#211217', 'bright' => '#260d15'],
+            950 => ['dim' => '#0f0b0c', 'normal' => '#11090b', 'bright' => '#13070b'],
+        ],
+        'rose' => [
+            50 => ['dim' => '#f9f6f7', 'normal' => '#f9f5f6', 'bright' => '#faf5f6'],
+            100 => ['dim' => '#f2edee', 'normal' => '#f3eced', 'bright' => '#f5eaec'],
+            200 => ['dim' => '#e4d3d6', 'normal' => '#e8ced3', 'bright' => '#edc9cf'],
+            300 => ['dim' => '#cbafb3', 'normal' => '#d6a3ac', 'bright' => '#e495a2'],
+            400 => ['dim' => '#b37f88', 'normal' => '#c96979', 'bright' => '#e34f68'],
+            500 => ['dim' => '#9f5662', 'normal' => '#be374d', 'bright' => '#e21235'],
+            600 => ['dim' => '#7e444e', 'normal' => '#962b3d', 'bright' => '#b30f2a'],
+            700 => ['dim' => '#59353b', 'normal' => '#692631', 'bright' => '#7b1425'],
+            800 => ['dim' => '#3a2226', 'normal' => '#431820', 'bright' => '#4f0d18'],
+            900 => ['dim' => '#1e1516', 'normal' => '#221114', 'bright' => '#270c11'],
+            950 => ['dim' => '#0f0a0b', 'normal' => '#11090a', 'bright' => '#130608'],
+        ],
+    ];
+
+    /**
      * Cache for computed default shades.
      * Maps palette names to their default shade based on CSS color matching.
      * @var array<string, int>
      */
     private static array $defaultShadeCache = [];
+
+    /**
+     * Custom palette defaults.
+     * Maps custom palette names to their default shade (detected from base color).
+     * @var array<string, int>
+     */
+    private static array $customPaletteDefaults = [];
 
     /**
      * Cache for resolved colors.
@@ -498,8 +749,8 @@ class Color
     /**
      * Get the default shade for a palette color name.
      *
-     * If the palette name matches a CSS color (e.g., 'red', 'blue'), finds
-     * the shade that most closely matches the CSS color value.
+     * For custom palettes: returns the shade detected from the base color.
+     * For built-in palettes matching CSS colors: finds the closest shade.
      * Otherwise returns 500.
      *
      * @param string $name Palette name
@@ -509,7 +760,12 @@ class Color
     {
         $name = strtolower($name);
 
-        // Check cache first
+        // Check custom palette defaults first
+        if (isset(self::$customPaletteDefaults[$name])) {
+            return self::$customPaletteDefaults[$name];
+        }
+
+        // Check cache
         if (isset(self::$defaultShadeCache[$name])) {
             return self::$defaultShadeCache[$name];
         }
@@ -523,7 +779,6 @@ class Color
 
             foreach (self::$palette[$name] as $shade => $paletteHex) {
                 $paletteRgb = self::hexToRgb($paletteHex);
-                // Euclidean distance in RGB space (using integer arithmetic to avoid overflow)
                 $dr = $cssRgb['r'] - $paletteRgb['r'];
                 $dg = $cssRgb['g'] - $paletteRgb['g'];
                 $db = $cssRgb['b'] - $paletteRgb['b'];
@@ -573,18 +828,75 @@ class Color
     /**
      * Define a custom color palette.
      *
+     * When auto-generating shades, the base color's lightness determines the default shade,
+     * so `Color::palette('name')` returns the original base color.
+     *
+     * Also creates a color alias with the same name pointing to the base color,
+     * so both `Color::palette('name')` and `Color::custom('name')` work.
+     *
      * @param string $name Palette name
      * @param string $baseColor Base hex color (used to generate shades if full palette not provided)
      * @param array<int, string>|null $shades Optional full shade map (50-950)
      */
     public static function define(string $name, string $baseColor, ?array $shades = null): void
     {
+        $name = strtolower($name);
+
         if ($shades !== null) {
-            self::$customPalettes[strtolower($name)] = $shades;
+            self::$customPalettes[$name] = $shades;
+            // For manual shades, default to 500
+            self::$customPaletteDefaults[$name] = 500;
+            // Create color alias pointing to shade 500
+            self::$customColors[$name] = $shades[500] ?? $baseColor;
         } else {
             // Auto-generate shades from base color
-            self::$customPalettes[strtolower($name)] = self::generateShades($baseColor);
+            self::$customPalettes[$name] = self::generateShades($baseColor);
+
+            // Detect which shade the base color falls into based on lightness
+            $hsl = self::hexToHsl($baseColor);
+            $defaultShade = self::detectShadeFromLightness($hsl['l']);
+            self::$customPaletteDefaults[$name] = $defaultShade;
+
+            // Create color alias pointing to the detected default shade
+            self::$customColors[$name] = self::$customPalettes[$name][$defaultShade];
         }
+    }
+
+    /**
+     * Detect which shade level a lightness value corresponds to.
+     *
+     * @param float $lightness Lightness value (0-1)
+     * @return int Shade level (50-950)
+     */
+    private static function detectShadeFromLightness(float $lightness): int
+    {
+        // Shade levels and their target lightness values
+        $shadeLevels = [
+            50  => 0.97,
+            100 => 0.94,
+            200 => 0.86,
+            300 => 0.74,
+            400 => 0.60,
+            500 => 0.48,
+            600 => 0.38,
+            700 => 0.28,
+            800 => 0.18,
+            900 => 0.10,
+            950 => 0.05,
+        ];
+
+        $bestShade = 500;
+        $bestDistance = PHP_FLOAT_MAX;
+
+        foreach ($shadeLevels as $shade => $targetLightness) {
+            $distance = abs($lightness - $targetLightness);
+            if ($distance < $bestDistance) {
+                $bestDistance = $distance;
+                $bestShade = $shade;
+            }
+        }
+
+        return $bestShade;
     }
 
     /**
@@ -592,6 +904,9 @@ class Color
      *
      * Creates a named alias for a color that can be used anywhere colors are accepted.
      * Can reference hex colors, palette colors with shades, or CSS named colors.
+     *
+     * Also creates a palette with the same name (auto-generated shades),
+     * so both `Color::custom('name')` and `Color::palette('name')` work.
      *
      * @param string $name Custom color name (e.g., 'dusty-orange', 'brand-primary')
      * @param string $color Base color - hex string, CSS name, or palette name
@@ -606,25 +921,39 @@ class Color
     public static function defineColor(string $name, string $color, ?int $shade = null): void
     {
         $name = strtolower($name);
+        $resolvedHex = null;
 
         if ($shade !== null) {
             // Palette color with shade
-            self::$customColors[$name] = self::palette($color, $shade);
+            $resolvedHex = self::palette($color, $shade);
         } elseif (str_starts_with($color, '#')) {
             // Hex color
-            self::$customColors[$name] = $color;
+            $resolvedHex = $color;
         } else {
             // Could be CSS name or palette name
             $cssHex = self::css($color);
             if ($cssHex !== null) {
-                self::$customColors[$name] = $cssHex;
+                $resolvedHex = $cssHex;
             } elseif (in_array(strtolower($color), self::paletteNames())) {
-                // Palette name without shade - use 500
-                self::$customColors[$name] = self::palette($color, 500);
+                // Palette name without shade - use default shade
+                $resolvedHex = self::palette($color);
             } else {
-                // Unknown - store as-is
+                // Unknown - store as-is (won't generate palette)
                 self::$customColors[$name] = $color;
+                return;
             }
+        }
+
+        // Store the color alias
+        self::$customColors[$name] = $resolvedHex;
+
+        // Also generate a palette around this color (if not already defined)
+        if (!isset(self::$customPalettes[$name])) {
+            self::$customPalettes[$name] = self::generateShades($resolvedHex);
+
+            // Detect default shade from lightness
+            $hsl = self::hexToHsl($resolvedHex);
+            self::$customPaletteDefaults[$name] = self::detectShadeFromLightness($hsl['l']);
         }
     }
 
@@ -658,49 +987,102 @@ class Color
     }
 
     /**
-     * Generate a full shade palette from a base color.
+     * Generate a full shade palette from a base color using vibrancy-aware logic.
      *
-     * @param string $baseColor Hex color (treated as the 500 shade)
+     * The base color is preserved at its detected shade level. Other shades are
+     * generated using the same hue and vibrancy level (saturation curve).
+     *
+     * @param string $baseColor Hex color
      * @return array<int, string>
      */
     public static function generateShades(string $baseColor): array
     {
         $hsl = self::hexToHsl($baseColor);
-        $shades = [];
+        $hue = $hsl['h'];
+        $baseSaturation = $hsl['s'];
+        $baseLightness = $hsl['l'];
 
-        // Shade levels and their target lightness adjustments
-        // 500 is the base, lighter shades increase L, darker decrease L
-        $levels = [
-            50 => 0.95,
-            100 => 0.90,
-            200 => 0.80,
-            300 => 0.70,
+        // Detect vibrancy level from saturation
+        // dim ≈ 35%, normal ≈ 65%, bright ≈ 100%
+        if ($baseSaturation <= 0.50) {
+            $vibrancyMultiplier = 0.35; // dim
+        } elseif ($baseSaturation <= 0.82) {
+            $vibrancyMultiplier = 0.65; // normal
+        } else {
+            $vibrancyMultiplier = 1.0; // bright
+        }
+
+        // Shade levels with their target lightness (same as vibrancy palette)
+        $shadeLevels = [
+            50  => 0.97,
+            100 => 0.94,
+            200 => 0.86,
+            300 => 0.74,
             400 => 0.60,
-            500 => null, // Use original
-            600 => 0.45,
-            700 => 0.35,
-            800 => 0.25,
-            900 => 0.18,
-            950 => 0.10,
+            500 => 0.48,
+            600 => 0.38,
+            700 => 0.28,
+            800 => 0.18,
+            900 => 0.10,
+            950 => 0.05,
         ];
 
-        foreach ($levels as $level => $targetL) {
-            if ($targetL === null) {
-                $shades[$level] = $baseColor;
-            } else {
-                // Adjust saturation slightly for very light/dark shades
-                $s = $hsl['s'];
-                if ($targetL > 0.85) {
-                    $s = max(0, $s * 0.3); // Desaturate light shades
-                } elseif ($targetL < 0.2) {
-                    $s = max(0, $s * 0.8); // Slightly desaturate dark shades
-                }
+        // Find which shade the base color belongs to
+        $baseShade = self::detectShadeFromLightness($baseLightness);
 
-                $shades[$level] = self::hslToHex($hsl['h'], $s, $targetL);
+        $shades = [];
+
+        foreach ($shadeLevels as $shade => $lightness) {
+            if ($shade === $baseShade) {
+                // Preserve the original color at its detected shade
+                $shades[$shade] = $baseColor;
+            } else {
+                $saturation = self::calculateVibrancySaturation($vibrancyMultiplier, $lightness);
+                $shades[$shade] = self::hslToHex($hue, $saturation, $lightness);
             }
         }
 
         return $shades;
+    }
+
+    /**
+     * Calculate saturation for a given vibrancy level and lightness.
+     * Uses the same formula as the vibrancy palette generator.
+     *
+     * @param float $vibrancyMultiplier Vibrancy level (0.35 = dim, 0.65 = normal, 1.0 = bright)
+     * @param float $lightness Lightness value (0-1)
+     * @return float Saturation value (0-1)
+     */
+    private static function calculateVibrancySaturation(float $vibrancyMultiplier, float $lightness): float
+    {
+        // Very light colors need minimal saturation
+        if ($lightness > 0.90) {
+            return 0.05 + ($vibrancyMultiplier * 0.30);
+        }
+
+        if ($lightness > 0.80) {
+            return 0.10 + ($vibrancyMultiplier * 0.40);
+        }
+
+        if ($lightness > 0.70) {
+            return $vibrancyMultiplier * 0.70;
+        }
+
+        if ($lightness > 0.55) {
+            return $vibrancyMultiplier * 0.85;
+        }
+
+        // Mid-range: full vibrancy
+        if ($lightness > 0.35) {
+            return $vibrancyMultiplier;
+        }
+
+        if ($lightness > 0.15) {
+            return $vibrancyMultiplier * 0.85;
+        }
+
+        // Very dark: reduced saturation
+        return $vibrancyMultiplier * 0.60;
     }
 
     /**
@@ -727,5 +1109,129 @@ class Color
     {
         $shade = $arguments[0] ?? 500;
         return self::palette($name, $shade);
+    }
+
+    // =========================================================================
+    // Vibrancy Palette Methods
+    // =========================================================================
+
+    /**
+     * Get a color from the vibrancy palette.
+     *
+     * @param string $family Color family (gray, red, orange, amber, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose)
+     * @param int $shade Shade level (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950)
+     * @param string $vibrancy Vibrancy level (dim, normal, bright). Default: normal
+     * @return string Hex color code
+     */
+    public static function vibrancy(string $family, int $shade = 500, string $vibrancy = 'normal'): string
+    {
+        $family = strtolower($family);
+        $vibrancy = strtolower($vibrancy);
+
+        if (!isset(self::$vibrancyPalette[$family][$shade][$vibrancy])) {
+            // Fallback to Tailwind palette if vibrancy not found
+            return self::palette($family, $shade);
+        }
+
+        return self::$vibrancyPalette[$family][$shade][$vibrancy];
+    }
+
+    /**
+     * Get the dim variant of a color from the vibrancy palette.
+     * Dim colors have low saturation (35%), creating muted, desaturated tones.
+     *
+     * @param string $family Color family
+     * @param int $shade Shade level (50-950). Default: 500
+     * @return string Hex color code
+     *
+     * @example
+     * Color::dim('red', 500)     // Muted brick red
+     * Color::dim('blue', 300)    // Dusty blue
+     */
+    public static function dim(string $family, int $shade = 500): string
+    {
+        return self::vibrancy($family, $shade, 'dim');
+    }
+
+    /**
+     * Get the normal variant of a color from the vibrancy palette.
+     * Normal colors have standard saturation (65%), balanced and versatile.
+     *
+     * @param string $family Color family
+     * @param int $shade Shade level (50-950). Default: 500
+     * @return string Hex color code
+     *
+     * @example
+     * Color::normal('red', 500)   // Crimson red
+     * Color::normal('blue', 300)  // Cornflower blue
+     */
+    public static function normal(string $family, int $shade = 500): string
+    {
+        return self::vibrancy($family, $shade, 'normal');
+    }
+
+    /**
+     * Get the bright variant of a color from the vibrancy palette.
+     * Bright colors have full saturation (100%), vivid and eye-catching.
+     *
+     * @param string $family Color family
+     * @param int $shade Shade level (50-950). Default: 500
+     * @return string Hex color code
+     *
+     * @example
+     * Color::bright('red', 500)   // Pure red
+     * Color::bright('blue', 300)  // Bright maya blue
+     */
+    public static function bright(string $family, int $shade = 500): string
+    {
+        return self::vibrancy($family, $shade, 'bright');
+    }
+
+    /**
+     * Get multiple vibrancy variants of a color at once.
+     * Useful for creating consistent color schemes with different intensities.
+     *
+     * @param string $family Color family
+     * @param int $shade Shade level (50-950). Default: 500
+     * @param string $vibrancies Space-separated vibrancy levels to return. Default: 'dim normal bright'
+     * @return array<string, string> Map of vibrancy => hex color
+     *
+     * @example
+     * Color::styles('red', 500)                    // ['dim' => '#a55050', 'normal' => '#ca2b2b', 'bright' => '#f50000']
+     * Color::styles('blue', 400, 'dim bright')     // ['dim' => '#7b8fb7', 'bright' => '#427cf0']
+     */
+    public static function styles(string $family, int $shade = 500, string $vibrancies = 'dim normal bright'): array
+    {
+        $result = [];
+        $levels = array_filter(array_map('trim', explode(' ', $vibrancies)));
+
+        foreach ($levels as $vibrancy) {
+            if (in_array($vibrancy, ['dim', 'normal', 'bright'])) {
+                $result[$vibrancy] = self::vibrancy($family, $shade, $vibrancy);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get all vibrancy family names.
+     *
+     * @return array<string>
+     */
+    public static function vibrancyFamilies(): array
+    {
+        return array_keys(self::$vibrancyPalette);
+    }
+
+    /**
+     * Check if a family exists in the vibrancy palette.
+     *
+     * @param string $family Color family name
+     * @return bool
+     */
+    public static function hasVibrancy(string $family): bool
+    {
+        return isset(self::$vibrancyPalette[strtolower($family)]);
     }
 }

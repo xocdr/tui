@@ -2,14 +2,13 @@
 <?php
 
 /**
- * Spinners - Animation with timed updates
+ * Spinners - Self-animating widgets
  *
  * Demonstrates:
- * - Using the Spinner widget for easy spinners
- * - Manual spinner patterns with arrays
- * - Auto-spinning using timers (every)
- * - Progress bar animation
- * - Various spinner types (dots, line, box, arrows, etc.)
+ * - Self-animating Spinner widgets (no manual frame management needed!)
+ * - Using append() with keys for widget instance persistence
+ * - The new instance-based API: (new Box())->asColumn()
+ * - Progress bar with manual animation
  *
  * Press 'q' or ESC to exit
  */
@@ -19,6 +18,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
@@ -30,13 +31,10 @@ class SpinnerDemo extends UI
 {
     public function build(): Component
     {
-        [$frame, $setFrame] = $this->state(0);
         [$progress, $setProgress] = $this->state(0);
 
-        // Auto-advance spinner every 80ms using timer
-        $this->every(80, function () use ($setFrame, $setProgress) {
-            $setFrame(fn ($f) => $f + 1);
-            // Also advance progress bar automatically
+        // Only need timer for progress bar - spinners animate themselves!
+        $this->every(50, function () use ($setProgress) {
             $setProgress(fn ($p) => $p >= 100 ? 0 : $p + 1);
         });
 
@@ -46,77 +44,62 @@ class SpinnerDemo extends UI
             }
         });
 
-        // Get all spinner types from the widget
-        $spinnerTypes = Spinner::getTypes();
-        $widgetSpinners = [];
-        foreach ($spinnerTypes as $type) {
-            $spinner = Spinner::create($type)->setFrame($frame);
-            $widgetSpinners[] = Box::row([
-                Text::create(str_pad($type, 10))->dim(),
-                Text::create($spinner->getFrame())->color(Color::Cyan)->bold(),
-                Text::create(' Processing...'),
-            ]);
-        }
-
-        // Manual spinner patterns (showing how it works under the hood)
-        $manualPatterns = [
-            'custom1' => ['◐', '◓', '◑', '◒'],
-            'custom2' => ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█', '▇', '▆', '▅', '▄', '▃', '▂'],
-            'custom3' => ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'],
-        ];
-
-        $manualSpinnerRows = [];
-        foreach ($manualPatterns as $name => $frames) {
-            $currentFrame = $frames[$frame % count($frames)];
-            $manualSpinnerRows[] = Box::row([
-                Text::create(str_pad($name, 10))->dim(),
-                Text::create($currentFrame)->color(Color::Magenta)->bold(),
-                Text::create(' Custom pattern'),
-            ]);
-        }
-
-        // Progress bar (auto-advancing)
+        // Progress bar
         $barWidth = 30;
         $filled = (int) (($progress / 100) * $barWidth);
         $empty = $barWidth - $filled;
         $bar = str_repeat('█', $filled) . str_repeat('░', $empty);
 
-        // Spinner with label using widget
-        $labeledSpinner = Spinner::dots()->setFrame($frame)->label('Loading data...');
+        // Build the UI using the new append() API with keyed widgets
+        $spinnersBox = new BoxColumn();
 
-        return Box::column([
-            Text::create('Spinner & Progress Demo')->bold()->color(Color::Cyan),
-            Text::create('All spinners auto-animate. Press q or ESC to quit.')->dim(),
-            Newline::create(),
+        // Each spinner type - they self-animate!
+        // Spinners must be appended with keys for instance persistence
+        foreach (Spinner::getTypes() as $type) {
+            $spinnersBox->append(
+                (new BoxRow())
+                    ->append(new Text(str_pad($type, 10)), 'label-' . $type)
+                    ->append((new Spinner($type))->color(Color::Cyan), 'spinner-' . $type)
+                    ->append(new Text(' Processing...'), 'suffix-' . $type),
+                'row-' . $type
+            );
+        }
 
-            // Spinner Widget Section
-            Text::create('Spinner Widget (easy API):')->bold(),
-            ...$widgetSpinners,
-            Newline::create(),
-
-            // With Label
-            Text::create('Spinner with Label:')->bold(),
-            Text::create('  ' . $labeledSpinner->toString()),
-            Newline::create(),
-
-            // Manual Patterns Section
-            Text::create('Custom Patterns (manual arrays):')->bold(),
-            ...$manualSpinnerRows,
-            Newline::create(),
-
-            // Progress Bar Section
-            Text::create('Progress Bar:')->bold(),
-            Box::row([
-                Text::create('  ['),
-                Text::create($bar)->color(Color::Green),
-                Text::create('] '),
-                Text::create(str_pad((string) $progress, 3, ' ', STR_PAD_LEFT) . '%'),
+        // Spinner with label
+        $labeledBox = new BoxColumn([
+            new Text('Spinner with Label:'),
+            new BoxRow([
+                new Text('  '),
+                (new Spinner())->label('Loading data...')->color(Color::Green),
             ]),
-            Newline::create(),
+        ]);
 
-            Text::create("Frame: {$frame}")->dim(),
+        return new Box([
+            new BoxColumn([
+                new Text('Spinner & Progress Demo'),
+                (new Text('Spinners self-animate! Press q or ESC to quit.'))->dim(),
+                new Newline(),
+
+                (new Text('Self-Animating Spinners:'))->bold(),
+                $spinnersBox,
+                new Newline(),
+
+                $labeledBox,
+                new Newline(),
+
+                (new Text('Progress Bar:'))->bold(),
+                new BoxRow([
+                    new Text('  ['),
+                    (new Text($bar))->color(Color::Green),
+                    new Text('] '),
+                    new Text(str_pad((string) $progress, 3, ' ', STR_PAD_LEFT) . '%'),
+                ]),
+                new Newline(),
+
+                (new Text("Progress: {$progress}%"))->dim(),
+            ]),
         ]);
     }
 }
 
-SpinnerDemo::run();
+(new SpinnerDemo())->run();

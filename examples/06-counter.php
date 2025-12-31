@@ -17,6 +17,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
@@ -42,7 +44,7 @@ class CounterDemo extends UI
         });
 
         // Determine color based on count
-        $countText = Text::create((string) $count);
+        $countText = new Text((string) $count);
         if ($count === 0) {
             $countText->color(Color::Gray);
         } elseif ($count < 5) {
@@ -54,28 +56,27 @@ class CounterDemo extends UI
         }
         $countText->bold();
 
-        return Box::column([
-            Text::create('=== Counter Demo ===')->bold()->color(Color::Cyan),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('=== Counter Demo ==='))->bold()->color(Color::Cyan),
+                new Newline(),
 
-            Box::create()
-                ->border('round')
-                ->padding(1)
-                ->children([
-                    Box::row([
-                        Text::create('Count: '),
+                (new Box([
+                    new BoxRow([
+                        new Text('Count: '),
                         $countText,
                     ]),
-                ]),
-            Newline::create(),
+                ]))->border('round')->padding(1),
+                new Newline(),
 
-            Text::create('Controls:')->bold(),
-            Text::create('  Up Arrow    - Increment'),
-            Text::create('  Down Arrow  - Decrement'),
-            Text::create('  Enter       - Reset to 0'),
-            Text::create('  q           - Quit'),
+                (new Text('Controls:'))->bold(),
+                new Text('  Up Arrow    - Increment'),
+                new Text('  Down Arrow  - Decrement'),
+                new Text('  Enter       - Reset to 0'),
+                new Text('  q           - Quit'),
+            ]),
         ]);
     }
 }
 
-CounterDemo::run();
+(new CounterDemo())->run();

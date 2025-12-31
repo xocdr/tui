@@ -17,10 +17,11 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 
 // Define action types
@@ -83,35 +84,30 @@ class ReducerDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('=== Reducer Demo ===')->bold()->color(Color::Cyan),
-            Text::create('Redux-like state management pattern')->dim(),
-            Newline::create(),
+        return new BoxColumn([
+            (new Text('=== Reducer Demo ==='))->styles('cyan bold'),
+            (new Text('Redux-like state management pattern'))->dim(),
+            new Newline(),
 
-            Box::create()
-                ->border('round')
-                ->padding(1)
-                ->children([
-                    Box::row([
-                        Text::create('Count: '),
-                        Text::create((string) $state['count'])
-                            ->bold()
-                            ->color($state['count'] === 0 ? '#808080' : '#00ff00'),
-                    ]),
-                    Box::row([
-                        Text::create('Step: '),
-                        Text::create((string) $state['step'])->bold()->color(Color::Yellow),
-                    ]),
+            (new BoxColumn([
+                new BoxRow([
+                    new Text('Count: '),
+                    (new Text((string) $state['count']))->bold()->color($state['count'] === 0 ? '#808080' : '#00ff00'),
                 ]),
-            Newline::create(),
+                new BoxRow([
+                    new Text('Step: '),
+                    (new Text((string) $state['step']))->styles('yellow bold'),
+                ]),
+            ]))->border('round')->padding(1),
+            new Newline(),
 
-            Text::create('Controls:')->bold(),
-            Text::create('  Up/Down   - Increment/Decrement by step'),
-            Text::create('  Enter     - Reset to 0'),
-            Text::create('  1/5/0     - Set step to 1/5/10'),
-            Text::create('  q         - Quit'),
+            (new Text('Controls:'))->bold(),
+            new Text('  Up/Down   - Increment/Decrement by step'),
+            new Text('  Enter     - Reset to 0'),
+            new Text('  1/5/0     - Set step to 1/5/10'),
+            new Text('  q         - Quit'),
         ]);
     }
 }
 
-ReducerDemo::run();
+(new ReducerDemo())->run();

@@ -43,21 +43,56 @@ class HookRegistry
     public static function getCurrent(): HookContextInterface
     {
         if (self::$currentContext === null) {
-            // Get helpful debug info
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            $caller = $backtrace[1] ?? [];
-            $callerInfo = isset($caller['file'], $caller['line'])
-                ? sprintf(' Called from %s:%d', $caller['file'], $caller['line'])
-                : '';
-
-            throw new \RuntimeException(
-                'Hooks can only be called during component rendering. ' .
-                'Make sure you are calling hooks from within a component function.' .
-                $callerInfo
-            );
+            throw new \RuntimeException(self::buildContextError());
         }
 
         return self::$currentContext;
+    }
+
+    /**
+     * Build a detailed error message when hooks are called outside rendering.
+     */
+    private static function buildContextError(): string
+    {
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 6);
+
+        // Find the hook function that was called (frame 2 is typically the hook function)
+        $hookFrame = $backtrace[2] ?? [];
+        $hookName = $hookFrame['function'] ?? 'unknown';
+
+        // Find the caller of the hook (frame 3+)
+        $callerInfo = '';
+        for ($i = 3; $i < count($backtrace); $i++) {
+            $frame = $backtrace[$i];
+            if (isset($frame['file'], $frame['line'])) {
+                $location = sprintf('%s:%d', basename($frame['file']), $frame['line']);
+                $function = $frame['function'] ?? '';
+                $class = $frame['class'] ?? '';
+
+                if ($class !== '' && $function !== '') {
+                    $callerInfo = sprintf('%s->%s() at %s', $class, $function, $location);
+                } elseif ($function !== '') {
+                    $callerInfo = sprintf('%s() at %s', $function, $location);
+                } else {
+                    $callerInfo = $location;
+                }
+                break;
+            }
+        }
+
+        $message = sprintf(
+            "Hook '%s' was called outside of component rendering context.",
+            $hookName
+        );
+
+        if ($callerInfo !== '') {
+            $message .= sprintf("\n  Called from: %s", $callerInfo);
+        }
+
+        $message .= "\n  Hooks must be called from within a component's build() method";
+        $message .= "\n  during an active render cycle started by \$app->run().";
+
+        return $message;
     }
 
     /**
@@ -84,7 +119,7 @@ class HookRegistry
             throw new \RuntimeException(
                 sprintf(
                     'HookRegistry has %d contexts registered. This indicates a memory leak. ' .
-                    'Ensure Application::unmount() is called when applications are no longer needed.',
+                    'Ensure Runtime::unmount() is called when runtimes are no longer needed.',
                     $count
                 )
             );
@@ -101,7 +136,7 @@ class HookRegistry
                 trigger_error(
                     sprintf(
                         'HookRegistry has %d contexts registered. This may indicate a memory leak. ' .
-                        'Ensure Application::unmount() is called when applications are no longer needed.',
+                        'Ensure Runtime::unmount() is called when runtimes are no longer needed.',
                         $count
                     ),
                     E_USER_WARNING

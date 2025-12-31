@@ -228,26 +228,30 @@ $lines = $sprite->render();
 
 ## Using canvas Hook
 
-For animated canvases in components:
+For animated canvases in widgets:
 
 ```php
-use Xocdr\Tui\Hooks\Hooks;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Widgets\Widget;
 
-$app = function() {
-    $hooks = new Hooks(Tui::getApplication());
+class AnimatedCanvas extends Widget
+{
+    public function build(): Component
+    {
+        ['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $this->hooks()->canvas(40, 12);
 
-    ['canvas' => $canvas, 'clear' => $clear, 'render' => $render] = $hooks->canvas(40, 12);
+        $this->hooks()->interval(function() use ($canvas, $clear) {
+            $clear();
+            $canvas->circle(40, 24, rand(10, 20));
+        }, 100);
 
-    $hooks->interval(function() use ($canvas, $clear) {
-        $clear();
-        $canvas->circle(40, 24, rand(10, 20));
-    }, 100);
-
-    return Box::column(
-        array_map(fn($l) => Text::create($l), $render())
-    );
-};
+        return Box::column(
+            array_map(fn($l) => Text::create($l), $render())
+        );
+    }
+}
 ```
 
 ---
@@ -256,50 +260,53 @@ $app = function() {
 
 ```php
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\Styling\Drawing\Sprite;
-use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Tui;
 
-$app = function() {
-    $hooks = new Hooks(Tui::getApplication());
+class AnimatedScene extends Widget
+{
+    public function build(): Component
+    {
+        [$frame, $setFrame] = $this->hooks()->state(0);
 
-    [$frame, $setFrame] = $hooks->state(0);
+        // Create canvas
+        $canvas = Canvas::create(40, 12);
 
-    // Create canvas
-    $canvas = Canvas::create(40, 12);
+        // Draw animated circle
+        $radius = 10 + sin($frame * 0.1) * 5;
+        $canvas->clear();
+        $canvas->circle(40, 24, (int)$radius);
 
-    // Draw animated circle
-    $radius = 10 + sin($frame * 0.1) * 5;
-    $canvas->clear();
-    $canvas->circle(40, 24, (int)$radius);
+        // Create sprite
+        $sprite = Sprite::fromFrames([
+            [' o ', '/|\\', '/ \\'],
+            [' o ', '\\|/', '/ \\'],
+        ], 100);
+        $sprite->setFrame($frame % 2);
 
-    // Create sprite
-    $sprite = Sprite::fromFrames([
-        [' o ', '/|\\', '/ \\'],
-        [' o ', '\\|/', '/ \\'],
-    ], 100);
-    $sprite->setFrame($frame % 2);
+        $this->hooks()->onInput(function($input, $key) use ($setFrame) {
+            if ($input === ' ') {
+                $setFrame(fn($f) => $f + 1);
+            }
+        });
 
-    $hooks->onInput(function($input, $key) use ($setFrame) {
-        if ($input === ' ') {
-            $setFrame(fn($f) => $f + 1);
-        }
-    });
+        return Box::column([
+            Text::create('Canvas:')->bold(),
+            ...array_map(fn($l) => Text::create($l), $canvas->render()),
+            Text::create(''),
+            Text::create('Sprite:')->bold(),
+            ...array_map(fn($l) => Text::create($l), $sprite->render()),
+            Text::create(''),
+            Text::create('SPACE to animate')->dim(),
+        ]);
+    }
+}
 
-    return Box::column([
-        Text::create('Canvas:')->bold(),
-        ...array_map(fn($l) => Text::create($l), $canvas->render()),
-        Text::create(''),
-        Text::create('Sprite:')->bold(),
-        ...array_map(fn($l) => Text::create($l), $sprite->render()),
-        Text::create(''),
-        Text::create('SPACE to animate')->dim(),
-    ]);
-};
-
-Tui::render($app)->waitUntilExit();
+Tui::render(new AnimatedScene())->waitUntilExit();
 ```
 
 [[TODO:SCREENSHOT:animated-scene-example]]

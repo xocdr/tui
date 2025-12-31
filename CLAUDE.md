@@ -25,7 +25,7 @@ The ext-tui C extension provides classes and functions:
 **Classes** are namespaced under `Xocdr\Tui`:
 - `\Xocdr\Tui\Box` - Flexbox container node
 - `\Xocdr\Tui\Text` - Text node
-- `\Xocdr\Tui\Instance` - Application instance handle (with hook methods)
+- `\Xocdr\Tui\Instance` - Runtime instance handle (with hook methods)
 - `\Xocdr\Tui\Key` - Keyboard input
 - `\Xocdr\Tui\FocusEvent` - Focus change event
 - `\Xocdr\Tui\Focus` - Focus state
@@ -96,10 +96,10 @@ tui/
 ├── FEATURES.md            # Feature status tracking
 ├── src/
 │   ├── Tui.php                    # Main entry point (static facade)
-│   ├── Application.php            # Application wrapper (wraps ext-tui Instance)
-│   ├── InstanceBuilder.php        # Fluent builder for Application
+│   ├── Runtime.php                # Runtime wrapper (wraps ext-tui Instance)
+│   ├── InstanceBuilder.php        # Fluent builder for Runtime
 │   ├── Container.php              # Simple DI container
-│   ├── Application/               # Manager classes for Application
+│   ├── Runtime/                   # Manager classes for Runtime
 │   │   ├── TimerManager.php       # Timer and interval management
 │   │   ├── OutputManager.php      # Terminal output operations
 │   │   └── TerminalManager.php    # Terminal control (cursor, title, capabilities)
@@ -120,7 +120,7 @@ tui/
 │   │   ├── RendererInterface.php  # Component renderer abstraction
 │   │   ├── EventDispatcherInterface.php  # Event system abstraction
 │   │   ├── HookContextInterface.php  # Hook state abstraction
-│   │   ├── InstanceInterface.php  # Application instance abstraction
+│   │   ├── InstanceInterface.php  # Runtime instance abstraction
 │   │   ├── TimerManagerInterface.php   # Timer manager abstraction
 │   │   ├── OutputManagerInterface.php  # Output manager abstraction
 │   │   ├── InputManagerInterface.php   # Input manager abstraction
@@ -133,7 +133,7 @@ tui/
 │   │   └── HookRegistry.php       # Global context tracking
 │   ├── Rendering/                 # Rendering subsystem
 │   │   ├── Lifecycle/
-│   │   │   └── ApplicationLifecycle.php  # App lifecycle management
+│   │   │   └── RuntimeLifecycle.php  # App lifecycle management
 │   │   ├── Render/
 │   │   │   ├── ComponentRenderer.php  # Component to node conversion
 │   │   │   ├── ExtensionRenderTarget.php  # Creates nodes via ext-tui
@@ -231,7 +231,7 @@ tui/
 The codebase follows SOLID principles:
 
 1. **Single Responsibility**: Each class has one job
-   - `Application` orchestrates the app lifecycle
+   - `Runtime` orchestrates the app lifecycle
    - `TimerManager` handles timers and intervals
    - `OutputManager` handles terminal output
    - `InputManager` handles keyboard input
@@ -260,7 +260,7 @@ The codebase follows SOLID principles:
 | `RendererInterface` | Component rendering |
 | `EventDispatcherInterface` | Event handling |
 | `HookContextInterface` | Hook state management |
-| `InstanceInterface` | Application interface |
+| `InstanceInterface` | Runtime interface |
 | `TimerManagerInterface` | Timer and interval management |
 | `OutputManagerInterface` | Terminal output operations |
 | `InputManagerInterface` | Keyboard input handling |
@@ -352,7 +352,7 @@ Tui::render(new Counter())->waitUntilExit();
 | `callback($fn, $deps)` | Memoized callbacks |
 | `ref($initial)` | Mutable reference |
 | `onInput($handler)` | Keyboard input handling |
-| `app()` | Application control (exit, etc.) |
+| `app()` | Runtime control (exit, etc.) |
 | `interval($fn, $ms)` | Interval timer |
 | `focus($opts)` | Focus state |
 | `focusManager()` | Focus navigation |
@@ -365,6 +365,43 @@ Tui::render(new Counter())->waitUntilExit();
 | `previous($value)` | Previous value tracking |
 | `animation($from, $to, $ms, $easing)` | Animation state |
 | `canvas($w, $h)` | Drawing canvas |
+
+## Naming Conventions
+
+### Method Naming
+
+The codebase follows these naming conventions for consistency:
+
+**Fluent Setters (no `set` prefix)**
+- For component properties that support fluent chaining, use the property name directly
+- Example: `->padding(2)`, `->margin(1)`, `->width(10)`, `->height(5)`
+- Example: `->bold()`, `->dim()`, `->color(Color::Red)`
+
+**Short Property Names**
+- For commonly-used properties, use short names to reduce verbosity
+- Example: `->bgColor()` instead of `->backgroundColor()`
+- Example: `->bg()` for background color (alias)
+
+**Boolean Properties**
+- For boolean states that represent capabilities or features, use the property name directly
+- Example: `->focusable()` (not `->setFocusable()`)
+- Example: `->visible()`, `->enabled()`
+
+**With-Prefix for Transformations**
+- For methods that return a modified copy, use `with` prefix
+- Example: `->withBorder()`, `->withPadding()`
+
+### State Convention
+
+- Use `is` prefix for boolean getters: `isRunning()`, `isStopped()`, `isVisible()`
+- Use `get` prefix for value getters: `getState()`, `getValue()`, `getSize()`
+- Use `has` prefix for existence checks: `hasCurrent()`, `hasChildren()`
+
+### Factory Methods
+
+- Use `create()` as the primary factory method name
+- Use descriptive static methods for specialized constructors: `::column()`, `::row()`, `::dots()`
+- Example: `Box::create()`, `Box::column([...])`, `Spinner::dots()`
 
 ## Related Packages
 

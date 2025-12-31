@@ -17,10 +17,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Animation\Easing;
 use Xocdr\Tui\UI;
 
@@ -73,17 +72,23 @@ class EasingDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Easing Functions Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
-            Text::create('Visualizing progression from t=0 to t=1:'),
-            Text::create(''),
-            ...array_map(fn ($row) => Text::create($row), $this->rows),
-            Text::create(''),
-            Text::create(sprintf('%d easing functions available', count(Easing::getAvailable())))->dim(),
-            Text::create('Press ESC to exit.')->dim(),
-        ]);
+        $children = [
+            (new Text('Easing Functions Demo'))->styles('cyan bold'),
+            new Text(''),
+            new Text('Visualizing progression from t=0 to t=1:'),
+            new Text(''),
+        ];
+
+        foreach ($this->rows as $row) {
+            $children[] = new Text($row);
+        }
+
+        $children[] = new Text('');
+        $children[] = (new Text(sprintf('%d easing functions available', count(Easing::getAvailable()))))->dim();
+        $children[] = (new Text('Press ESC to exit.'))->dim();
+
+        return new BoxColumn($children);
     }
 }
 
-EasingDemo::run();
+(new EasingDemo())->run();

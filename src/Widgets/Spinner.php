@@ -4,22 +4,27 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets;
 
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Ext\Color;
 
 /**
- * Animated spinner widget.
+ * Self-animating spinner widget.
  *
  * Displays a spinning indicator using various Unicode character sets.
+ * The spinner automatically animates itself using an interval hook.
  *
  * @example
- * $spinner = Spinner::create('dots');
- * // In a render loop:
- * $frame = $spinner->getFrame();
+ * // Simple usage - spinner auto-animates
+ * (new Box())->asColumn()
+ *     ->append(new Spinner(), 'my-spinner')
+ *     ->append(new Spinner('line'), 'line-spinner');
  *
- * // Or with automatic frame tracking:
- * $spinner->advance();
- * Text::create($spinner->getFrame());
+ * // With label and color
+ * (new Box())->append(
+ *     (new Spinner())->label('Loading...')->color(Color::Cyan),
+ *     'loader'
+ * );
  */
 class Spinner extends Widget
 {
@@ -32,6 +37,11 @@ class Spinner extends Widget
     public const TYPE_CLOCK = 'clock';
     public const TYPE_MOON = 'moon';
     public const TYPE_EARTH = 'earth';
+
+    /** Speed constants (interval in milliseconds) */
+    public const SPEED_FAST = 50;
+    public const SPEED_NORMAL = 150;
+    public const SPEED_SLOW = 250;
 
     /** @var array<string, array<string>> */
     private const FRAMES = [
@@ -54,9 +64,12 @@ class Spinner extends Widget
 
     private Color|string|null $color = null;
 
-    public function __construct(string $type = self::TYPE_DOTS)
+    private int $intervalMs;
+
+    public function __construct(string $type = self::TYPE_DOTS, int $intervalMs = self::SPEED_NORMAL)
     {
         $this->type = $type;
+        $this->intervalMs = $intervalMs;
     }
 
     /**
@@ -114,6 +127,18 @@ class Spinner extends Widget
     }
 
     /**
+     * Set the animation speed (interval in milliseconds).
+     *
+     * @param int $ms Interval between frames in milliseconds
+     */
+    public function speed(int $ms): self
+    {
+        $this->intervalMs = $ms;
+
+        return $this;
+    }
+
+    /**
      * Get the current frame character.
      */
     public function getFrame(): string
@@ -140,36 +165,6 @@ class Spinner extends Widget
     }
 
     /**
-     * Advance to the next frame.
-     */
-    public function advance(): self
-    {
-        $this->frame = ($this->frame + 1) % $this->getFrameCount();
-
-        return $this;
-    }
-
-    /**
-     * Set the current frame index.
-     */
-    public function setFrame(int $frame): self
-    {
-        $this->frame = $frame % $this->getFrameCount();
-
-        return $this;
-    }
-
-    /**
-     * Reset to the first frame.
-     */
-    public function reset(): self
-    {
-        $this->frame = 0;
-
-        return $this;
-    }
-
-    /**
      * Get the spinner type.
      */
     public function getType(): string
@@ -189,15 +184,40 @@ class Spinner extends Widget
 
     /**
      * Build the spinner component.
+     *
+     * Uses hooks for self-animation - the spinner automatically
+     * advances frames using an interval timer.
      */
-    public function build(): Text
+    public function build(): Component
     {
-        $content = $this->getFrame();
+        $hooks = $this->hooks();
+
+        // Use hook state for frame - persists across renders, syncs to $this->frame
+        [$frame, $setFrame] = $hooks->state($this->frame);
+
+        // Self-animate using interval hook
+        $frameCount = $this->getFrameCount();
+        $hooks->interval(function () use ($setFrame, $frameCount) {
+            $setFrame(function ($f) use ($frameCount) {
+                $newFrame = ($f + 1) % $frameCount;
+                $this->frame = $newFrame;
+
+                return $newFrame;
+            });
+        }, $this->intervalMs);
+
+        // Sync current frame to property for debugging
+        $this->frame = $frame;
+
+        // Get current frame character
+        $frames = self::FRAMES[$this->type] ?? self::FRAMES[self::TYPE_DOTS];
+        $content = $frames[$frame % count($frames)];
+
         if ($this->label !== null) {
             $content .= ' ' . $this->label;
         }
 
-        $text = Text::create($content);
+        $text = new Text($content);
         if ($this->color !== null) {
             $text->color($this->color);
         }

@@ -28,49 +28,39 @@ class BusyBarTest extends TestCase
 
     public function testStyle(): void
     {
-        $bar1 = BusyBar::create()->width(20)->style(BusyBar::STYLE_PULSE)->setFrame(5);
-        $bar2 = BusyBar::create()->width(20)->style(BusyBar::STYLE_SHIMMER)->setFrame(5);
+        $bar1 = BusyBar::create()->width(20)->style(BusyBar::STYLE_PULSE);
+        $bar2 = BusyBar::create()->width(20)->style(BusyBar::STYLE_SHIMMER);
 
         // Different styles should produce different output (shimmer uses different chars)
         $this->assertNotSame($bar1->toString(), $bar2->toString());
     }
 
-    public function testAdvance(): void
+    public function testPlayStop(): void
     {
-        $bar = BusyBar::create()->width(20);
+        $bar = BusyBar::create();
 
-        $frame1 = $bar->toString();
-        $bar->advance();
-        $frame2 = $bar->toString();
+        $this->assertTrue($bar->isPlaying());
 
-        $this->assertNotSame($frame1, $frame2);
+        $bar->stop();
+        $this->assertFalse($bar->isPlaying());
+
+        $bar->play();
+        $this->assertTrue($bar->isPlaying());
     }
 
-    public function testSetFrame(): void
+    public function testSpeed(): void
     {
-        $bar1 = BusyBar::create()->width(20)->setFrame(0);
-        $bar2 = BusyBar::create()->width(20)->setFrame(5);
+        $bar = BusyBar::create()->speed(100);
 
-        $this->assertNotSame($bar1->toString(), $bar2->toString());
-    }
-
-    public function testReset(): void
-    {
-        $bar = BusyBar::create()->width(20);
-
-        $initial = $bar->toString();
-        $bar->advance()->advance()->advance();
-        $bar->reset();
-
-        $this->assertSame($initial, $bar->toString());
+        // Just verify fluent interface works
+        $this->assertInstanceOf(BusyBar::class, $bar);
     }
 
     public function testActiveChar(): void
     {
         $bar = BusyBar::create()
             ->width(20)
-            ->activeChar('#')
-            ->setFrame(0);
+            ->activeChar('#');
 
         $string = $bar->toString();
 
@@ -81,8 +71,7 @@ class BusyBarTest extends TestCase
     {
         $bar = BusyBar::create()
             ->width(20)
-            ->inactiveChar('.')
-            ->setFrame(0);
+            ->inactiveChar('.');
 
         $string = $bar->toString();
 
@@ -123,15 +112,8 @@ class BusyBarTest extends TestCase
             ->width(20)
             ->style(BusyBar::STYLE_PULSE);
 
-        // Pulse should bounce back and forth
-        $positions = [];
-        for ($i = 0; $i < 40; $i++) {
-            $bar->setFrame($i);
-            $positions[] = $bar->toString();
-        }
-
-        // Should have different frames
-        $this->assertGreaterThan(1, count(array_unique($positions)));
+        $string = $bar->toString();
+        $this->assertEquals(20, mb_strlen($string));
     }
 
     public function testSnakeStyle(): void
@@ -172,7 +154,8 @@ class BusyBarTest extends TestCase
             ->activeChar('▓')
             ->inactiveChar('░')
             ->color('#00ff00')
-            ->setFrame(5);
+            ->speed(50)
+            ->play();
 
         $this->assertInstanceOf(BusyBar::class, $bar);
     }

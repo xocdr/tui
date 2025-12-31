@@ -19,9 +19,9 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
 use Xocdr\Tui\Widgets\ProgressBar;
 
@@ -63,26 +63,28 @@ class ProgressBarDemo extends UI
             ->emptyChar('░')
             ->showPercentage();
 
-        return Box::column([
-            Text::create('Progress Bar Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
-            Text::create('Basic:'),
-            Text::create($basic->toString()),
-            Text::create(''),
-            Text::create('Colored:'),
-            Text::create($colored->toString()),
-            Text::create(''),
-            Text::create('Custom chars:'),
-            Text::create($custom->toString()),
-            Text::create(''),
-            Text::create('Controls:')->bold(),
-            Text::create('  +/= - Increase progress'),
-            Text::create('  -/_ - Decrease progress'),
-            Text::create('  R   - Reset to 0%'),
-            Text::create(''),
-            Text::create('Press ESC to exit.')->dim(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Progress Bar Demo'))->styles('cyan bold'),
+                new Text(''),
+                new Text('Basic:'),
+                new Text($basic->toString()),
+                new Text(''),
+                new Text('Colored:'),
+                new Text($colored->toString()),
+                new Text(''),
+                new Text('Custom chars:'),
+                new Text($custom->toString()),
+                new Text(''),
+                (new Text('Controls:'))->bold(),
+                new Text('  +/= - Increase progress'),
+                new Text('  -/_ - Decrease progress'),
+                new Text('  R   - Reset to 0%'),
+                new Text(''),
+                (new Text('Press ESC to exit.'))->dim(),
+            ]),
         ]);
     }
 }
 
-ProgressBarDemo::run();
+(new ProgressBarDemo())->run();

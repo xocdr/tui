@@ -15,14 +15,13 @@ use Xocdr\Tui\Components\Text;
  * like async streams or any polling-based data.
  *
  * @example
- * $viewer = StreamViewer::create(['maxLines' => 20]);
- * $instance = Tui::render($viewer);
- *
- * // Use onTick for polling (called each event loop iteration)
- * $instance->onTick(function () use ($viewer, $stream) {
- *     while ($chunk = $stream->read()) {
- *         $viewer->appendText($chunk);
+ * // Use StreamViewer within a UI class
+ * class MyApp extends UI {
+ *     public function build(): Component {
+ *         return StreamViewer::create(['maxLines' => 20]);
  *     }
+ * }
+ * (new MyApp())->run();
  * });
  *
  * // Or push data directly

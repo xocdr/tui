@@ -37,7 +37,7 @@ use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Hooks\Hooks;
 
 $app = function () {
-    $hooks = new Hooks(Tui::getApplication());
+    $hooks = new Hooks(Tui::getRuntime());
 
     [$count, $setCount] = $hooks->state(0);
     ['exit' => $exit] = $hooks->app();
@@ -344,7 +344,7 @@ $app->off($handlerId);
 
 ## Advanced Usage
 
-### Application Builder
+### Runtime Builder
 
 Configure with fluent API:
 
@@ -366,13 +366,13 @@ $app = Tui::builder()
 For testing or custom configurations:
 
 ```php
-use Xocdr\Tui\Application;
+use Xocdr\Tui\Runtime;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Rendering\Render\ComponentRenderer;
 use Xocdr\Tui\Rendering\Render\ExtensionRenderTarget;
 
-$app = new Application(
+$app = new Runtime(
     $component,
     ['fullscreen' => true],
     new EventDispatcher(),
@@ -586,7 +586,7 @@ The package follows SOLID principles with a clean separation of concerns:
 
 ```
 src/
-├── Application/          # Manager classes for Application
+├── Runtime/              # Manager classes for Runtime
 │   ├── TimerManager.php  # Timer and interval management
 │   ├── OutputManager.php # Terminal output operations
 │   └── TerminalManager.php # Cursor, title, capabilities
@@ -615,7 +615,7 @@ src/
 │   ├── Hooks.php         # Primary hooks API
 │   └── HooksAwareTrait.php
 ├── Rendering/            # Rendering subsystem
-│   ├── Lifecycle/        # Application lifecycle
+│   ├── Lifecycle/        # Runtime lifecycle
 │   ├── Render/           # Component rendering
 │   └── Focus/            # Focus management
 ├── Styling/              # Styling subsystem
@@ -634,7 +634,7 @@ src/
 │   └── Capabilities.php  # Terminal feature detection
 ├── Widgets/              # Pre-built widgets
 ├── Container.php         # DI container
-├── Application.php       # Application wrapper with manager getters
+├── Runtime.php           # Runtime wrapper with manager getters
 ├── InstanceBuilder.php   # Fluent builder
 └── Tui.php               # Main entry point
 ```

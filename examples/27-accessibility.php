@@ -20,6 +20,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
@@ -51,53 +52,55 @@ class AccessibilityDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Accessibility Features')->bold()->underline(),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Accessibility Features'))->bold()->underline(),
+                new Newline(),
 
-            // Display detected preferences
-            Text::create('User Preferences:')->bold(),
-            Text::create(sprintf(
-                '  Reduced Motion: %s',
-                $this->features['reduced_motion'] ? 'Yes (animations will be skipped)' : 'No'
-            ))->color($this->features['reduced_motion'] ? Color::Yellow : Color::Green),
-            Text::create(sprintf(
-                '  High Contrast: %s',
-                $this->features['high_contrast'] ? 'Yes (using high contrast colors)' : 'No'
-            ))->color($this->features['high_contrast'] ? Color::Yellow : Color::Green),
-            Text::create(sprintf(
-                '  Screen Reader: %s',
-                $this->features['screen_reader'] ? 'Detected' : 'Not detected'
-            ))->color($this->features['screen_reader'] ? Color::Cyan : Color::Gray),
+                // Display detected preferences
+                (new Text('User Preferences:'))->bold(),
+                (new Text(sprintf(
+                    '  Reduced Motion: %s',
+                    $this->features['reduced_motion'] ? 'Yes (animations will be skipped)' : 'No'
+                )))->color($this->features['reduced_motion'] ? Color::Yellow : Color::Green),
+                (new Text(sprintf(
+                    '  High Contrast: %s',
+                    $this->features['high_contrast'] ? 'Yes (using high contrast colors)' : 'No'
+                )))->color($this->features['high_contrast'] ? Color::Yellow : Color::Green),
+                (new Text(sprintf(
+                    '  Screen Reader: %s',
+                    $this->features['screen_reader'] ? 'Detected' : 'Not detected'
+                )))->color($this->features['screen_reader'] ? Color::Cyan : Color::Gray),
 
-            Newline::create(),
+                new Newline(),
 
-            // ARIA roles demo
-            Text::create('ARIA Role Constants:')->bold(),
-            Text::create(sprintf(
-                '  ROLE_BUTTON (%d) = "%s"',
-                Accessibility::ROLE_BUTTON,
-                Accessibility::roleToString(Accessibility::ROLE_BUTTON)
-            ))->dim(),
-            Text::create(sprintf(
-                '  ROLE_DIALOG (%d) = "%s"',
-                Accessibility::ROLE_DIALOG,
-                Accessibility::roleToString(Accessibility::ROLE_DIALOG)
-            ))->dim(),
-            Text::create(sprintf(
-                '  roleFromString("menu") = %d',
-                Accessibility::roleFromString('menu')
-            ))->dim(),
+                // ARIA roles demo
+                (new Text('ARIA Role Constants:'))->bold(),
+                (new Text(sprintf(
+                    '  ROLE_BUTTON (%d) = "%s"',
+                    Accessibility::ROLE_BUTTON,
+                    Accessibility::roleToString(Accessibility::ROLE_BUTTON)
+                )))->dim(),
+                (new Text(sprintf(
+                    '  ROLE_DIALOG (%d) = "%s"',
+                    Accessibility::ROLE_DIALOG,
+                    Accessibility::roleToString(Accessibility::ROLE_DIALOG)
+                )))->dim(),
+                (new Text(sprintf(
+                    '  roleFromString("menu") = %d',
+                    Accessibility::roleFromString('menu')
+                )))->dim(),
 
-            Newline::create(),
+                new Newline(),
 
-            // Instructions
-            Text::create('Test with environment variables:')->bold(),
-            Text::create('  REDUCE_MOTION=1 php examples/27-accessibility.php')->italic()->dim(),
-            Text::create('  HIGH_CONTRAST=1 php examples/27-accessibility.php')->italic()->dim(),
+                // Instructions
+                (new Text('Test with environment variables:'))->bold(),
+                (new Text('  REDUCE_MOTION=1 php examples/27-accessibility.php'))->italic()->dim(),
+                (new Text('  HIGH_CONTRAST=1 php examples/27-accessibility.php'))->italic()->dim(),
 
-            Newline::create(),
-            Text::create('Press q or ESC to exit')->dim(),
+                new Newline(),
+                (new Text('Press q or ESC to exit'))->dim(),
+            ]),
         ]);
     }
 }
@@ -105,4 +108,4 @@ class AccessibilityDemo extends UI
 // Announce to screen reader when app starts
 Accessibility::announce('Accessibility demo loaded');
 
-AccessibilityDemo::run(new AccessibilityDemo($features));
+(new AccessibilityDemo($features))->run();

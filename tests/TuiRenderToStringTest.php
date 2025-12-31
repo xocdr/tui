@@ -7,20 +7,22 @@ namespace Xocdr\Tui\Tests;
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\Support\Testing\TestRenderer;
 
 class TuiRenderToStringTest extends TestCase
 {
     public function testRenderToStringWithText(): void
     {
-        $output = Tui::renderToString(Text::create('Hello World'));
+        $renderer = new TestRenderer(80, 24);
+        $output = $renderer->render(Text::create('Hello World'));
 
         $this->assertEquals('Hello World', $output);
     }
 
     public function testRenderToStringWithBox(): void
     {
-        $output = Tui::renderToString(
+        $renderer = new TestRenderer(80, 24);
+        $output = $renderer->render(
             Box::column([
                 Text::create('Line 1'),
                 Text::create('Line 2'),
@@ -33,32 +35,32 @@ class TuiRenderToStringTest extends TestCase
 
     public function testRenderToStringWithCallable(): void
     {
-        $output = Tui::renderToString(fn () => Text::create('From callable'));
+        $renderer = new TestRenderer(80, 24);
+        $output = $renderer->render(fn () => Text::create('From callable'));
 
         $this->assertEquals('From callable', $output);
     }
 
     public function testRenderToStringWithCustomDimensions(): void
     {
-        $output = Tui::renderToString(
-            Text::create('Content'),
-            100,
-            50
-        );
+        $renderer = new TestRenderer(100, 50);
+        $output = $renderer->render(Text::create('Content'));
 
         $this->assertEquals('Content', $output);
     }
 
     public function testRenderToStringWithBoldText(): void
     {
-        $output = Tui::renderToString(Text::create('Bold')->bold());
+        $renderer = new TestRenderer(80, 24);
+        $output = $renderer->render(Text::create('Bold')->bold());
 
         $this->assertEquals('**Bold**', $output);
     }
 
     public function testRenderToStringWithNestedComponents(): void
     {
-        $output = Tui::renderToString(
+        $renderer = new TestRenderer(80, 24);
+        $output = $renderer->render(
             Box::column([
                 Box::row([
                     Text::create('A'),

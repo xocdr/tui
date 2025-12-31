@@ -17,6 +17,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
@@ -62,31 +64,33 @@ class NotificationsDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Terminal Notifications Demo')->bold()->underline(),
-            Newline::create(),
+        return new Box([
+            new BoxColumn([
+                (new Text('Terminal Notifications Demo'))->bold()->underline(),
+                new Newline(),
 
-            Text::create('Press a key to trigger notification:')->bold(),
-            Newline::create(),
-            Text::create('  [b] Bell - Play terminal bell sound')->dim(),
-            Text::create('  [f] Flash - Flash the screen')->dim(),
-            Text::create('  [n] Notify - Send desktop notification')->dim(),
-            Text::create('  [u] Urgent - Send urgent notification')->dim(),
-            Text::create('  [a] Alert - All of the above')->dim(),
+                (new Text('Press a key to trigger notification:'))->bold(),
+                new Newline(),
+                (new Text('  [b] Bell - Play terminal bell sound'))->dim(),
+                (new Text('  [f] Flash - Flash the screen'))->dim(),
+                (new Text('  [n] Notify - Send desktop notification'))->dim(),
+                (new Text('  [u] Urgent - Send urgent notification'))->dim(),
+                (new Text('  [a] Alert - All of the above'))->dim(),
 
-            Newline::create(),
+                new Newline(),
 
-            Box::row([
-                Text::create('Last action: ')->bold(),
-                Text::create($lastAction)->color(Color::Cyan),
+                new BoxRow([
+                    (new Text('Last action: '))->bold(),
+                    (new Text($lastAction))->color(Color::Cyan),
+                ]),
+
+                new Newline(),
+                (new Text('Note: Desktop notifications require terminal support (iTerm2, Kitty, etc.)'))->dim()->italic(),
+                new Newline(),
+                (new Text('Press q or ESC to exit'))->dim(),
             ]),
-
-            Newline::create(),
-            Text::create('Note: Desktop notifications require terminal support (iTerm2, Kitty, etc.)')->dim()->italic(),
-            Newline::create(),
-            Text::create('Press q or ESC to exit')->dim(),
         ]);
     }
 }
 
-NotificationsDemo::run();
+(new NotificationsDemo())->run();

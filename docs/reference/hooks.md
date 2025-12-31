@@ -13,7 +13,7 @@ $hooks = new Hooks($instance);
 ```
 
 **Constructor Parameters:**
-- `$instance` (InstanceInterface|null) - Application instance (optional)
+- `$instance` (InstanceInterface|null) - Runtime instance (optional)
 
 ---
 

@@ -16,6 +16,8 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Image;
 use Xocdr\Tui\Components\Text;
@@ -34,78 +36,80 @@ class ImageDemo extends UI
 
         $isSupported = Image::isSupported();
 
-        return Box::column([
-            Text::create('Image Display Demo')->bold()->color(Color::Cyan),
-            Text::create(''),
+        return new Box([
+            new BoxColumn([
+                (new Text('Image Display Demo'))->bold()->color(Color::Cyan),
+                new Text(''),
 
-            // Terminal support status
-            Box::create()->children([
-                Text::create('Kitty Graphics: '),
+                // Terminal support status
+                new BoxRow([
+                    new Text('Kitty Graphics: '),
+                    $isSupported
+                        ? (new Text('Supported ✓'))->color(Color::Green)
+                        : (new Text('Not Supported ✗'))->color(Color::Red),
+                ]),
+                new Text(''),
+
+                // Display image or fallback
                 $isSupported
-                    ? Text::create('Supported ✓')->color(Color::Green)
-                    : Text::create('Not Supported ✗')->color(Color::Red),
+                    ? $this->renderWithGraphics()
+                    : $this->renderFallbackDemo(),
+
+                new Text(''),
+                (new Text('Press ESC to exit.'))->dim(),
             ]),
-            Text::create(''),
-
-            // Display image or fallback
-            $isSupported
-                ? $this->renderWithGraphics()
-                : $this->renderFallbackDemo(),
-
-            Text::create(''),
-            Text::create('Press ESC to exit.')->dim(),
         ]);
     }
 
-    private function renderWithGraphics(): Box
+    private function renderWithGraphics(): BoxColumn
     {
         // Check if we have the logo file
         $logoPath = __DIR__ . '/../docs/tui-logo.svg';
 
         if (!file_exists($logoPath)) {
-            return Box::column([
-                Text::create('No test image found at:')->dim(),
-                Text::create($logoPath)->dim(),
-                Text::create(''),
-                Text::create('Try with your own PNG image:'),
-                Text::create('  Image::fromPath("/path/to/image.png")'),
+            return new BoxColumn([
+                (new Text('No test image found at:'))->dim(),
+                (new Text($logoPath))->dim(),
+                new Text(''),
+                new Text('Try with your own PNG image:'),
+                new Text('  Image::fromPath("/path/to/image.png")'),
             ]);
         }
 
-        return Box::column([
-            Text::create('Displaying logo:')->bold(),
-            Text::create(''),
+        return new BoxColumn([
+            (new Text('Displaying logo:'))->bold(),
+            new Text(''),
             Image::fromPath($logoPath)
                 ->size(60, 20)
                 ->alt('TUI Logo'),
         ]);
     }
 
-    private function renderFallbackDemo(): Box
+    private function renderFallbackDemo(): BoxColumn
     {
-        return Box::column([
-            Text::create('Fallback Mode (no graphics support)')->bold(),
-            Text::create(''),
+        return new BoxColumn([
+            (new Text('Fallback Mode (no graphics support)'))->bold(),
+            new Text(''),
 
             // Show what the fallback looks like
-            Box::row([
+            new BoxRow([
                 Image::fromPath('/path/to/image.png')
                     ->size(25, 8)
                     ->alt('Sample Image'),
 
-                Box::create()->width(2),
+                (new Box())->width(2),
 
                 Image::fromUrl('https://example.com/photo.jpg')
                     ->size(25, 8),
             ]),
 
-            Text::create(''),
-            Text::create('To see actual images, use a terminal with Kitty graphics support:'),
-            Text::create('  - Kitty (recommended)'),
-            Text::create('  - WezTerm'),
-            Text::create('  - Konsole (partial support)'),
+            new Text(''),
+            new Text('To see actual images, use a terminal with Kitty graphics support:'),
+            new Text('  - Kitty (recommended)'),
+            new Text('  - WezTerm'),
+            new Text('  - Konsole (partial support)'),
         ]);
     }
 }
 
-ImageDemo::run();
+(new ImageDemo())->run();

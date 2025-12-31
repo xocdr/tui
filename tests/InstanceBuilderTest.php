@@ -132,7 +132,7 @@ class InstanceBuilderTest extends TestCase
             ->component(fn () => Box::create())
             ->build();
 
-        $this->assertInstanceOf(\Xocdr\Tui\Application::class, $instance);
+        $this->assertInstanceOf(\Xocdr\Tui\Runtime::class, $instance);
     }
 
     public function testCreateDefaultsReturnsAllDependencies(): void

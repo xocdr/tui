@@ -972,7 +972,7 @@ Capabilities::all()                    // Get all capabilities as array
 ### TerminalManager
 
 ```php
-use Xocdr\Tui\Application\TerminalManager;
+use Xocdr\Tui\Runtime\TerminalManager;
 
 $terminal = $app->getTerminalManager();
 

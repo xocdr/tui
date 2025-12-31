@@ -11,6 +11,7 @@ use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\Terminal\Clipboard;
 use Xocdr\Tui\Terminal\Events\InputEvent;
+use Xocdr\Tui\Terminal\TerminalInfo;
 use Xocdr\Tui\Terminal\Events\MouseEvent;
 use Xocdr\Tui\Terminal\Events\PasteEvent;
 use Xocdr\Tui\Terminal\Input\InputHistory;
@@ -141,7 +142,7 @@ final readonly class Hooks implements HooksInterface
             return;
         }
 
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
         if ($app === null) {
             return;
         }
@@ -175,7 +176,7 @@ final readonly class Hooks implements HooksInterface
             return;
         }
 
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
         if ($app === null) {
             return;
         }
@@ -208,7 +209,7 @@ final readonly class Hooks implements HooksInterface
             return;
         }
 
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
         if ($app === null) {
             return;
         }
@@ -281,7 +282,7 @@ final readonly class Hooks implements HooksInterface
      */
     public function app(): array
     {
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
 
         return [
             'exit' => function (int $code = 0) use ($app): void {
@@ -312,8 +313,8 @@ final readonly class Hooks implements HooksInterface
             ];
         }
 
-        // Fallback implementation
-        $size = \Xocdr\Tui\Tui::getTerminalSize();
+        // Fallback implementation using TerminalInfo
+        $size = TerminalInfo::getSize();
 
         return [
             'columns' => $size['width'],
@@ -334,7 +335,7 @@ final readonly class Hooks implements HooksInterface
      */
     public function focus(array $options = []): array
     {
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
         $autoFocus = $options['autoFocus'] ?? false;
         $isActive = $options['isActive'] ?? true;
         $id = $options['id'] ?? null;
@@ -382,7 +383,7 @@ final readonly class Hooks implements HooksInterface
      */
     public function focusManager(): array
     {
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
 
         // Use native FocusManager class if available (ext-tui 0.1.3+)
         if (class_exists(\Xocdr\Tui\Ext\FocusManager::class) && $app !== null) {
@@ -464,7 +465,7 @@ final readonly class Hooks implements HooksInterface
      */
     public function context(string $contextClass): mixed
     {
-        $container = \Xocdr\Tui\Tui::getContainer();
+        $container = \Xocdr\Tui\Container::getInstance();
 
         return $container->get($contextClass);
     }
@@ -481,7 +482,7 @@ final readonly class Hooks implements HooksInterface
         $callbackRef = $this->ref($callback);
         $callbackRef->current = $callback;
 
-        $app = $this->instance ?? \Xocdr\Tui\Tui::getApplication();
+        $app = $this->instance ?? \Xocdr\Tui\Runtime::current();
 
         $this->onRender(function () use ($callbackRef, $ms, $isActive, $app) {
             if (!$isActive || $app === null) {

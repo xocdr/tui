@@ -17,10 +17,9 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\UI;
 
@@ -58,15 +57,21 @@ class CanvasDemo extends UI
             }
         });
 
-        return Box::column([
-            Text::create('Canvas Demo - Braille Drawing')->bold()->color(Color::Cyan),
-            Text::create(''),
-            ...array_map(fn ($line) => Text::create($line), $this->lines),
-            Text::create(''),
-            Text::create('40x12 terminal cells = 80x48 pixels')->dim(),
-            Text::create('Press ESC to exit.')->dim(),
-        ]);
+        $children = [
+            (new Text('Canvas Demo - Braille Drawing'))->styles('cyan bold'),
+            new Text(''),
+        ];
+
+        foreach ($this->lines as $line) {
+            $children[] = new Text($line);
+        }
+
+        $children[] = new Text('');
+        $children[] = (new Text('40x12 terminal cells = 80x48 pixels'))->dim();
+        $children[] = (new Text('Press ESC to exit.'))->dim();
+
+        return new BoxColumn($children);
     }
 }
 
-CanvasDemo::run();
+(new CanvasDemo())->run();

@@ -224,32 +224,36 @@ while (!$tween->isComplete()) {
 
 ## animation Hook
 
-For animations in components:
+For animations in widgets:
 
 ```php
-use Xocdr\Tui\Hooks\Hooks;
-use Xocdr\Tui\Tui;
+use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
+use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Widgets\Widget;
 
-$app = function() {
-    $hooks = new Hooks(Tui::getApplication());
+class AnimatedBar extends Widget
+{
+    public function build(): Component
+    {
+        $animation = $this->hooks()->animation(0, 100, 1000, 'out-cubic');
 
-    $animation = $hooks->animation(0, 100, 1000, 'out-cubic');
+        // $animation = [
+        //     'value' => float,        // Current animated value
+        //     'isAnimating' => bool,   // Animation in progress
+        //     'start' => callable,     // Start animation
+        //     'reset' => callable,     // Reset to start
+        // ]
 
-    // $animation = [
-    //     'value' => float,        // Current animated value
-    //     'isAnimating' => bool,   // Animation in progress
-    //     'start' => callable,     // Start animation
-    //     'reset' => callable,     // Reset to start
-    // ]
+        $x = (int)$animation['value'];
+        $bar = str_repeat('█', $x) . str_repeat('░', 100 - $x);
 
-    $x = (int)$animation['value'];
-    $bar = str_repeat('█', $x) . str_repeat('░', 100 - $x);
-
-    return Box::column([
-        Text::create($bar)->green(),
-        Text::create("Value: {$x}")->dim(),
-    ]);
-};
+        return Box::column([
+            Text::create($bar)->green(),
+            Text::create("Value: {$x}")->dim(),
+        ]);
+    }
+}
 ```
 
 ---
@@ -262,45 +266,48 @@ use Xocdr\Tui\Styling\Animation\Easing;
 use Xocdr\Tui\Styling\Animation\Gradient;
 use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Hooks\Hooks;
+use Xocdr\Tui\Widgets\Widget;
 use Xocdr\Tui\Tui;
 
-$app = function() {
-    $hooks = new Hooks(Tui::getApplication());
+class AnimationDemo extends Widget
+{
+    public function build(): Component
+    {
+        [$frame, $setFrame] = $this->hooks()->state(0);
 
-    [$frame, $setFrame] = $hooks->state(0);
+        // Create animations
+        $xTween = Tween::create(0, 40, 2000, Easing::OUT_BOUNCE);
+        $xTween->update($frame * 50);
 
-    // Create animations
-    $xTween = Tween::create(0, 40, 2000, Easing::OUT_BOUNCE);
-    $xTween->update($frame * 50);
+        $colorGradient = Gradient::rainbow(50);
 
-    $colorGradient = Gradient::rainbow(50);
+        $this->hooks()->onInput(function($input, $key) use ($setFrame) {
+            if ($input === ' ') {
+                $setFrame(fn($f) => $f + 1);
+            } elseif ($input === 'r') {
+                $setFrame(0);
+            }
+        });
 
-    $hooks->onInput(function($input, $key) use ($setFrame) {
-        if ($input === ' ') {
-            $setFrame(fn($f) => $f + 1);
-        } elseif ($input === 'r') {
-            $setFrame(0);
-        }
-    });
+        // Build animated display
+        $x = $xTween->getValueInt();
+        $bar = str_repeat(' ', $x) . '●';
+        $color = $colorGradient->at($frame / 40);
 
-    // Build animated display
-    $x = $xTween->getValueInt();
-    $bar = str_repeat(' ', $x) . '●';
-    $color = $colorGradient->at($frame / 40);
+        return Box::column([
+            Text::create('Animation Demo')->bold(),
+            Text::create(''),
+            Text::create($bar)->color($color),
+            Text::create(''),
+            Text::create("Frame: {$frame} | X: {$x}")->dim(),
+            Text::create('SPACE = advance, R = reset')->dim(),
+        ]);
+    }
+}
 
-    return Box::column([
-        Text::create('Animation Demo')->bold(),
-        Text::create(''),
-        Text::create($bar)->color($color),
-        Text::create(''),
-        Text::create("Frame: {$frame} | X: {$x}")->dim(),
-        Text::create('SPACE = advance, R = reset')->dim(),
-    ]);
-};
-
-Tui::render($app)->waitUntilExit();
+Tui::render(new AnimationDemo())->waitUntilExit();
 ```
 
 [[TODO:SCREENSHOT:complete-animation-example]]

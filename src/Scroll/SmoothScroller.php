@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Scroll;
 
+use Xocdr\Tui\Contracts\DestroyableInterface;
+
 /**
  * Smooth scrolling with spring physics.
  *
@@ -30,10 +32,12 @@ namespace Xocdr\Tui\Scroll;
  *     $scroller->scrollBy(0, 1);  // Add 1 to target Y
  * }
  */
-class SmoothScroller
+class SmoothScroller implements DestroyableInterface
 {
     /** @var resource|null The native scroll animation resource */
     private mixed $resource = null;
+
+    private bool $destroyed = false;
 
     private float $x = 0.0;
 
@@ -84,6 +88,12 @@ class SmoothScroller
      */
     public function destroy(): void
     {
+        if ($this->destroyed) {
+            return;
+        }
+
+        $this->destroyed = true;
+
         if ($this->resource !== null && function_exists('tui_scroll_destroy')) {
             try {
                 tui_scroll_destroy($this->resource);
@@ -92,6 +102,14 @@ class SmoothScroller
                 $this->resource = null;
             }
         }
+    }
+
+    /**
+     * Check if this instance has been destroyed.
+     */
+    public function isDestroyed(): bool
+    {
+        return $this->destroyed;
     }
 
     /**
