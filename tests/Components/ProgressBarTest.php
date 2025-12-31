@@ -7,7 +7,7 @@ namespace Xocdr\Tui\Tests\Components;
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Styling\Animation\Gradient;
-use Xocdr\Tui\Widgets\ProgressBar;
+use Xocdr\Tui\Widgets\Feedback\ProgressBar;
 
 class ProgressBarTest extends TestCase
 {

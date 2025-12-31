@@ -9,7 +9,7 @@ use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Telemetry\Metrics;
 use Xocdr\Tui\Support\Testing\TuiTestCase;
-use Xocdr\Tui\Widgets\DebugPanel;
+use Xocdr\Tui\Widgets\Support\DebugPanel;
 use Xocdr\Tui\Widgets\Widget;
 
 /**

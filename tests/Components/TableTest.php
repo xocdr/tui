@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Components;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Widgets\Table;
+use Xocdr\Tui\Widgets\Display\Table;
 
 class TableTest extends TestCase
 {

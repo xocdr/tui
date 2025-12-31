@@ -194,7 +194,7 @@ for ($frame = 0; $frame < 100; $frame++) {
 ### With Progress Bar
 
 ```php
-use Xocdr\Tui\Widgets\ProgressBar;
+use Xocdr\Tui\Widgets\Feedback\ProgressBar;
 
 $bar = ProgressBar::create()
     ->gradient(Gradient::rainbow(30))

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Xocdr\Tui\Widgets;
+namespace Xocdr\Tui\Widgets\Feedback;
+
+use Xocdr\Tui\Widgets\Widget;
 
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;

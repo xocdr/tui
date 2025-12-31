@@ -237,7 +237,7 @@ use Xocdr\Tui\Components\Line;
 Determinate progress indicator.
 
 ```php
-use Xocdr\Tui\Widgets\ProgressBar;
+use Xocdr\Tui\Widgets\Feedback\ProgressBar;
 
 ProgressBar::create()
     ->value(0.5)              // 0.0 to 1.0
@@ -262,7 +262,7 @@ ProgressBar::create()
 Indeterminate/loading indicator.
 
 ```php
-use Xocdr\Tui\Widgets\BusyBar;
+use Xocdr\Tui\Widgets\Feedback\BusyBar;
 
 BusyBar::create()
     ->width(30)
@@ -284,7 +284,7 @@ BusyBar::create()
 Animated spinner indicator.
 
 ```php
-use Xocdr\Tui\Widgets\Spinner;
+use Xocdr\Tui\Widgets\Feedback\Spinner;
 
 // Factory methods
 Spinner::create('dots')       // Create with type
@@ -331,7 +331,7 @@ Spinner::getTypes()           // All available types
 Display tabular data.
 
 ```php
-use Xocdr\Tui\Widgets\Table;
+use Xocdr\Tui\Widgets\Display\Table;
 
 Table::create(['Name', 'Age', 'City'])
     ->addRow(['Alice', 30, 'New York'])

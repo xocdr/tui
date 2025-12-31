@@ -25,7 +25,7 @@ use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\UI;
-use Xocdr\Tui\Widgets\Spinner;
+use Xocdr\Tui\Widgets\Feedback\Spinner;
 
 class SpinnerDemo extends UI
 {

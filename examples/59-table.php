@@ -22,7 +22,7 @@ use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\UI;
-use Xocdr\Tui\Widgets\Table;
+use Xocdr\Tui\Widgets\Display\Table;
 
 // Create a basic table
 $table1 = Table::create(['Name', 'Age', 'City', 'Score'])

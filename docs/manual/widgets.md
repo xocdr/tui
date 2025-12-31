@@ -18,7 +18,7 @@ The core library includes several ready-to-use widgets:
 Animated spinner indicator.
 
 ```php
-use Xocdr\Tui\Widgets\Spinner;
+use Xocdr\Tui\Widgets\Feedback\Spinner;
 
 // Create spinner
 $spinner = new Spinner('dots');
@@ -59,7 +59,7 @@ $component = $spinner->render();
 Determinate progress indicator.
 
 ```php
-use Xocdr\Tui\Widgets\ProgressBar;
+use Xocdr\Tui\Widgets\Feedback\ProgressBar;
 
 $bar = (new ProgressBar())
     ->value(0.5)              // 0.0 to 1.0
@@ -84,7 +84,7 @@ $string = $bar->toString();   // Returns string
 Indeterminate/loading indicator for unknown progress.
 
 ```php
-use Xocdr\Tui\Widgets\BusyBar;
+use Xocdr\Tui\Widgets\Feedback\BusyBar;
 
 $busy = (new BusyBar())
     ->width(30)
@@ -107,7 +107,7 @@ $string = $busy->toString();  // Returns string
 Display tabular data.
 
 ```php
-use Xocdr\Tui\Widgets\Table;
+use Xocdr\Tui\Widgets\Display\Table;
 
 $table = (new Table(['Name', 'Age', 'City']))
     ->addRow(['Alice', 30, 'New York'])
@@ -154,7 +154,7 @@ use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\UI;
-use Xocdr\Tui\Widgets\Spinner;
+use Xocdr\Tui\Widgets\Feedback\Spinner;
 
 class LoadingApp extends UI
 {
