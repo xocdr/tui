@@ -96,9 +96,9 @@ abstract class UI implements Component, HooksAwareInterface
      *
      * This is called by the framework. You typically don't override this.
      *
-     * @return mixed The rendered output for the C extension
+     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|\Xocdr\Tui\Ext\Newline|object
      */
-    public function render(): mixed
+    public function render(): object
     {
         return $this->build()->render();
     }

@@ -200,12 +200,12 @@ class Icon
         return $this->bold;
     }
 
-    public function render(): mixed
+    public function render(): object
     {
         return $this->renderFrame(0);
     }
 
-    public function renderFrame(int $frame): mixed
+    public function renderFrame(int $frame): object
     {
         $char = $this->getFrameAt($frame);
         $text = new Text($char);

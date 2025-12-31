@@ -38,7 +38,7 @@ class StateDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         // state() - Basic reactive state management
         [$count, $setCount] = $this->hooks()->state(0);
@@ -69,7 +69,7 @@ class ToggleDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         // toggle() - Boolean state with toggle helper
         [$isOn, $toggle, $setOn] = $this->hooks()->toggle(false);
@@ -100,7 +100,7 @@ class CounterDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         // counter() - Numeric counter with helpers
         $counter = $this->hooks()->counter(10);
@@ -133,7 +133,7 @@ class ListDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         // list() - Array management with add/remove/clear
         $list = $this->hooks()->list(['Apple', 'Banana']);
@@ -169,7 +169,7 @@ class RefDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         [$count, $setCount] = $this->hooks()->state(0);
 
@@ -205,7 +205,7 @@ class PreviousDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         [$value, $setValue] = $this->hooks()->state(0);
 
@@ -242,7 +242,7 @@ class MemoDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         [$input, $setInput] = $this->hooks()->state(5);
 
@@ -287,7 +287,7 @@ class IntervalDemo implements Component, HooksAwareInterface
 {
     use HooksAwareTrait;
 
-    public function render(): mixed
+    public function render(): object
     {
         [$seconds, $setSeconds] = $this->hooks()->state(0);
         [$isRunning, $toggle] = $this->hooks()->toggle(true);

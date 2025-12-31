@@ -28,7 +28,7 @@ use Xocdr\Tui\Terminal\Mouse\MouseMode;
  * {
  *     use HooksAwareTrait;
  *
- *     public function render(): mixed
+ *     public function render(): object
  *     {
  *         [$count, $setCount] = $this->hooks()->state(0);
  *         $this->hooks()->onRender(fn() => echo "Mounted", []);

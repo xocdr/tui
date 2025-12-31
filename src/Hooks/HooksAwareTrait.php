@@ -19,7 +19,7 @@ use Xocdr\Tui\Runtime;
  * {
  *     use HooksAwareTrait;
  *
- *     public function render(): mixed
+ *     public function render(): object
  *     {
  *         [$count, $setCount] = $this->hooks()->state(0);
  *

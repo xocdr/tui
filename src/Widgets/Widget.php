@@ -61,9 +61,9 @@ abstract class Widget implements Component, HooksAwareInterface
      * Calls build() to get the component tree, then renders it
      * to produce the final Ext object for the C extension.
      *
-     * @return mixed The rendered output (Ext\Box, Ext\Text, etc.)
+     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|\Xocdr\Tui\Ext\Newline|object
      */
-    public function render(): mixed
+    public function render(): object
     {
         return $this->build()->render();
     }

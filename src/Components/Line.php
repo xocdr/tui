@@ -265,8 +265,10 @@ class Line implements Component
 
     /**
      * Render the component.
+     *
+     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|\Xocdr\Tui\Ext\Newline|object
      */
-    public function render(): mixed
+    public function render(): object
     {
         // For labeled lines, we need to handle colors differently
         // For now, use lineColor for the entire line including label
