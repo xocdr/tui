@@ -11,9 +11,9 @@ use Xocdr\Tui\Styling\Style\Color as ColorUtil;
  * Styled text component.
  *
  * @example
- * Text::create('Hello World')->bold()->color(Color::Red)
- * Text::create('Custom')->color('#ff0000')
- * Text::create('Palette')->palette('blue', 500)
+ * (new Text('Hello World'))->bold()->color(Color::Red)
+ * (new Text('Custom'))->color('#ff0000')
+ * (new Text('Palette'))->palette('blue', 500)
  */
 class Text implements Component
 {
@@ -31,14 +31,6 @@ class Text implements Component
     public function __construct(string $content = '')
     {
         $this->content = $content;
-    }
-
-    /**
-     * Create a new Text instance.
-     */
-    public static function create(string $content = ''): self
-    {
-        return new self($content);
     }
 
     // Text styles

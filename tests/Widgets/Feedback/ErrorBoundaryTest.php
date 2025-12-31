@@ -22,7 +22,7 @@ class ErrorBoundaryTest extends TuiTestCase
     {
         $widget = $this->createWidget(
             ErrorBoundary::create()
-                ->children(Text::create('Hello World'))
+                ->children(new Text('Hello World'))
         );
 
         $output = $this->renderWidget($widget);
@@ -35,7 +35,7 @@ class ErrorBoundaryTest extends TuiTestCase
     {
         $widget = $this->createWidget(
             ErrorBoundary::create()
-                ->children(fn () => Text::create('Dynamic content'))
+                ->children(fn () => new Text('Dynamic content'))
         );
 
         $output = $this->renderWidget($widget);
@@ -66,7 +66,7 @@ class ErrorBoundaryTest extends TuiTestCase
                 ->children(function () {
                     throw new \Exception('Oops');
                 })
-                ->fallback(Text::create('Custom error message'))
+                ->fallback(new Text('Custom error message'))
         );
 
         $output = $this->renderWidget($widget);
@@ -82,7 +82,7 @@ class ErrorBoundaryTest extends TuiTestCase
                     throw new \InvalidArgumentException('Bad input');
                 })
                 ->fallback(function (\Throwable $e) {
-                    return Text::create('Caught: ' . $e->getMessage());
+                    return new Text('Caught: ' . $e->getMessage());
                 })
         );
 
@@ -114,8 +114,8 @@ class ErrorBoundaryTest extends TuiTestCase
     public function testFluentChaining(): void
     {
         $widget = ErrorBoundary::create()
-            ->children(Text::create('Content'))
-            ->fallback(Text::create('Error'))
+            ->children(new Text('Content'))
+            ->fallback(new Text('Error'))
             ->onError(fn ($e) => null);
 
         $this->assertInstanceOf(ErrorBoundary::class, $widget);

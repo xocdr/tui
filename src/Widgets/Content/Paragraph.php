@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Content;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -193,7 +195,7 @@ class Paragraph extends Widget
             $lineText = $this->applyIndent($line, $index === 0);
             $lineText = $this->applyAlignment($lineText);
 
-            $textComponent = Text::create($lineText);
+            $textComponent = new Text($lineText);
             $textComponent = $this->applyStyles($textComponent);
 
             $elements[] = $textComponent;
@@ -201,12 +203,12 @@ class Paragraph extends Widget
             if ($this->lineHeight > 1.0 && $index < count($lines) - 1) {
                 $extraLines = (int) floor($this->lineHeight - 1);
                 for ($i = 0; $i < $extraLines; $i++) {
-                    $elements[] = Text::create('');
+                    $elements[] = new Text('');
                 }
             }
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderSegments(): mixed
@@ -214,7 +216,7 @@ class Paragraph extends Widget
         $parts = [];
 
         foreach ($this->segments as $segment) {
-            $textComponent = Text::create($segment->text);
+            $textComponent = new Text($segment->text);
 
             if ($segment->color !== null) {
                 $textComponent = $textComponent->color($segment->color);
@@ -239,7 +241,7 @@ class Paragraph extends Widget
             $parts[] = $textComponent;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function wrapText(string $text, int $width): string

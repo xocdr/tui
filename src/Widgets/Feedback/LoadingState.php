@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -169,16 +171,16 @@ class LoadingState extends Widget
             if ($this->state === 'loading') {
                 $frames = IconPresets::getSpinner($this->spinnerType);
                 $frame = $frames[$spinnerFrame % count($frames)];
-                $iconText = Text::create($frame)->color($stateConfig['color']);
+                $iconText = new Text($frame)->color($stateConfig['color']);
             } else {
-                $iconText = Text::create($stateConfig['icon'])->color($stateConfig['color']);
+                $iconText = new Text($stateConfig['icon'])->color($stateConfig['color']);
             }
 
             $parts[] = $iconText;
-            $parts[] = Text::create(' ');
+            $parts[] = new Text(' ');
         }
 
-        $messageText = Text::create($message);
+        $messageText = new Text($message);
         if ($this->state === 'error') {
             $messageText = $messageText->color('red');
         } elseif ($this->state === 'success') {
@@ -187,18 +189,18 @@ class LoadingState extends Widget
 
         $parts[] = $messageText;
 
-        $header = Box::row($parts);
+        $header = new BoxRow($parts);
 
         $elements = [$header];
 
         if ($stateContent !== null) {
-            $elements[] = Text::create('');
-            $elements[] = is_string($stateContent) ? Text::create($stateContent) : $stateContent;
+            $elements[] = new Text('');
+            $elements[] = is_string($stateContent) ? new Text($stateContent) : $stateContent;
         } elseif ($this->children !== null && $this->state === 'success') {
-            $elements[] = Text::create('');
-            $elements[] = is_string($this->children) ? Text::create($this->children) : $this->children;
+            $elements[] = new Text('');
+            $elements[] = is_string($this->children) ? new Text($this->children) : $this->children;
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 }

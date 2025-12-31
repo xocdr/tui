@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
@@ -467,10 +469,10 @@ class Input extends Widget implements FocusableWidget, InteractiveWidget
     {
         $elements = [];
 
-        $elements[] = Text::create($this->prompt);
+        $elements[] = new Text($this->prompt);
 
         if ($value === '' && $this->placeholder !== '') {
-            $elements[] = Text::create($this->placeholder)->dim();
+            $elements[] = new Text($this->placeholder)->dim();
             $elements[] = $this->renderCursor(' ', $cursorVisible);
         } else {
             $displayValue = $this->masked
@@ -482,24 +484,24 @@ class Input extends Widget implements FocusableWidget, InteractiveWidget
             $afterCursor = mb_substr($displayValue, $cursorPos + 1);
 
             if ($beforeCursor !== '') {
-                $elements[] = Text::create($beforeCursor);
+                $elements[] = new Text($beforeCursor);
             }
 
             $cursorChar = $atCursor !== '' ? $atCursor : ' ';
             $elements[] = $this->renderCursor($cursorChar, $cursorVisible);
 
             if ($afterCursor !== '') {
-                $elements[] = Text::create($afterCursor);
+                $elements[] = new Text($afterCursor);
             }
         }
 
         $hint = $this->hint ?: $this->hintStreaming;
         if ($hint !== '') {
             $elements[] = Spacer::create();
-            $elements[] = Text::create($hint)->dim();
+            $elements[] = new Text($hint)->dim();
         }
 
-        $box = Box::row($elements);
+        $box = new BoxRow($elements);
 
         if ($this->isFocused) {
             $box = $box->showCursor(true);
@@ -511,18 +513,18 @@ class Input extends Widget implements FocusableWidget, InteractiveWidget
     private function renderCursor(string $char, bool $visible): mixed
     {
         if (!$this->isFocused || !$visible) {
-            return Text::create($char);
+            return new Text($char);
         }
 
         if ($this->cursorChar !== null) {
-            return Text::create($this->cursorChar);
+            return new Text($this->cursorChar);
         }
 
         return match ($this->cursorStyle) {
-            CursorStyle::BLOCK => Text::create($char)->inverse(),
-            CursorStyle::UNDERLINE => Text::create($char)->underline(),
-            CursorStyle::BAR, CursorStyle::BEAM => Text::create($this->cursorStyle->character() . $char),
-            CursorStyle::NONE => Text::create($char),
+            CursorStyle::BLOCK => new Text($char)->inverse(),
+            CursorStyle::UNDERLINE => new Text($char)->underline(),
+            CursorStyle::BAR, CursorStyle::BEAM => new Text($this->cursorStyle->character() . $char),
+            CursorStyle::NONE => new Text($char),
         };
     }
 }

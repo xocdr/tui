@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Display;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
@@ -413,10 +415,10 @@ class TodoList extends Widget
             $activeTask = $this->getActiveTask();
             if ($activeTask !== null) {
                 $prefix = $this->treeStyle ? '└ ' : '  ';
-                $elements[] = Box::row([
-                    Text::create($prefix)->dim(),
-                    Text::create('Next: ')->dim(),
-                    Text::create($activeTask->getActiveForm()),
+                $elements[] = new BoxRow([
+                    new Text($prefix)->dim(),
+                    new Text('Next: ')->dim(),
+                    new Text($activeTask->getActiveForm()),
                 ]);
             }
         }
@@ -425,7 +427,7 @@ class TodoList extends Widget
             $elements[] = $this->renderProgress();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderTitleBar(int $spinnerFrame): mixed
@@ -437,8 +439,8 @@ class TodoList extends Widget
             $frames = IconPresets::getSpinner($this->spinnerType);
             $frame = $frames[$spinnerFrame % count($frames)];
 
-            $spinnerText = Text::create($frame . ' ');
-            $titleText = Text::create($activeTask->getActiveForm() . '... ');
+            $spinnerText = new Text($frame . ' ');
+            $titleText = new Text($activeTask->getActiveForm() . '... ');
 
             if ($this->titleRgb !== null) {
                 $spinnerText = $spinnerText->rgb($this->titleRgb[0], $this->titleRgb[1], $this->titleRgb[2]);
@@ -472,10 +474,10 @@ class TodoList extends Widget
         }
 
         if (!empty($additionalInfo)) {
-            $parts[] = Text::create('(' . implode(' · ', $additionalInfo) . ')')->color($this->titleAdditionalColor);
+            $parts[] = new Text('(' . implode(' · ', $additionalInfo) . ')')->color($this->titleAdditionalColor);
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderTodoItems(int $spinnerFrame, int $selectedIndex): mixed
@@ -498,7 +500,7 @@ class TodoList extends Widget
             }
         }
 
-        return Box::column($rows);
+        return new BoxColumn($rows);
     }
 
 
@@ -520,22 +522,22 @@ class TodoList extends Widget
         // Tree style: └ for first item, spaces for rest
         if ($this->treeStyle) {
             $connector = ($index === 0 && $depth === 0) ? '└ ' : '  ';
-            $parts[] = Text::create($connector)->dim();
+            $parts[] = new Text($connector)->dim();
         } else {
             $indent = str_repeat(' ', $depth * $this->indentSize);
-            $parts[] = Text::create($indent . '  ');
+            $parts[] = new Text($indent . '  ');
         }
 
         if ($this->interactive && $index === $selectedIndex && $depth === 0) {
-            $parts[] = Text::create('> ')->color('cyan');
+            $parts[] = new Text('> ')->color('cyan');
         }
 
         if ($isAnimated) {
             $frames = IconPresets::getSpinner($this->spinnerType);
             $frame = $frames[$spinnerFrame % count($frames)];
-            $iconText = Text::create($frame);
+            $iconText = new Text($frame);
         } else {
-            $iconText = Text::create($icon);
+            $iconText = new Text($icon);
         }
 
         if ($this->colorIcons) {
@@ -548,9 +550,9 @@ class TodoList extends Widget
         }
 
         $parts[] = $iconText;
-        $parts[] = Text::create(' ');
+        $parts[] = new Text(' ');
 
-        $contentText = Text::create($item->content);
+        $contentText = new Text($item->content);
 
         if ($hasStrikethrough) {
             $contentText = $contentText->strikethrough()->dim();
@@ -569,10 +571,10 @@ class TodoList extends Widget
 
         if ($this->showDurations && $item->duration !== null) {
             $parts[] = Spacer::create();
-            $parts[] = Text::create($item->duration)->color($this->durationColor);
+            $parts[] = new Text($item->duration)->color($this->durationColor);
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderProgress(): mixed
@@ -592,7 +594,7 @@ class TodoList extends Widget
             $this->progressFormat,
         );
 
-        return Text::create($text)->dim();
+        return new Text($text)->dim();
     }
 
     private function hasInProgressItem(): bool

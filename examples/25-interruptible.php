@@ -41,22 +41,22 @@ class InterruptibleDemo extends UI
                 new Newline(),
 
                 (new Text('Basic Interruptible:'))->dim(),
-                Interruptible::create()
-                    ->children('Processing...')
+                (new Interruptible())
+                    ->append('Processing...')
                     ->onInterrupt(fn () => null),
                 new Newline(),
 
                 (new Text('With Custom Key (Ctrl+C):'))->dim(),
-                Interruptible::create()
-                    ->children('Downloading files...')
+                (new Interruptible())
+                    ->append('Downloading files...')
                     ->interruptKey('ctrl+c')
                     ->interruptLabel('Press Ctrl+C to cancel')
                     ->onInterrupt(fn () => null),
                 new Newline(),
 
                 (new Text('Build Process:'))->dim(),
-                Interruptible::create()
-                    ->children('Building project...')
+                (new Interruptible())
+                    ->append('Building project...')
                     ->interruptLabel('Press ESC to cancel')
                     ->onInterrupt(fn () => null),
                 new Newline(),

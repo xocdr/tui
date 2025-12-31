@@ -81,7 +81,7 @@ class TimerSegment implements StatusBarSegment
 
         $content = $this->formatDuration($elapsed);
 
-        $text = Text::create($content);
+        $text = new Text($content);
 
         if ($this->color !== null) {
             $text = $text->color($this->color);

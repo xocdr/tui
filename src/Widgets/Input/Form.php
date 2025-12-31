@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -165,7 +167,7 @@ class Form extends Widget
         $hooks = $this->hooks();
 
         if (empty($this->fields)) {
-            return Text::create('No form fields defined')->dim();
+            return new Text('No form fields defined')->dim();
         }
 
         [$focusedIndex, $setFocusedIndex] = $hooks->state(0);
@@ -216,8 +218,8 @@ class Form extends Widget
 
         // Render title if set
         if ($this->titleText !== null) {
-            $elements[] = Text::create($this->titleText)->bold();
-            $elements[] = Text::create('');
+            $elements[] = new Text($this->titleText)->bold();
+            $elements[] = new Text('');
         }
 
         // Render fields
@@ -228,10 +230,10 @@ class Form extends Widget
         }
 
         // Render buttons
-        $elements[] = Text::create('');
+        $elements[] = new Text('');
         $elements[] = $this->renderButtons($focusedIndex);
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderField(FormField $field, bool $isFocused, ?string $error): mixed
@@ -245,13 +247,13 @@ class Form extends Widget
         }
 
         if ($this->layout === 'horizontal') {
-            $label = Text::create(str_pad($labelText, $this->labelWidth));
+            $label = new Text(str_pad($labelText, $this->labelWidth));
             $parts[] = $label;
             $parts[] = $field->input;
 
-            $row = Box::row($parts);
+            $row = new BoxRow($parts);
         } else {
-            $label = Text::create($labelText);
+            $label = new Text($labelText);
             if ($isFocused) {
                 $label = $label->color('cyan');
             }
@@ -259,22 +261,22 @@ class Form extends Widget
             $elements = [$label];
 
             // Wrap input in a simple container for visual indication
-            $inputWrapper = Box::create()->children([$field->input]);
+            $inputWrapper = new Box([$field->input]);
             if ($isFocused) {
                 $inputWrapper = $inputWrapper->border('round');
             }
             $elements[] = $inputWrapper;
 
             if ($field->hint !== null && $error === null) {
-                $elements[] = Text::create($field->hint)->dim();
+                $elements[] = new Text($field->hint)->dim();
             }
 
             if ($error !== null) {
-                $elements[] = Text::create($error)->color('red');
+                $elements[] = new Text($error)->color('red');
             }
 
-            $elements[] = Text::create('');
-            $row = Box::column($elements);
+            $elements[] = new Text('');
+            $row = new BoxColumn($elements);
         }
 
         return $row;
@@ -290,22 +292,22 @@ class Form extends Widget
 
         $buttons = [];
 
-        $submitText = Text::create('[' . $this->submitLabel . ']');
+        $submitText = new Text('[' . $this->submitLabel . ']');
         if ($submitFocused) {
             $submitText = $submitText->bold()->color('cyan');
         }
         $buttons[] = $submitText;
 
         if ($this->showCancel) {
-            $buttons[] = Text::create('  ');
-            $cancelText = Text::create('[' . $this->cancelLabel . ']');
+            $buttons[] = new Text('  ');
+            $cancelText = new Text('[' . $this->cancelLabel . ']');
             if ($cancelFocused) {
                 $cancelText = $cancelText->bold()->color('cyan');
             }
             $buttons[] = $cancelText;
         }
 
-        return Box::row($buttons);
+        return new BoxRow($buttons);
     }
 
     /**

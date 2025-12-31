@@ -66,7 +66,7 @@ class TextSegment implements StatusBarSegment
             ? ($this->content)($context)
             : $this->content;
 
-        $text = Text::create($content);
+        $text = new Text($content);
 
         if ($this->color !== null) {
             $text = $text->color($this->color);

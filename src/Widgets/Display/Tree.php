@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Display;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Scroll\SmoothScroller;
@@ -295,7 +297,7 @@ class Tree extends Widget
         $hooks = $this->hooks();
 
         if (empty($this->nodes)) {
-            return Text::create('No nodes')->dim();
+            return new Text('No nodes')->dim();
         }
 
         $flatNodes = $this->flattenNodes($this->nodes, $this->expandAll);
@@ -583,28 +585,28 @@ class Tree extends Widget
         $elements = [];
 
         if ($this->label !== null) {
-            $elements[] = Text::create($this->label)->bold();
+            $elements[] = new Text($this->label)->bold();
         }
 
         // Show filter input when searchable
         if ($this->searchable) {
             $hasFilter = $filterText !== '';
             if ($hasFilter) {
-                $elements[] = Text::create('/ ' . $filterText . '█')->color('cyan');
+                $elements[] = new Text('/ ' . $filterText . '█')->color('cyan');
             } else {
-                $elements[] = Text::create($this->filterPlaceholder ?? '')->dim();
+                $elements[] = new Text($this->filterPlaceholder ?? '')->dim();
             }
         }
 
         if (empty($visibleNodes) && $filterText !== '') {
-            $elements[] = Text::create($this->emptyFilterText ?? 'No matches')->dim();
+            $elements[] = new Text($this->emptyFilterText ?? 'No matches')->dim();
         }
 
         $showScrollUp = $range['start'] > 0;
         $showScrollDown = $range['end'] < $nodeCount;
 
         if ($showScrollUp) {
-            $elements[] = Text::create('  ↑ ' . $range['start'] . ' more')->dim();
+            $elements[] = new Text('  ↑ ' . $range['start'] . ' more')->dim();
         }
 
         // Only render visible items from VirtualList range
@@ -620,10 +622,10 @@ class Tree extends Widget
 
         if ($showScrollDown) {
             $hidden = $nodeCount - $range['end'];
-            $elements[] = Text::create('  ↓ ' . $hidden . ' more')->dim();
+            $elements[] = new Text('  ↓ ' . $hidden . ' more')->dim();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     /**
@@ -746,7 +748,7 @@ class Tree extends Widget
         // Selection indicator for multi-select mode
         if ($this->multiSelect) {
             $checkbox = $isSelected ? '◉ ' : '○ ';
-            $checkboxText = Text::create($checkbox);
+            $checkboxText = new Text($checkbox);
             if ($isSelected) {
                 $checkboxText = $checkboxText->color('green');
             } else {
@@ -756,37 +758,37 @@ class Tree extends Widget
         }
 
         if ($isFocused) {
-            $parts[] = Text::create('› ')->color('cyan');
+            $parts[] = new Text('› ')->color('cyan');
         } else {
-            $parts[] = Text::create('  ');
+            $parts[] = new Text('  ');
         }
 
         if ($this->showGuides && $depth > 0) {
-            $parts[] = Text::create($this->buildGuides($isLastAtDepth))->dim();
+            $parts[] = new Text($this->buildGuides($isLastAtDepth))->dim();
         } elseif ($depth > 0) {
-            $parts[] = Text::create(str_repeat(' ', $depth * $this->indentSize));
+            $parts[] = new Text(str_repeat(' ', $depth * $this->indentSize));
         }
 
         $hasChildren = !empty($node->children);
 
         if ($hasChildren) {
             $expandIcon = $isExpanded ? $this->expandedIcon : $this->collapsedIcon;
-            $parts[] = Text::create($expandIcon . ' ')->dim();
+            $parts[] = new Text($expandIcon . ' ')->dim();
         } else {
-            $parts[] = Text::create($this->leafIcon . ' ')->dim();
+            $parts[] = new Text($this->leafIcon . ' ')->dim();
         }
 
         if ($this->showIcons && $node->icon !== null) {
-            $parts[] = Text::create($node->icon . ' ');
+            $parts[] = new Text($node->icon . ' ');
         } elseif ($this->showIcons) {
             $defaultIcon = $hasChildren ? $this->folderIcon : $this->fileIcon;
-            $parts[] = Text::create($defaultIcon . ' ');
+            $parts[] = new Text($defaultIcon . ' ');
         }
 
         if ($this->renderNode !== null) {
             $parts[] = ($this->renderNode)($node, $isFocused, $isExpanded);
         } else {
-            $labelText = Text::create($node->label);
+            $labelText = new Text($node->label);
             if ($isFocused) {
                 $labelText = $labelText->bold()->color('cyan');
             } elseif ($isSelected) {
@@ -796,10 +798,10 @@ class Tree extends Widget
         }
 
         if ($node->badge !== null) {
-            $parts[] = Text::create(' (' . $node->badge . ')')->dim();
+            $parts[] = new Text(' (' . $node->badge . ')')->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     /**

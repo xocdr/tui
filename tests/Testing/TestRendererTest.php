@@ -6,6 +6,7 @@ namespace Xocdr\Tui\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Newline;
 use Xocdr\Tui\Components\Spacer;
@@ -24,7 +25,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderTextComponent(): void
     {
-        $text = Text::create('Hello World');
+        $text = new Text('Hello World');
 
         $output = $this->renderer->render($text);
 
@@ -33,7 +34,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoldText(): void
     {
-        $text = Text::create('Bold')->bold();
+        $text = (new Text('Bold'))->bold();
 
         $output = $this->renderer->render($text);
 
@@ -42,7 +43,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderItalicText(): void
     {
-        $text = Text::create('Italic')->italic();
+        $text = (new Text('Italic'))->italic();
 
         $output = $this->renderer->render($text);
 
@@ -51,7 +52,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderUnderlineText(): void
     {
-        $text = Text::create('Underline')->underline();
+        $text = (new Text('Underline'))->underline();
 
         $output = $this->renderer->render($text);
 
@@ -60,7 +61,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderStrikethroughText(): void
     {
-        $text = Text::create('Strike')->strikethrough();
+        $text = (new Text('Strike'))->strikethrough();
 
         $output = $this->renderer->render($text);
 
@@ -69,11 +70,11 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithColumnDirection(): void
     {
-        $box = Box::create()
+        $box = (new Box)
             ->flexDirection('column')
             ->children([
-                Text::create('Line 1'),
-                Text::create('Line 2'),
+                new Text('Line 1'),
+                new Text('Line 2'),
             ]);
 
         $output = $this->renderer->render($box);
@@ -86,11 +87,11 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithRowDirection(): void
     {
-        $box = Box::create()
+        $box = (new Box)
             ->flexDirection('row')
             ->children([
-                Text::create('A'),
-                Text::create('B'),
+                new Text('A'),
+                new Text('B'),
             ]);
 
         $output = $this->renderer->render($box);
@@ -101,9 +102,9 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithPadding(): void
     {
-        $box = Box::create()
+        $box = (new Box)
             ->padding(1)
-            ->children([Text::create('Content')]);
+            ->children([new Text('Content')]);
 
         $output = $this->renderer->render($box);
         $lines = $this->renderer->getOutputLines();
@@ -114,9 +115,9 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithBorder(): void
     {
-        $box = Box::create()
+        $box = (new Box)
             ->border('single')
-            ->children([Text::create('Bordered')]);
+            ->children([new Text('Bordered')]);
 
         $output = $this->renderer->render($box);
 
@@ -129,9 +130,9 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithDoubleBorder(): void
     {
-        $box = Box::create()
+        $box = (new Box)
             ->border('double')
-            ->children([Text::create('Double')]);
+            ->children([new Text('Double')]);
 
         $output = $this->renderer->render($box);
 
@@ -141,9 +142,9 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithRoundBorder(): void
     {
-        $box = Box::create()
+        $box = (new Box)
             ->border('round')
-            ->children([Text::create('Round')]);
+            ->children([new Text('Round')]);
 
         $output = $this->renderer->render($box);
 
@@ -153,9 +154,9 @@ class TestRendererTest extends TestCase
 
     public function testRenderFragment(): void
     {
-        $fragment = Fragment::create([
-            Text::create('First'),
-            Text::create('Second'),
+        $fragment = new Fragment([
+            new Text('First'),
+            new Text('Second'),
         ]);
 
         $output = $this->renderer->render($fragment);
@@ -168,9 +169,9 @@ class TestRendererTest extends TestCase
 
     public function testRenderStatic(): void
     {
-        $static = Static_::create([
-            Text::create('Static 1'),
-            Text::create('Static 2'),
+        $static = new Static_([
+            new Text('Static 1'),
+            new Text('Static 2'),
         ]);
 
         $output = $this->renderer->render($static);
@@ -181,7 +182,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderNewline(): void
     {
-        $newline = Newline::create(2);
+        $newline = new Newline(2);
 
         $output = $this->renderer->render($newline);
         $lines = $this->renderer->getOutputLines();
@@ -191,7 +192,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderSpacer(): void
     {
-        $spacer = Spacer::create();
+        $spacer = new Spacer;
 
         $output = $this->renderer->render($spacer);
         $lines = $this->renderer->getOutputLines();
@@ -208,7 +209,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderCallable(): void
     {
-        $callable = fn () => Text::create('From callable');
+        $callable = fn () => new Text('From callable');
 
         $output = $this->renderer->render($callable);
 
@@ -227,16 +228,16 @@ class TestRendererTest extends TestCase
 
     public function testGetOutput(): void
     {
-        $this->renderer->render(Text::create('Test'));
+        $this->renderer->render(new Text('Test'));
 
         $this->assertEquals('Test', $this->renderer->getOutput());
     }
 
     public function testGetOutputLines(): void
     {
-        $this->renderer->render(Box::column([
-            Text::create('A'),
-            Text::create('B'),
+        $this->renderer->render(new BoxColumn([
+            new Text('A'),
+            new Text('B'),
         ]));
 
         $lines = $this->renderer->getOutputLines();
@@ -247,7 +248,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderTextWithNewlines(): void
     {
-        $text = Text::create("Line1\nLine2\nLine3");
+        $text = new Text("Line1\nLine2\nLine3");
 
         $output = $this->renderer->render($text);
         $lines = $this->renderer->getOutputLines();
@@ -260,11 +261,11 @@ class TestRendererTest extends TestCase
 
     public function testRenderNestedBoxes(): void
     {
-        $outer = Box::create()
+        $outer = (new Box)
             ->flexDirection('column')
             ->children([
-                Box::create()->children([Text::create('Inner 1')]),
-                Box::create()->children([Text::create('Inner 2')]),
+                (new Box)->children([new Text('Inner 1')]),
+                (new Box)->children([new Text('Inner 2')]),
             ]);
 
         $output = $this->renderer->render($outer);

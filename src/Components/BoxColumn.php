@@ -9,23 +9,26 @@ namespace Xocdr\Tui\Components;
  *
  * A convenience wrapper around Box with column direction pre-set.
  *
- * @example
- * $column = new BoxColumn();
- * $column->append(new Text('First'))
- *        ->append(new Text('Second'));
+ * @example Fluent append with explicit keys:
+ * (new BoxColumn)
+ *     ->append($widget1, 'my-widget-1')
+ *     ->append($widget2, 'my-widget-2')
  *
- * // Or with children in constructor
- * $column = new BoxColumn([
- *     new Text('First'),
- *     new Text('Second'),
- * ]);
+ * @example Associative array (explicit keys for widget caching):
+ * new BoxColumn([
+ *     'my-widget' => $widget,
+ *     'my-list' => $todoList,
+ * ])
  */
 class BoxColumn extends Box
 {
     /**
      * Create a new BoxColumn instance.
      *
-     * @param array<Component|string> $children Initial children
+     * Supports associative arrays where string keys become widget keys
+     * for instance persistence across re-renders.
+     *
+     * @param array<int|string, Component|string> $children Initial children
      */
     public function __construct(array $children = [])
     {

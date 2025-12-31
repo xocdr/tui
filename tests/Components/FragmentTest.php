@@ -12,7 +12,7 @@ class FragmentTest extends TestCase
 {
     public function testCreate(): void
     {
-        $fragment = Fragment::create();
+        $fragment = new Fragment;
 
         $this->assertInstanceOf(Fragment::class, $fragment);
         $this->assertEmpty($fragment->getChildren());
@@ -20,9 +20,9 @@ class FragmentTest extends TestCase
 
     public function testCreateWithChildren(): void
     {
-        $fragment = Fragment::create([
-            Text::create('Hello'),
-            Text::create('World'),
+        $fragment = new Fragment([
+            new Text('Hello'),
+            new Text('World'),
         ]);
 
         $this->assertCount(2, $fragment->getChildren());
@@ -30,8 +30,8 @@ class FragmentTest extends TestCase
 
     public function testChildren(): void
     {
-        $fragment = Fragment::create()->children([
-            Text::create('Test'),
+        $fragment = (new Fragment)->children([
+            new Text('Test'),
         ]);
 
         $this->assertCount(1, $fragment->getChildren());
@@ -39,9 +39,9 @@ class FragmentTest extends TestCase
 
     public function testChild(): void
     {
-        $fragment = Fragment::create()
-            ->child(Text::create('One'))
-            ->child(Text::create('Two'));
+        $fragment = (new Fragment)
+            ->child(new Text('One'))
+            ->child(new Text('Two'));
 
         $this->assertCount(2, $fragment->getChildren());
     }
@@ -52,8 +52,8 @@ class FragmentTest extends TestCase
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
-        $fragment = Fragment::create([
-            Text::create('Hello'),
+        $fragment = new Fragment([
+            new Text('Hello'),
         ]);
 
         $rendered = $fragment->render();

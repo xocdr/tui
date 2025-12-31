@@ -13,7 +13,7 @@ class MockInstanceTest extends TestCase
     public function testCreateMockInstance(): void
     {
         $instance = new MockInstance(
-            Text::create('Hello'),
+            new Text('Hello'),
             ['width' => 100, 'height' => 50]
         );
 
@@ -23,7 +23,7 @@ class MockInstanceTest extends TestCase
 
     public function testStartInstance(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $instance->start();
 
         $this->assertTrue($instance->isRunning());
@@ -31,7 +31,7 @@ class MockInstanceTest extends TestCase
 
     public function testGetLastOutput(): void
     {
-        $instance = new MockInstance(Text::create('Hello World'));
+        $instance = new MockInstance(new Text('Hello World'));
         $instance->start();
 
         $this->assertEquals('Hello World', $instance->getLastOutput());
@@ -39,7 +39,7 @@ class MockInstanceTest extends TestCase
 
     public function testClear(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $instance->start();
         $instance->clear();
 
@@ -48,7 +48,7 @@ class MockInstanceTest extends TestCase
 
     public function testUnmount(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $instance->start();
         $instance->unmount();
 
@@ -57,7 +57,7 @@ class MockInstanceTest extends TestCase
 
     public function testWaitUntilExitReturnsImmediately(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $instance->start();
 
         // Should return immediately in mock
@@ -69,7 +69,7 @@ class MockInstanceTest extends TestCase
     public function testGetSize(): void
     {
         $instance = new MockInstance(
-            Text::create('Hello'),
+            new Text('Hello'),
             ['width' => 120, 'height' => 40]
         );
 
@@ -83,7 +83,7 @@ class MockInstanceTest extends TestCase
 
     public function testSetSize(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $instance->setSize(200, 60);
 
         $size = $instance->getSize();
@@ -95,7 +95,7 @@ class MockInstanceTest extends TestCase
     public function testSimulateInput(): void
     {
         $receivedKey = null;
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
 
         $instance->getInputManager()->onInput(function (string $key) use (&$receivedKey) {
             $receivedKey = $key;
@@ -110,7 +110,7 @@ class MockInstanceTest extends TestCase
     public function testSimulateInputWithModifiers(): void
     {
         $receivedMods = null;
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
 
         $instance->getInputManager()->onInput(function (string $key, $nativeKey) use (&$receivedMods) {
             $receivedMods = [
@@ -131,7 +131,7 @@ class MockInstanceTest extends TestCase
     public function testSimulateResize(): void
     {
         $resizeEvent = null;
-        $instance = new MockInstance(Text::create('Hello'), ['width' => 80, 'height' => 24]);
+        $instance = new MockInstance(new Text('Hello'), ['width' => 80, 'height' => 24]);
 
         $instance->getEventDispatcher()->on('resize', function ($event) use (&$resizeEvent) {
             $resizeEvent = $event;
@@ -149,7 +149,7 @@ class MockInstanceTest extends TestCase
 
     public function testAddAndRemoveTimer(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $called = false;
 
         $timerId = $instance->getTimerManager()->addTimer(100, function () use (&$called) {
@@ -164,7 +164,7 @@ class MockInstanceTest extends TestCase
 
     public function testTickTimers(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $count = 0;
 
         $instance->getTimerManager()->addTimer(50, function () use (&$count) {
@@ -179,14 +179,14 @@ class MockInstanceTest extends TestCase
     public function testGetOptions(): void
     {
         $options = ['width' => 80, 'fullscreen' => true];
-        $instance = new MockInstance(Text::create('Hello'), $options);
+        $instance = new MockInstance(new Text('Hello'), $options);
 
         $this->assertEquals($options, $instance->getOptions());
     }
 
     public function testGetEventDispatcher(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
 
         $dispatcher = $instance->getEventDispatcher();
 
@@ -195,7 +195,7 @@ class MockInstanceTest extends TestCase
 
     public function testGetHookContext(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
 
         $context = $instance->getHookContext();
 
@@ -204,7 +204,7 @@ class MockInstanceTest extends TestCase
 
     public function testGetRenderer(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
 
         $renderer = $instance->getRenderer();
 
@@ -217,7 +217,7 @@ class MockInstanceTest extends TestCase
         $instance = new MockInstance(function () use (&$counter) {
             $counter++;
 
-            return Text::create("Count: {$counter}");
+            return new Text("Count: {$counter}");
         });
 
         $instance->start();
@@ -229,7 +229,7 @@ class MockInstanceTest extends TestCase
 
     public function testOffRemovesHandler(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $called = false;
 
         $handlerId = $instance->getInputManager()->onInput(function () use (&$called) {
@@ -249,7 +249,7 @@ class MockInstanceTest extends TestCase
         $instance = new MockInstance(function () use (&$renderCount) {
             $renderCount++;
 
-            return Text::create('Hello');
+            return new Text('Hello');
         });
 
         $instance->start();
@@ -260,7 +260,7 @@ class MockInstanceTest extends TestCase
 
     public function testDoubleUnmountIsIgnored(): void
     {
-        $instance = new MockInstance(Text::create('Hello'));
+        $instance = new MockInstance(new Text('Hello'));
         $instance->start();
         $instance->unmount();
         $instance->unmount(); // Should not throw

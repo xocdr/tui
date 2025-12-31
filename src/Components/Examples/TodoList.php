@@ -15,7 +15,7 @@ use Xocdr\Tui\Components\Text;
  * // Use TodoList within a UI class
  * class MyApp extends UI {
  *     public function build(): Component {
- *         return TodoList::create(['title' => 'My Tasks']);
+ *         return new TodoList(['title' => 'My Tasks']);
  *     }
  * }
  * (new MyApp())->run();
@@ -145,12 +145,12 @@ class TodoList extends StatefulComponent
         $totalCount = count($items);
 
         $children = [
-            Text::create("{$title} ({$completedCount}/{$totalCount})"),
-            Text::create(''),
+            new Text("{$title} ({$completedCount}/{$totalCount})"),
+            new Text(''),
         ];
 
         if (empty($items)) {
-            $children[] = Text::create('  No items yet');
+            $children[] = new Text('  No items yet');
         } else {
             foreach ($items as $index => $item) {
                 $isSelected = $index === $selectedIndex;
@@ -162,18 +162,17 @@ class TodoList extends StatefulComponent
                     $text = "~~{$text}~~"; // Strikethrough effect
                 }
 
-                $children[] = Text::create("{$prefix}[{$checkbox}] {$text}");
+                $children[] = new Text("{$prefix}[{$checkbox}] {$text}");
             }
         }
 
-        $children[] = Text::create('');
-        $children[] = Text::create('↑↓ navigate, Space toggle, d delete');
+        $children[] = new Text('');
+        $children[] = new Text('↑↓ navigate, Space toggle, d delete');
 
-        return Box::create()
+        return (new Box($children))
             ->flexDirection('column')
             ->padding(1)
             ->border('single')
-            ->children($children)
             ->render();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Modal;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -121,10 +122,10 @@ abstract class Modal extends Widget
         }
 
         $borderStyle = is_string($this->border) ? $this->border : 'double';
-        $container = Box::create()
+        $container = (new Box())
             ->border($borderStyle)
             ->padding($this->padding)
-            ->children([$content]);
+            ->append($content);
 
         if ($this->borderColor !== null) {
             $container = $container->borderColor($this->borderColor);
@@ -153,10 +154,10 @@ abstract class Modal extends Widget
 
         foreach ($buttons as $i => $button) {
             if ($i > 0) {
-                $parts[] = Text::create($separator);
+                $parts[] = new Text($separator);
             }
 
-            $text = Text::create('[' . $button['label'] . ']');
+            $text = new Text('[' . $button['label'] . ']');
             if ($button['selected']) {
                 $color = $button['color'] ?? 'cyan';
                 $text = $text->bold()->color($color);
@@ -164,6 +165,6 @@ abstract class Modal extends Widget
             $parts[] = $text;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 }

@@ -18,7 +18,7 @@ use Xocdr\Tui\Components\Text;
  * // Use StreamViewer within a UI class
  * class MyApp extends UI {
  *     public function build(): Component {
- *         return StreamViewer::create(['maxLines' => 20]);
+ *         return new StreamViewer(['maxLines' => 20]);
  *     }
  * }
  * (new MyApp())->run();
@@ -202,25 +202,24 @@ class StreamViewer extends StatefulComponent
         // Build children
         $children = [];
         foreach ($visible as $line) {
-            $children[] = Text::create($line);
+            $children[] = new Text($line);
         }
 
         // Pad with empty lines if needed
         while (count($children) < $visibleLines) {
-            $children[] = Text::create('');
+            $children[] = new Text('');
         }
 
         // Add scroll indicator
         $scrollIndicator = $autoScroll ? '[AUTO]' : "[{$offset}/" . count($lines) . ']';
 
-        return Box::create()
+        return (new Box(array_merge(
+            [new Text("{$title} {$scrollIndicator}")],
+            $children
+        )))
             ->flexDirection('column')
             ->height($height)
             ->border('single')
-            ->children(array_merge(
-                [Text::create("{$title} {$scrollIndicator}")],
-                $children
-            ))
             ->render();
     }
 }

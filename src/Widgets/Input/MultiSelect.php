@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Scroll\SmoothScroller;
@@ -342,7 +344,7 @@ class MultiSelect extends Widget
         $elements = [];
 
         if ($this->label !== null) {
-            $elements[] = Text::create($this->label);
+            $elements[] = new Text($this->label);
         }
 
         $showScrollUp = $range['start'] > 0;
@@ -350,7 +352,7 @@ class MultiSelect extends Widget
 
         if ($showScrollUp) {
             $hidden = $range['start'];
-            $elements[] = Text::create("  ↑ {$hidden} more")->dim();
+            $elements[] = new Text("  ↑ {$hidden} more")->dim();
         }
 
         // Only render visible items from VirtualList range
@@ -363,10 +365,10 @@ class MultiSelect extends Widget
 
         if ($showScrollDown) {
             $hidden = $optionCount - $range['end'];
-            $elements[] = Text::create("  ↓ {$hidden} more")->dim();
+            $elements[] = new Text("  ↓ {$hidden} more")->dim();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     /**
@@ -380,10 +382,10 @@ class MultiSelect extends Widget
         $parts = [];
 
         $focusIndicator = $isFocused ? '› ' : '  ';
-        $parts[] = Text::create($focusIndicator)->color($isFocused ? 'cyan' : null);
+        $parts[] = new Text($focusIndicator)->color($isFocused ? 'cyan' : null);
 
         $checkIcon = $isSelected ? $this->checkedIcon : $this->uncheckedIcon;
-        $checkText = Text::create($checkIcon . ' ');
+        $checkText = new Text($checkIcon . ' ');
 
         if ($isSelected) {
             $checkText = $checkText->color('green');
@@ -393,7 +395,7 @@ class MultiSelect extends Widget
 
         $parts[] = $checkText;
 
-        $labelText = Text::create($option->label);
+        $labelText = new Text($option->label);
 
         if ($option->disabled) {
             $labelText = $labelText->dim();
@@ -403,7 +405,7 @@ class MultiSelect extends Widget
 
         $parts[] = $labelText;
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
 }

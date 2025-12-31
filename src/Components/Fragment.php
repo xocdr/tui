@@ -17,12 +17,9 @@ class Fragment extends AbstractContainerComponent
      *
      * @param array<Component|string> $children
      */
-    public static function create(array $children = []): self
+    public function __construct(array $children = [])
     {
-        $fragment = new self();
-        $fragment->children = $children;
-
-        return $fragment;
+        $this->children = $children;
     }
 
     /**

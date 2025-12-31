@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -273,36 +275,36 @@ class Meter extends Widget
         $parts = [];
 
         if ($this->label !== null) {
-            $parts[] = Text::create($this->label . ' ');
+            $parts[] = new Text($this->label . ' ');
         }
 
         if ($this->showBrackets) {
-            $parts[] = Text::create($this->leftBracket);
+            $parts[] = new Text($this->leftBracket);
         }
 
-        $barText = Text::create($bar);
+        $barText = new Text($bar);
         if ($color !== null) {
             $barText = $barText->color($color);
         }
         $parts[] = $barText;
 
         if ($this->showBrackets) {
-            $parts[] = Text::create($this->rightBracket);
+            $parts[] = new Text($this->rightBracket);
         }
 
         if ($this->showValue) {
-            $parts[] = Text::create(' ');
-            $parts[] = Text::create($this->formatValue($percent))->dim();
+            $parts[] = new Text(' ');
+            $parts[] = new Text($this->formatValue($percent))->dim();
         }
 
         // Add elapsed time, speed, and ETA
         $extras = $this->buildExtras($percent);
         if (!empty($extras)) {
-            $parts[] = Text::create(' ');
-            $parts[] = Text::create($extras)->dim();
+            $parts[] = new Text(' ');
+            $parts[] = new Text($extras)->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function buildIndeterminate(int $frame): Component
@@ -310,11 +312,11 @@ class Meter extends Widget
         $parts = [];
 
         if ($this->label !== null) {
-            $parts[] = Text::create($this->label . ' ');
+            $parts[] = new Text($this->label . ' ');
         }
 
         if ($this->showBrackets) {
-            $parts[] = Text::create($this->leftBracket);
+            $parts[] = new Text($this->leftBracket);
         }
 
         // Create a bouncing animation
@@ -333,21 +335,21 @@ class Meter extends Widget
         }
 
         $color = $this->color ?? 'cyan';
-        $barText = Text::create($bar)->color($color);
+        $barText = new Text($bar)->color($color);
         $parts[] = $barText;
 
         if ($this->showBrackets) {
-            $parts[] = Text::create($this->rightBracket);
+            $parts[] = new Text($this->rightBracket);
         }
 
         // Show elapsed time for indeterminate
         if ($this->showElapsed && $this->startTime !== null) {
             $elapsed = microtime(true) - $this->startTime;
-            $parts[] = Text::create(' ');
-            $parts[] = Text::create($this->formatTime($elapsed))->dim();
+            $parts[] = new Text(' ');
+            $parts[] = new Text($this->formatTime($elapsed))->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function buildExtras(float $percent): string

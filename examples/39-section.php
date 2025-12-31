@@ -38,31 +38,25 @@ class SectionDemo extends UI
             (new Text('Section Widget Examples'))->bold(),
             new Newline(),
 
-            Section::major('Getting Started')
-                ->children([
-                    new Text('Welcome to the documentation.'),
-                    new Text('Follow the steps below to begin.'),
-                ]),
+            (new Section('Getting Started'))
+                ->major()
+                ->append(new Text('Welcome to the documentation.'))
+                ->append(new Text('Follow the steps below to begin.')),
             new Newline(),
 
-            Section::create('Installation')
-                ->children([
-                    new Text('composer require exocoder/tui-widgets'),
-                ]),
+            (new Section('Installation'))
+                ->append(new Text('composer require exocoder/tui-widgets')),
             new Newline(),
 
-            Section::sub('Prerequisites')
-                ->children([
-                    new Text('- PHP 8.1 or higher'),
-                    new Text('- Composer installed'),
-                ]),
+            (new Section('Prerequisites'))
+                ->sub()
+                ->append(new Text('- PHP 8.1 or higher'))
+                ->append(new Text('- Composer installed')),
             new Newline(),
 
-            Section::create('Configuration')
+            (new Section('Configuration'))
                 ->icon('⚙️')
-                ->children([
-                    new Text('Configure your settings in config.php'),
-                ]),
+                ->append(new Text('Configure your settings in config.php')),
             new Newline(),
 
             (new Text('Press ESC to exit'))->dim(),

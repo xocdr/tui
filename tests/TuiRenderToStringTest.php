@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Testing\TestRenderer;
 
@@ -14,7 +15,7 @@ class TuiRenderToStringTest extends TestCase
     public function testRenderToStringWithText(): void
     {
         $renderer = new TestRenderer(80, 24);
-        $output = $renderer->render(Text::create('Hello World'));
+        $output = $renderer->render(new Text('Hello World'));
 
         $this->assertEquals('Hello World', $output);
     }
@@ -23,9 +24,9 @@ class TuiRenderToStringTest extends TestCase
     {
         $renderer = new TestRenderer(80, 24);
         $output = $renderer->render(
-            Box::column([
-                Text::create('Line 1'),
-                Text::create('Line 2'),
+            new BoxColumn([
+                new Text('Line 1'),
+                new Text('Line 2'),
             ])
         );
 
@@ -36,7 +37,7 @@ class TuiRenderToStringTest extends TestCase
     public function testRenderToStringWithCallable(): void
     {
         $renderer = new TestRenderer(80, 24);
-        $output = $renderer->render(fn () => Text::create('From callable'));
+        $output = $renderer->render(fn () => new Text('From callable'));
 
         $this->assertEquals('From callable', $output);
     }
@@ -44,7 +45,7 @@ class TuiRenderToStringTest extends TestCase
     public function testRenderToStringWithCustomDimensions(): void
     {
         $renderer = new TestRenderer(100, 50);
-        $output = $renderer->render(Text::create('Content'));
+        $output = $renderer->render(new Text('Content'));
 
         $this->assertEquals('Content', $output);
     }
@@ -52,7 +53,7 @@ class TuiRenderToStringTest extends TestCase
     public function testRenderToStringWithBoldText(): void
     {
         $renderer = new TestRenderer(80, 24);
-        $output = $renderer->render(Text::create('Bold')->bold());
+        $output = $renderer->render((new Text('Bold'))->bold());
 
         $this->assertEquals('**Bold**', $output);
     }
@@ -61,12 +62,12 @@ class TuiRenderToStringTest extends TestCase
     {
         $renderer = new TestRenderer(80, 24);
         $output = $renderer->render(
-            Box::column([
-                Box::row([
-                    Text::create('A'),
-                    Text::create('B'),
+            new BoxColumn([
+                new BoxRow([
+                    new Text('A'),
+                    new Text('B'),
                 ]),
-                Text::create('C'),
+                new Text('C'),
             ])
         );
 

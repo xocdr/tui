@@ -13,9 +13,9 @@ namespace Xocdr\Tui\Terminal;
  *
  * @example
  * if (Capabilities::supportsHyperlinks()) {
- *     return Text::create('Link')->hyperlink($url);
+ *     return new Text('Link')->hyperlink($url);
  * } else {
- *     return Text::create("Link ({$url})")->dim();
+ *     return new Text("Link ({$url})")->dim();
  * }
  */
 class Capabilities

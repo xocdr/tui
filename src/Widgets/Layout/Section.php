@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Layout;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -130,7 +132,7 @@ class Section extends Widget
             $elements[] = $this->renderContent();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderTitle(): mixed
@@ -138,10 +140,10 @@ class Section extends Widget
         $titleParts = [];
 
         if ($this->icon !== null) {
-            $titleParts[] = Text::create($this->icon . ' ');
+            $titleParts[] = new Text($this->icon . ' ');
         }
 
-        $titleText = Text::create($this->title);
+        $titleText = new Text($this->title);
         $titleText = $this->applyLevelStyle($titleText);
 
         if ($this->color !== null) {
@@ -151,13 +153,13 @@ class Section extends Widget
         $titleParts[] = $titleText;
 
         if (!empty($this->actions)) {
-            $titleParts[] = Text::create('  ');
+            $titleParts[] = new Text('  ');
             foreach ($this->actions as $action) {
                 $titleParts[] = $action;
             }
         }
 
-        return Box::row($titleParts);
+        return new BoxRow($titleParts);
     }
 
     private function applyLevelStyle(mixed $text): mixed
@@ -173,10 +175,10 @@ class Section extends Widget
     {
         $indent = $this->getIndentForLevel();
 
-        $content = Box::column($this->children);
+        $content = new BoxColumn($this->children);
 
         if ($indent > 0) {
-            return Box::create()->paddingLeft($indent)->children([$content]);
+            return new Box()->paddingLeft($indent)->append($content);
         }
 
         return $content;

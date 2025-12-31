@@ -24,8 +24,8 @@ use Xocdr\Tui\Widgets\Widget;
  * {
  *     public function testRendersCorrectly(): void
  *     {
- *         $this->render(fn() => Box::column([
- *             Text::create('Hello World'),
+ *         $this->render(fn() => new BoxColumn([
+ *             new Text('Hello World'),
  *         ]));
  *
  *         $this->assertTextPresent('Hello World');
@@ -143,7 +143,7 @@ abstract class TuiTestCase extends TestCase
         }
 
         // Otherwise wrap in a Box (this shouldn't happen for proper widgets)
-        return \Xocdr\Tui\Components\Box::create();
+        return new \Xocdr\Tui\Components\Box();
     }
 
     /**

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
@@ -241,14 +243,14 @@ class Autocomplete extends Widget
 
         // Check minChars requirement
         if (mb_strlen($this->currentQuery) < $this->minChars) {
-            return Fragment::create();
+            return new Fragment();
         }
 
         $filteredSuggestions = $this->getFilteredSuggestions();
         $suggestionCount = count($filteredSuggestions);
 
         if (empty($filteredSuggestions) || !$this->isOpen) {
-            return Fragment::create();
+            return new Fragment();
         }
 
         // Use VirtualList for efficient rendering of large suggestion lists
@@ -340,10 +342,10 @@ class Autocomplete extends Widget
 
         $width = $this->calculateWidth($filteredSuggestions);
 
-        return Box::create()
+        return new Box()
             ->border('round')
             ->width($width)
-            ->children([Box::column($rows)]);
+            ->append(new BoxColumn($rows));
     }
 
     private function renderSuggestion(AutocompleteSuggestion $suggestion, int $index, int $selectedIndex): mixed
@@ -353,23 +355,23 @@ class Autocomplete extends Widget
         $parts = [];
 
         $prefix = $isSelected ? '▶ ' : '  ';
-        $parts[] = Text::create($prefix)->color($isSelected ? 'cyan' : null);
+        $parts[] = new Text($prefix)->color($isSelected ? 'cyan' : null);
 
         if ($suggestion->icon !== null) {
-            $parts[] = Text::create($suggestion->icon . ' ');
+            $parts[] = new Text($suggestion->icon . ' ');
         }
 
-        $displayText = Text::create($suggestion->display);
+        $displayText = new Text($suggestion->display);
         if ($isSelected) {
             $displayText = $displayText->bold();
         }
         $parts[] = $displayText;
 
         if ($suggestion->description !== null) {
-            $parts[] = Text::create(' : ' . $suggestion->description)->dim();
+            $parts[] = new Text(' : ' . $suggestion->description)->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     /**

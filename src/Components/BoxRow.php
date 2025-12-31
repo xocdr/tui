@@ -9,23 +9,26 @@ namespace Xocdr\Tui\Components;
  *
  * A convenience wrapper around Box with row direction pre-set.
  *
- * @example
- * $row = new BoxRow();
- * $row->append(new Text('Left'))
- *     ->append(new Text('Right'));
+ * @example Fluent append with explicit keys:
+ * (new BoxRow)
+ *     ->append($widget1, 'my-widget-1')
+ *     ->append($widget2, 'my-widget-2')
  *
- * // Or with children in constructor
- * $row = new BoxRow([
- *     new Text('Left'),
- *     new Text('Right'),
- * ]);
+ * @example Associative array (explicit keys for widget caching):
+ * new BoxRow([
+ *     'my-widget' => $widget,
+ *     'my-list' => $todoList,
+ * ])
  */
 class BoxRow extends Box
 {
     /**
      * Create a new BoxRow instance.
      *
-     * @param array<Component|string> $children Initial children
+     * Supports associative arrays where string keys become widget keys
+     * for instance persistence across re-renders.
+     *
+     * @param array<int|string, Component|string> $children Initial children
      */
     public function __construct(array $children = [])
     {

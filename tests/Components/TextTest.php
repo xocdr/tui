@@ -12,7 +12,7 @@ class TextTest extends TestCase
 {
     public function testCreate(): void
     {
-        $text = Text::create('Hello World');
+        $text = new Text('Hello World');
 
         $this->assertInstanceOf(Text::class, $text);
         $this->assertEquals('Hello World', $text->getContent());
@@ -20,14 +20,14 @@ class TextTest extends TestCase
 
     public function testBold(): void
     {
-        $text = Text::create('Bold')->bold();
+        $text = (new Text('Bold'))->bold();
 
         $this->assertEquals(['bold' => true], $text->getStyle());
     }
 
     public function testColor(): void
     {
-        $text = Text::create('Red')->color('#ff0000');
+        $text = (new Text('Red'))->color('#ff0000');
 
         $this->assertEquals(['color' => '#ff0000'], $text->getStyle());
     }
@@ -35,19 +35,19 @@ class TextTest extends TestCase
     public function testColorWithEnum(): void
     {
         // Color accepts Color enum and converts to its value
-        $text = Text::create('')->color(Color::Red);
+        $text = (new Text(''))->color(Color::Red);
         $style = $text->getStyle();
         $this->assertArrayHasKey('color', $style);
         $this->assertNotNull($style['color']);
 
         // Verify enum colors work (value is hex from enum)
-        $text2 = Text::create('')->color(Color::Blue);
+        $text2 = (new Text(''))->color(Color::Blue);
         $this->assertArrayHasKey('color', $text2->getStyle());
     }
 
     public function testChainedStyles(): void
     {
-        $text = Text::create('Styled')
+        $text = (new Text('Styled'))
             ->bold()
             ->italic()
             ->color('#00ffff');
@@ -65,7 +65,7 @@ class TextTest extends TestCase
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
-        $text = Text::create('Hello')->bold();
+        $text = (new Text('Hello'))->bold();
         $rendered = $text->render();
 
         // render() now returns a TuiText object
@@ -78,7 +78,7 @@ class TextTest extends TestCase
 
     public function testStylesWithTextDecoration(): void
     {
-        $text = Text::create('Hello')->styles('bold');
+        $text = (new Text('Hello'))->styles('bold');
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);
@@ -86,7 +86,7 @@ class TextTest extends TestCase
 
     public function testStylesWithMultipleDecorations(): void
     {
-        $text = Text::create('Hello')->styles('bold italic underline');
+        $text = (new Text('Hello'))->styles('bold italic underline');
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);
@@ -96,7 +96,7 @@ class TextTest extends TestCase
 
     public function testStylesWithTextColor(): void
     {
-        $text = Text::create('Hello')->styles('text-red-500');
+        $text = (new Text('Hello'))->styles('text-red-500');
         $style = $text->getStyle();
 
         $this->assertEquals('#ef4444', $style['color']);
@@ -104,7 +104,7 @@ class TextTest extends TestCase
 
     public function testStylesWithBgColor(): void
     {
-        $text = Text::create('Hello')->styles('bg-slate-900');
+        $text = (new Text('Hello'))->styles('bg-slate-900');
         $style = $text->getStyle();
 
         $this->assertEquals('#0f172a', $style['bgColor']);
@@ -112,7 +112,7 @@ class TextTest extends TestCase
 
     public function testStylesWithCombinedUtilities(): void
     {
-        $text = Text::create('Hello')->styles('bold text-green-500 bg-slate-900');
+        $text = (new Text('Hello'))->styles('bold text-green-500 bg-slate-900');
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);
@@ -122,7 +122,7 @@ class TextTest extends TestCase
 
     public function testStylesWithBareColor(): void
     {
-        $text = Text::create('Hello')->styles('red');
+        $text = (new Text('Hello'))->styles('red');
         $style = $text->getStyle();
 
         // Bare 'red' uses defaultShade() which finds the closest palette shade to CSS red (#ff0000)
@@ -132,7 +132,7 @@ class TextTest extends TestCase
 
     public function testStylesWithBarePaletteShade(): void
     {
-        $text = Text::create('Hello')->styles('green-500');
+        $text = (new Text('Hello'))->styles('green-500');
         $style = $text->getStyle();
 
         $this->assertEquals('#22c55e', $style['color']);
@@ -140,7 +140,7 @@ class TextTest extends TestCase
 
     public function testStylesWithBareCssColor(): void
     {
-        $text = Text::create('Hello')->styles('coral');
+        $text = (new Text('Hello'))->styles('coral');
         $style = $text->getStyle();
 
         $this->assertEquals('#ff7f50', $style['color']);
@@ -150,7 +150,7 @@ class TextTest extends TestCase
     {
         \Xocdr\Tui\Styling\Style\Color::defineColor('styles-test-brand', 'blue', 600);
 
-        $text = Text::create('Hello')->styles('styles-test-brand');
+        $text = (new Text('Hello'))->styles('styles-test-brand');
         $style = $text->getStyle();
 
         $this->assertEquals('#2563eb', $style['color']);
@@ -158,7 +158,7 @@ class TextTest extends TestCase
 
     public function testStylesWithMultipleArguments(): void
     {
-        $text = Text::create('Hello')->styles('bold', 'italic', 'text-blue-500');
+        $text = (new Text('Hello'))->styles('bold', 'italic', 'text-blue-500');
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);
@@ -168,7 +168,7 @@ class TextTest extends TestCase
 
     public function testStylesWithArrayArgument(): void
     {
-        $text = Text::create('Hello')->styles(['bold', 'italic']);
+        $text = (new Text('Hello'))->styles(['bold', 'italic']);
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);
@@ -178,7 +178,7 @@ class TextTest extends TestCase
     public function testStylesWithCallable(): void
     {
         $isActive = true;
-        $text = Text::create('Hello')->styles(fn () => $isActive ? 'bold text-green-500' : 'dim text-red-500');
+        $text = (new Text('Hello'))->styles(fn () => $isActive ? 'bold text-green-500' : 'dim text-red-500');
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);
@@ -187,7 +187,7 @@ class TextTest extends TestCase
 
     public function testStylesWithMixedArguments(): void
     {
-        $text = Text::create('Hello')->styles('bold', ['italic', 'underline'], fn () => 'text-blue-500');
+        $text = (new Text('Hello'))->styles('bold', ['italic', 'underline'], fn () => 'text-blue-500');
         $style = $text->getStyle();
 
         $this->assertTrue($style['bold']);

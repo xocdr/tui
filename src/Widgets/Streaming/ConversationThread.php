@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Streaming;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -138,20 +140,20 @@ class ConversationThread extends Widget
     public function build(): Component
     {
         if (empty($this->messages)) {
-            return Text::create('No messages yet')->dim();
+            return new Text('No messages yet')->dim();
         }
 
         $elements = [];
 
         foreach ($this->messages as $i => $message) {
             if ($i > 0) {
-                $elements[] = Text::create('');
+                $elements[] = new Text('');
             }
 
             $elements[] = $this->renderMessage($message, $i);
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderMessage(ConversationMessage $message, int $index): mixed
@@ -164,27 +166,27 @@ class ConversationThread extends Widget
 
         if ($this->showAvatars) {
             $avatar = $isUser ? '●' : '◆';
-            $headerParts[] = Text::create($avatar . ' ');
+            $headerParts[] = new Text($avatar . ' ');
         }
 
-        $labelText = Text::create($label)->bold()->color($color);
+        $labelText = new Text($label)->bold()->color($color);
         $headerParts[] = $labelText;
 
         if ($this->showTimestamps && $message->timestamp !== null) {
             $time = date('H:i', (int) $message->timestamp);
-            $headerParts[] = Text::create(' ' . $time)->dim();
+            $headerParts[] = new Text(' ' . $time)->dim();
         }
 
         $contentLines = $this->wrapText($message->content, $this->maxWidth);
         $contentElements = [];
 
         foreach ($contentLines as $line) {
-            $contentElements[] = Text::create('  ' . $line);
+            $contentElements[] = new Text('  ' . $line);
         }
 
-        return Box::column([
-            Box::row($headerParts),
-            Box::column($contentElements),
+        return new BoxColumn([
+            new BoxRow($headerParts),
+            new BoxColumn($contentElements),
         ]);
     }
 

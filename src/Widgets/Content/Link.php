@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Content;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -116,7 +117,7 @@ class Link extends Widget
         $osc8Start = "\e]8;;" . $this->url . "\e\\";
         $osc8End = "\e]8;;\e\\";
 
-        $linkText = Text::create($osc8Start . $displayText . $osc8End);
+        $linkText = new Text($osc8Start . $displayText . $osc8End);
         $linkText = $linkText->color($this->color);
 
         if ($this->underlineEnabled) {
@@ -124,11 +125,11 @@ class Link extends Widget
         }
 
         if ($this->showUrlEnabled && $this->text !== null) {
-            return Box::row([
+            return new BoxRow([
                 $linkText,
-                Text::create(' ('),
-                Text::create($this->url)->dim(),
-                Text::create(')'),
+                new Text(' ('),
+                new Text($this->url)->dim(),
+                new Text(')'),
             ]);
         }
 

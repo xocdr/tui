@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -244,7 +246,7 @@ class KeyHint extends Widget
     public function build(): Component
     {
         if (empty($this->hints)) {
-            return Text::create('');
+            return new Text('');
         }
 
         return match ($this->displayMode) {
@@ -260,13 +262,13 @@ class KeyHint extends Widget
 
         foreach ($this->hints as $i => $hint) {
             if ($i > 0) {
-                $parts[] = Text::create($this->separator);
+                $parts[] = new Text($this->separator);
             }
 
             $parts[] = $this->renderHint($hint);
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function buildGrid(): Component
@@ -277,14 +279,14 @@ class KeyHint extends Widget
         foreach ($chunks as $row) {
             $cols = [];
             foreach ($row as $hint) {
-                $cols[] = Box::create()
+                $cols[] = new Box()
                     ->width($this->columnWidth)
                     ->child($this->renderHint($hint));
             }
-            $rows[] = Box::row($cols);
+            $rows[] = new BoxRow($cols);
         }
 
-        return Box::column($rows);
+        return new BoxColumn($rows);
     }
 
     private function buildGrouped(): Component
@@ -310,43 +312,43 @@ class KeyHint extends Widget
         // Render grouped hints
         foreach ($groups as $groupName => $hints) {
             if ($this->showGroupHeaders) {
-                $elements[] = Text::create($groupName)->bold()->color($this->groupHeaderColor);
+                $elements[] = new Text($groupName)->bold()->color($this->groupHeaderColor);
             }
 
             $chunks = array_chunk($hints, $this->columns);
             foreach ($chunks as $row) {
                 $cols = [];
                 foreach ($row as $hint) {
-                    $cols[] = Box::create()
+                    $cols[] = new Box()
                         ->width($this->columnWidth)
                         ->child($this->renderHint($hint));
                 }
-                $elements[] = Box::row($cols);
+                $elements[] = new BoxRow($cols);
             }
 
             // Add spacing between groups
-            $elements[] = Text::create('');
+            $elements[] = new Text('');
         }
 
         // Render ungrouped hints at the end
         if (!empty($ungrouped)) {
             if ($this->showGroupHeaders && !empty($groups)) {
-                $elements[] = Text::create('Other')->bold()->color($this->groupHeaderColor);
+                $elements[] = new Text('Other')->bold()->color($this->groupHeaderColor);
             }
 
             $chunks = array_chunk($ungrouped, $this->columns);
             foreach ($chunks as $row) {
                 $cols = [];
                 foreach ($row as $hint) {
-                    $cols[] = Box::create()
+                    $cols[] = new Box()
                         ->width($this->columnWidth)
                         ->child($this->renderHint($hint));
                 }
-                $elements[] = Box::row($cols);
+                $elements[] = new BoxRow($cols);
             }
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     /**
@@ -358,21 +360,21 @@ class KeyHint extends Widget
         $action = $hint['action'];
 
         if ($this->compact) {
-            $keyText = Text::create($key);
+            $keyText = new Text($key);
             if ($this->keyBold) {
                 $keyText = $keyText->bold();
             }
             $keyText = $keyText->color($this->keyColor);
 
-            return Box::row([
+            return new BoxRow([
                 $keyText,
-                Text::create(':'),
-                Text::create($action)->color($this->actionColor),
+                new Text(':'),
+                new Text($action)->color($this->actionColor),
             ]);
         }
 
         $keyDisplay = $this->keyPrefix . $key . $this->keySuffix;
-        $keyText = Text::create($keyDisplay);
+        $keyText = new Text($keyDisplay);
 
         if ($this->keyBold) {
             $keyText = $keyText->bold();
@@ -384,10 +386,10 @@ class KeyHint extends Widget
             $keyText = $keyText->color($this->keyColor);
         }
 
-        return Box::row([
+        return new BoxRow([
             $keyText,
-            Text::create(' '),
-            Text::create($action)->color($this->actionColor),
+            new Text(' '),
+            new Text($action)->color($this->actionColor),
         ]);
     }
 }

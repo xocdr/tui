@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Tests\Testing;
 
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Testing\TuiTestCase;
 
@@ -12,7 +12,7 @@ class TuiTestCaseTest extends TuiTestCase
 {
     public function testRenderCreatesInstance(): void
     {
-        $instance = $this->render(fn () => Text::create('Hello'));
+        $instance = $this->render(fn () => new Text('Hello'));
 
         $this->assertNotNull($instance);
         $this->assertNotNull($this->getInstance());
@@ -20,14 +20,14 @@ class TuiTestCaseTest extends TuiTestCase
 
     public function testRenderStartsInstance(): void
     {
-        $this->render(fn () => Text::create('Test'));
+        $this->render(fn () => new Text('Test'));
 
         $this->assertRunning();
     }
 
     public function testTearDownUnmountsInstance(): void
     {
-        $this->render(fn () => Text::create('Test'));
+        $this->render(fn () => new Text('Test'));
         $instance = $this->getInstance();
 
         $this->tearDown();
@@ -37,14 +37,14 @@ class TuiTestCaseTest extends TuiTestCase
 
     public function testRenderToString(): void
     {
-        $output = $this->renderToString(fn () => Text::create('Direct render'));
+        $output = $this->renderToString(fn () => new Text('Direct render'));
 
         $this->assertStringContainsString('Direct render', $output);
     }
 
     public function testGetOutput(): void
     {
-        $this->render(fn () => Text::create('Output test'));
+        $this->render(fn () => new Text('Output test'));
 
         $output = $this->getOutput();
 
@@ -53,9 +53,9 @@ class TuiTestCaseTest extends TuiTestCase
 
     public function testGetOutputLines(): void
     {
-        $this->render(fn () => Box::column([
-            Text::create('Line 1'),
-            Text::create('Line 2'),
+        $this->render(fn () => new BoxColumn([
+            new Text('Line 1'),
+            new Text('Line 2'),
         ]));
 
         $lines = $this->getOutputLines();
@@ -66,14 +66,14 @@ class TuiTestCaseTest extends TuiTestCase
 
     public function testAssertTextPresent(): void
     {
-        $this->render(fn () => Text::create('Find me'));
+        $this->render(fn () => new Text('Find me'));
 
         $this->assertTextPresent('Find me');
     }
 
     public function testAssertTextNotPresent(): void
     {
-        $this->render(fn () => Text::create('Something else'));
+        $this->render(fn () => new Text('Something else'));
 
         $this->assertTextNotPresent('Not here');
     }
@@ -83,7 +83,7 @@ class TuiTestCaseTest extends TuiTestCase
         $keyPressed = false;
 
         $this->render(function () use (&$keyPressed) {
-            return Text::create($keyPressed ? 'Pressed' : 'Not pressed');
+            return new Text($keyPressed ? 'Pressed' : 'Not pressed');
         });
 
         // Simulate key press through event dispatcher
@@ -101,7 +101,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $typed = '';
 
-        $this->render(fn () => Text::create("Typed: {$typed}"));
+        $this->render(fn () => new Text("Typed: {$typed}"));
 
         $this->getInstance()->getEventDispatcher()->on('input', function ($event) use (&$typed) {
             $typed .= $event->key;
@@ -117,7 +117,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $timerFired = false;
 
-        $this->render(fn () => Text::create('Timer test'));
+        $this->render(fn () => new Text('Timer test'));
 
         $this->getInstance()->getTimerManager()->addTimer(100, function () use (&$timerFired) {
             $timerFired = true;
@@ -136,7 +136,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $resized = false;
 
-        $this->render(fn () => Text::create('Resize test'));
+        $this->render(fn () => new Text('Resize test'));
 
         $this->getInstance()->getEventDispatcher()->on('resize', function () use (&$resized) {
             $resized = true;
@@ -155,7 +155,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $enterPressed = false;
 
-        $this->render(fn () => Text::create('Enter test'));
+        $this->render(fn () => new Text('Enter test'));
 
         $this->getInstance()->getEventDispatcher()->on('input', function ($event) use (&$enterPressed) {
             if ($event->key === "\r") {
@@ -172,7 +172,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $escapePressed = false;
 
-        $this->render(fn () => Text::create('Escape test'));
+        $this->render(fn () => new Text('Escape test'));
 
         $this->getInstance()->getEventDispatcher()->on('input', function ($event) use (&$escapePressed) {
             if ($event->key === "\x1b") {
@@ -189,7 +189,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $tabPressed = false;
 
-        $this->render(fn () => Text::create('Tab test'));
+        $this->render(fn () => new Text('Tab test'));
 
         $this->getInstance()->getEventDispatcher()->on('input', function ($event) use (&$tabPressed) {
             if ($event->key === "\t") {
@@ -206,7 +206,7 @@ class TuiTestCaseTest extends TuiTestCase
     {
         $arrowPressed = '';
 
-        $this->render(fn () => Text::create('Arrow test'));
+        $this->render(fn () => new Text('Arrow test'));
 
         $this->getInstance()->getEventDispatcher()->on('input', function ($event) use (&$arrowPressed) {
             $arrowPressed = $event->key;
@@ -232,7 +232,7 @@ class TuiTestCaseTest extends TuiTestCase
         $this->render(function () use (&$renderCount) {
             $renderCount++;
 
-            return Text::create("Render: {$renderCount}");
+            return new Text("Render: {$renderCount}");
         });
 
         $this->assertEquals(1, $renderCount);
@@ -252,7 +252,7 @@ class TuiTestCaseTest extends TuiTestCase
 
     public function testCustomDimensions(): void
     {
-        $this->render(fn () => Text::create('Custom size'), [
+        $this->render(fn () => new Text('Custom size'), [
             'width' => 120,
             'height' => 40,
         ]);

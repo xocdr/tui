@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -93,19 +95,17 @@ class ErrorBoundary extends Widget
 
     private function renderDefaultFallback(\Throwable $error): mixed
     {
-        return Box::create()
+        return new Box()
             ->border('round')
             ->borderColor('red')
             ->padding(1)
-            ->children([
-                Box::column([
-                    Text::create('⚠ Error')->bold()->color('red'),
-                    Text::create(''),
-                    Text::create(get_class($error))->bold(),
-                    Text::create($error->getMessage()),
-                    Text::create(''),
-                    Text::create($error->getFile() . ':' . $error->getLine())->dim(),
-                ]),
-            ]);
+            ->append(new BoxColumn([
+                new Text('⚠ Error')->bold()->color('red'),
+                new Text(''),
+                new Text(get_class($error))->bold(),
+                new Text($error->getMessage()),
+                new Text(''),
+                new Text($error->getFile() . ':' . $error->getLine())->dim(),
+            ]));
     }
 }

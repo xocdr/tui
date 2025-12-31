@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -149,7 +151,7 @@ class Badge extends Widget
             return $mainRow;
         }
 
-        return Box::column([
+        return new BoxColumn([
             $mainRow,
             $this->renderDescription(),
         ]);
@@ -162,16 +164,16 @@ class Badge extends Widget
         $iconElement = $this->renderIcon($spinnerFrame, $isAnimated);
         if ($iconElement !== null) {
             $elements[] = $iconElement;
-            $elements[] = Text::create(' ');
+            $elements[] = new Text(' ');
         }
 
         $textElement = $this->renderText();
         $elements[] = $textElement;
 
-        $row = Box::row($elements);
+        $row = new BoxRow($elements);
 
         if ($this->bordered || $this->bgColor !== null) {
-            $box = Box::create()->children([$row]);
+            $box = new Box([$row]);
 
             if ($this->bordered) {
                 $box = $box->border('round');
@@ -194,13 +196,13 @@ class Badge extends Widget
                 return $this->icon->render();
             }
 
-            return Text::create($this->icon);
+            return new Text($this->icon);
         }
 
         if ($isAnimated) {
             $frames = IconPresets::getSpinner('dots');
             $frame = $frames[$spinnerFrame % count($frames)];
-            $text = Text::create($frame);
+            $text = new Text($frame);
 
             $color = $this->color ?? $this->variant->color();
             $text = $text->color($color);
@@ -213,7 +215,7 @@ class Badge extends Widget
             return null;
         }
 
-        $text = Text::create($iconChar);
+        $text = new Text($iconChar);
 
         $color = $this->color ?? $this->variant->color();
         $text = $text->color($color);
@@ -223,7 +225,7 @@ class Badge extends Widget
 
     private function renderText(): mixed
     {
-        $text = Text::create($this->text);
+        $text = new Text($this->text);
 
         $color = $this->color ?? $this->variant->color();
         $text = $text->color($color);
@@ -233,9 +235,9 @@ class Badge extends Widget
 
     private function renderDescription(): mixed
     {
-        return Box::row([
-            Text::create('  '),
-            Text::create($this->description ?? '')->dim(),
+        return new BoxRow([
+            new Text('  '),
+            new Text($this->description ?? '')->dim(),
         ]);
     }
 }

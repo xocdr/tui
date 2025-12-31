@@ -29,8 +29,8 @@ use Xocdr\Tui\Runtime;
  *             }
  *         });
  *
- *         return Box::create()->children([
- *             Text::create("Count: {$count}"),
+ *         return new Box([
+ *             new Text("Count: {$count}"),
  *         ]);
  *     }
  * }

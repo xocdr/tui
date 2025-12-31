@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Testing\ExtTestRenderer;
 use Xocdr\Tui\Support\Testing\TestKey;
@@ -38,14 +38,14 @@ class ExtTestRendererTest extends TestCase
 
     public function testRenderReturnsself(): void
     {
-        $result = $this->renderer->render(fn () => Text::create('Hello'));
+        $result = $this->renderer->render(fn () => new Text('Hello'));
 
         $this->assertSame($this->renderer, $result);
     }
 
     public function testGetOutputReturnsArray(): void
     {
-        $this->renderer->render(fn () => Text::create('Test'));
+        $this->renderer->render(fn () => new Text('Test'));
 
         $output = $this->renderer->getOutput();
 
@@ -54,7 +54,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testToStringReturnsString(): void
     {
-        $this->renderer->render(fn () => Text::create('Hello World'));
+        $this->renderer->render(fn () => new Text('Hello World'));
 
         $output = $this->renderer->toString();
 
@@ -64,7 +64,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testContainsText(): void
     {
-        $this->renderer->render(fn () => Text::create('Find me'));
+        $this->renderer->render(fn () => new Text('Find me'));
 
         $this->assertTrue($this->renderer->containsText('Find me'));
         $this->assertFalse($this->renderer->containsText('Not here'));
@@ -72,9 +72,9 @@ class ExtTestRendererTest extends TestCase
 
     public function testRenderBox(): void
     {
-        $this->renderer->render(fn () => Box::column([
-            Text::create('Line 1'),
-            Text::create('Line 2'),
+        $this->renderer->render(fn () => new BoxColumn([
+            new Text('Line 1'),
+            new Text('Line 2'),
         ]));
 
         $output = $this->renderer->toString();
@@ -114,7 +114,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testAdvanceFrameReturnsSelf(): void
     {
-        $this->renderer->render(fn () => Text::create('Test'));
+        $this->renderer->render(fn () => new Text('Test'));
 
         $result = $this->renderer->advanceFrame();
 
@@ -123,7 +123,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testRunTimersReturnsSelf(): void
     {
-        $this->renderer->render(fn () => Text::create('Test'));
+        $this->renderer->render(fn () => new Text('Test'));
 
         $result = $this->renderer->runTimers(100);
 
@@ -132,7 +132,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testGetByIdReturnsNullWhenNotFound(): void
     {
-        $this->renderer->render(fn () => Text::create('No ID'));
+        $this->renderer->render(fn () => new Text('No ID'));
 
         $result = $this->renderer->getById('nonexistent');
 
@@ -141,7 +141,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testGetByTextReturnsArray(): void
     {
-        $this->renderer->render(fn () => Text::create('Searchable text'));
+        $this->renderer->render(fn () => new Text('Searchable text'));
 
         $results = $this->renderer->getByText('Searchable');
 
@@ -150,7 +150,7 @@ class ExtTestRendererTest extends TestCase
 
     public function testQueryByTextReturnsNullWhenNotFound(): void
     {
-        $this->renderer->render(fn () => Text::create('Something'));
+        $this->renderer->render(fn () => new Text('Something'));
 
         $result = $this->renderer->queryByText('Not found');
 
@@ -160,7 +160,7 @@ class ExtTestRendererTest extends TestCase
     public function testFluentApi(): void
     {
         $result = $this->renderer
-            ->render(fn () => Text::create('Test'))
+            ->render(fn () => new Text('Test'))
             ->sendInput('a')
             ->sendKey(TestKey::ENTER)
             ->advanceFrame()

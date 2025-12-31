@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -273,15 +275,15 @@ class OptionPrompt extends Widget
     {
         $parts = [];
 
-        $parts[] = Text::create($this->question . ' ');
+        $parts[] = new Text($this->question . ' ');
 
         foreach ($this->options as $i => $option) {
             if ($i > 0) {
-                $parts[] = Text::create(' ');
+                $parts[] = new Text(' ');
             }
 
             $isSelected = $i === $selectedIndex;
-            $text = Text::create('[' . $option->key . ']' . $option->label);
+            $text = new Text('[' . $option->key . ']' . $option->label);
 
             if ($isSelected) {
                 $text = $text->bold()->color($this->selectedColor);
@@ -290,7 +292,7 @@ class OptionPrompt extends Widget
             $parts[] = $text;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderModal(int $selectedIndex, bool $showInput, string $inputValue): mixed
@@ -298,23 +300,23 @@ class OptionPrompt extends Widget
         $elements = [];
 
         if ($this->content !== null) {
-            $elements[] = is_string($this->content) ? Text::create($this->content) : $this->content;
-            $elements[] = Text::create('');
+            $elements[] = is_string($this->content) ? new Text($this->content) : $this->content;
+            $elements[] = new Text('');
         }
 
         if ($this->question !== '') {
-            $elements[] = Text::create($this->question);
-            $elements[] = Text::create('');
+            $elements[] = new Text($this->question);
+            $elements[] = new Text('');
         }
 
         $optionParts = [];
         foreach ($this->options as $i => $option) {
             if ($i > 0) {
-                $optionParts[] = Text::create('  ');
+                $optionParts[] = new Text('  ');
             }
 
             $isSelected = $i === $selectedIndex;
-            $text = Text::create('[' . $option->key . '] ' . $option->label);
+            $text = new Text('[' . $option->key . '] ' . $option->label);
 
             if ($isSelected) {
                 $text = $text->bold()->color($this->selectedColor);
@@ -323,30 +325,30 @@ class OptionPrompt extends Widget
             $optionParts[] = $text;
         }
 
-        $elements[] = Box::row($optionParts);
+        $elements[] = new BoxRow($optionParts);
 
         $selectedOption = $this->options[$selectedIndex] ?? null;
         if ($selectedOption?->description !== null) {
-            $elements[] = Text::create($selectedOption->description)->dim();
+            $elements[] = new Text($selectedOption->description)->dim();
         }
 
         if ($showInput) {
-            $elements[] = Text::create('');
-            $elements[] = Box::row([
-                Text::create($this->inputLabel),
-                Text::create($inputValue),
-                Text::create('█')->inverse(),
+            $elements[] = new Text('');
+            $elements[] = new BoxRow([
+                new Text($this->inputLabel),
+                new Text($inputValue),
+                new Text('█')->inverse(),
             ]);
         }
 
-        $box = Box::column($elements);
+        $box = new BoxColumn($elements);
 
         if ($this->border !== false) {
             $borderStyle = is_string($this->border) ? $this->border : 'double';
-            $container = Box::create()
+            $container = new Box()
                 ->border($borderStyle)
                 ->padding(1)
-                ->children([$box]);
+                ->append($box);
 
             if ($this->title !== null) {
                 $container = $container->borderTitle($this->title);

@@ -15,7 +15,7 @@ use Xocdr\Tui\Components\Text;
  * // Use Counter within a UI class
  * class MyApp extends UI {
  *     public function build(): Component {
- *         return Counter::create(['initial' => 10]);
+ *         return new Counter(['initial' => 10]);
  *     }
  * }
  * (new MyApp())->run();
@@ -71,15 +71,14 @@ class Counter extends StatefulComponent
         /** @var int $count */
         $count = $this->state['count'];
 
-        return Box::create()
+        return (new Box([
+            new Text("{$label}: {$count}"),
+            new Text(''),
+            new Text('↑/↓ to change, r to reset'),
+        ]))
             ->flexDirection('column')
             ->padding(1)
             ->border('round')
-            ->children([
-                Text::create("{$label}: {$count}"),
-                Text::create(''),
-                Text::create('↑/↓ to change, r to reset'),
-            ])
             ->render();
     }
 }

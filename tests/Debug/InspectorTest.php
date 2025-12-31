@@ -6,7 +6,7 @@ namespace Xocdr\Tui\Tests\Debug;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Runtime;
-use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Debug\Inspector;
 use Xocdr\Tui\Support\Telemetry\Metrics;
@@ -182,8 +182,8 @@ class InspectorTest extends TestCase
 
     public function testDumpTreeFormatsNodeTree(): void
     {
-        $text = Text::create('Hello');
-        $box = Box::column([$text]);
+        $text = new Text('Hello');
+        $box = new BoxColumn([$text]);
 
         $this->runtime->method('getRootNode')->willReturn($box);
         $this->inspector->enable();

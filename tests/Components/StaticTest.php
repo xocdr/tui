@@ -12,7 +12,7 @@ class StaticTest extends TestCase
 {
     public function testCreate(): void
     {
-        $static = Static_::create();
+        $static = new Static_;
 
         $this->assertInstanceOf(Static_::class, $static);
         $this->assertEmpty($static->getItems());
@@ -20,9 +20,9 @@ class StaticTest extends TestCase
 
     public function testCreateWithItems(): void
     {
-        $static = Static_::create([
-            Text::create('Log 1'),
-            Text::create('Log 2'),
+        $static = new Static_([
+            new Text('Log 1'),
+            new Text('Log 2'),
         ]);
 
         $this->assertCount(2, $static->getItems());
@@ -30,9 +30,9 @@ class StaticTest extends TestCase
 
     public function testItems(): void
     {
-        $static = Static_::create()->items([
-            Text::create('Item 1'),
-            Text::create('Item 2'),
+        $static = (new Static_)->items([
+            new Text('Item 1'),
+            new Text('Item 2'),
         ]);
 
         $this->assertCount(2, $static->getItems());
@@ -40,16 +40,16 @@ class StaticTest extends TestCase
 
     public function testGetItems(): void
     {
-        $items = [Text::create('Test')];
-        $static = Static_::create($items);
+        $items = [new Text('Test')];
+        $static = new Static_($items);
 
         $this->assertSame($items, $static->getItems());
     }
 
     public function testChildrenAliasForItems(): void
     {
-        $static = Static_::create()
-            ->children([Text::create('Child')]);
+        $static = (new Static_)
+            ->children([new Text('Child')]);
 
         $this->assertCount(1, $static->getChildren());
         $this->assertSame($static->getChildren(), $static->getItems());
@@ -57,8 +57,8 @@ class StaticTest extends TestCase
 
     public function testRender(): void
     {
-        $static = Static_::create([
-            Text::create('Log entry'),
+        $static = new Static_([
+            new Text('Log entry'),
         ]);
 
         $rendered = $static->render();

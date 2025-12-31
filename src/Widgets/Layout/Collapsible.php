@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Layout;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -221,14 +223,14 @@ class Collapsible extends Widget
             $elements[] = $this->renderContent();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderHeader(bool $isExpanded): mixed
     {
         $icon = $isExpanded ? $this->expandedIcon : $this->collapsedIcon;
 
-        $headerText = Text::create($this->header);
+        $headerText = new Text($this->header);
 
         if ($this->isFocused) {
             $headerText = $headerText->bold();
@@ -241,8 +243,8 @@ class Collapsible extends Widget
             $headerText = $this->applyStyle($headerText, $this->headerStyle);
         }
 
-        return Box::row([
-            Text::create($icon . ' '),
+        return new BoxRow([
+            new Text($icon . ' '),
             $headerText,
         ]);
     }
@@ -250,11 +252,11 @@ class Collapsible extends Widget
     private function renderContent(): mixed
     {
         $content = is_string($this->content)
-            ? Text::create($this->content)
+            ? new Text($this->content)
             : $this->content;
 
         if ($this->contentIndent > 0) {
-            return Box::create()->paddingLeft($this->contentIndent)->children([$content]);
+            return new Box()->paddingLeft($this->contentIndent)->append($content);
         }
 
         return $content;

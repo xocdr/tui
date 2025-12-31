@@ -112,8 +112,8 @@ class ColorPaletteDemo extends UI
 
         // Usage examples
         $column->append((new Text('Usage:'))->bold());
-        $column->append((new Text("  Text::create('Hello')->color('$currentPalette', 500)"))->color('zinc', 400));
-        $column->append((new Text("  Text::create('Hello')->bgColor('$currentPalette', 100)"))->color('zinc', 400));
+        $column->append((new Text("  (new Text('Hello'))->color('$currentPalette', 500)"))->color('zinc', 400));
+        $column->append((new Text("  (new Text('Hello'))->bgColor('$currentPalette', 100)"))->color('zinc', 400));
         $column->append((new Text("  Color::palette('$currentPalette', 500)  // Returns hex"))->color('zinc', 400));
         $column->append((new Text("  Color::$currentPalette(500)             // Shorthand"))->color('zinc', 400));
         $column->append(new Newline());

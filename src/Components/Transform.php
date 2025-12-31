@@ -14,7 +14,7 @@ use Xocdr\Tui\Styling\Style\Color;
  *
  * @example
  * // Rainbow gradient
- * Transform::create(Text::create("Hello World"))
+ * Transform::create(new Text("Hello World"))
  *     ->gradient('#ff0000', '#0000ff')
  *
  * // Custom line transform

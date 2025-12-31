@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Layout;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Scroll\SmoothScroller;
@@ -208,7 +210,7 @@ class Scrollable extends Widget
 
         // Top indicator
         if ($this->indicator === 'arrows' && $scrollOffset > 0) {
-            $elements[] = Text::create('↑ more content above')->dim();
+            $elements[] = new Text('↑ more content above')->dim();
         }
 
         // Visible content
@@ -217,25 +219,25 @@ class Scrollable extends Widget
 
         foreach ($visibleItems as $item) {
             if (is_string($item)) {
-                $contentElements[] = Text::create($item);
+                $contentElements[] = new Text($item);
             } else {
                 $contentElements[] = $item;
             }
         }
 
-        $content = Box::column($contentElements);
+        $content = new BoxColumn($contentElements);
 
         // Add scrollbar if enabled
         if ($this->showScrollbar && $totalItems > $visibleHeight) {
             $scrollbar = $this->renderScrollbar($scrollOffset, $totalItems, $visibleHeight);
-            $elements[] = Box::row([$content, Text::create(' '), $scrollbar]);
+            $elements[] = new BoxRow([$content, new Text(' '), $scrollbar]);
         } else {
             $elements[] = $content;
         }
 
         // Bottom indicator
         if ($this->indicator === 'arrows' && $scrollOffset < $maxOffset) {
-            $elements[] = Text::create('↓ more content below')->dim();
+            $elements[] = new Text('↓ more content below')->dim();
         }
 
         // Sticky bottom
@@ -243,7 +245,7 @@ class Scrollable extends Widget
             $elements[] = $this->stickyBottom;
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderScrollbar(int $offset, int $total, int $visible): mixed
@@ -254,13 +256,13 @@ class Scrollable extends Widget
         $lines = [];
         for ($i = 0; $i < $visible; $i++) {
             if ($i >= $thumbPosition && $i < $thumbPosition + $thumbSize) {
-                $lines[] = Text::create($this->scrollbarChar);
+                $lines[] = new Text($this->scrollbarChar);
             } else {
-                $lines[] = Text::create($this->trackChar)->dim();
+                $lines[] = new Text($this->trackChar)->dim();
             }
         }
 
-        return Box::column($lines);
+        return new BoxColumn($lines);
     }
 
     public function maxHeight(int $height): self

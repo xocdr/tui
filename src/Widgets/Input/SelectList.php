@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
@@ -339,7 +341,7 @@ class SelectList extends Widget
         $rows = [];
 
         if ($showScrollUp) {
-            $rows[] = Text::create('  ↑ more')->dim();
+            $rows[] = new Text('  ↑ more')->dim();
         }
 
         // Only render visible items from VirtualList range (includes overscan)
@@ -351,10 +353,10 @@ class SelectList extends Widget
         }
 
         if ($showScrollDown) {
-            $rows[] = Text::create('  ↓ more')->dim();
+            $rows[] = new Text('  ↓ more')->dim();
         }
 
-        return Box::column($rows);
+        return new BoxColumn($rows);
     }
 
     private function renderOption(SelectOption $option, int $index, int $focusedIndex): mixed
@@ -374,7 +376,7 @@ class SelectList extends Widget
             $statusIcon = $isSelected ? $icons['selected'] : $icons['unselected'];
         }
 
-        $labelText = Text::create($option->label);
+        $labelText = new Text($option->label);
 
         if ($option->disabled) {
             $labelText = $labelText->color($colors['disabled']);
@@ -382,30 +384,30 @@ class SelectList extends Widget
             $labelText = $labelText->bold();
         }
 
-        $statusText = Text::create($statusIcon);
+        $statusText = new Text($statusIcon);
         if ($isSelected && !$option->disabled) {
             $statusText = $statusText->color($colors['selected']);
         } elseif ($option->disabled) {
             $statusText = $statusText->color($colors['disabled']);
         }
 
-        $focusText = Text::create($focusIndicator)->color($isFocused ? $colors['focused'] : null);
+        $focusText = new Text($focusIndicator)->color($isFocused ? $colors['focused'] : null);
 
         $elements = [
             $focusText,
             $statusText,
-            Text::create(' '),
-            $option->icon ? Text::create($option->icon . ' ') : null,
+            new Text(' '),
+            $option->icon ? new Text($option->icon . ' ') : null,
             $labelText,
         ];
 
         if ($this->showDescriptions && $option->description !== null) {
             $description = $this->formatDescription($option);
             $elements[] = Spacer::create();
-            $elements[] = Text::create($description)->color($colors['description']);
+            $elements[] = new Text($description)->color($colors['description']);
         }
 
-        return Box::row(array_filter($elements));
+        return new BoxRow(array_filter($elements));
     }
 
     private function isSelected(string|int $value): bool

@@ -51,24 +51,24 @@ class ErrorBoundaryDemo extends UI
                 new Newline(),
 
                 (new Text('Catching an Error (default fallback):'))->dim(),
-                ErrorBoundary::create()
-                    ->children($brokenComponent),
+                (new ErrorBoundary())
+                    ->append($brokenComponent),
                 new Newline(),
 
                 (new Text('With Custom Fallback:'))->dim(),
-                ErrorBoundary::create()
-                    ->children($brokenComponent)
+                (new ErrorBoundary())
+                    ->append($brokenComponent)
                     ->fallback((new Text('Oops! Something went wrong. Please try again.'))->color('yellow')),
                 new Newline(),
 
                 (new Text('Working Component (no error):'))->dim(),
-                ErrorBoundary::create()
-                    ->children($workingComponent),
+                (new ErrorBoundary())
+                    ->append($workingComponent),
                 new Newline(),
 
                 (new Text('With Error Callback:'))->dim(),
-                ErrorBoundary::create()
-                    ->children($brokenComponent)
+                (new ErrorBoundary())
+                    ->append($brokenComponent)
                     ->onError(fn ($e) => error_log('Caught: ' . $e->getMessage()))
                     ->fallback(fn ($e) => (new Text('Error: ' . $e->getMessage()))->color('red')),
                 new Newline(),

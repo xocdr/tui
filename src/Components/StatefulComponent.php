@@ -29,11 +29,9 @@ use Xocdr\Tui\Runtime;
  *
  *     public function render(): \Xocdr\Tui\Ext\Box
  *     {
- *         return Box::create()
- *             ->children([
- *                 Text::create("Count: {$this->state['count']}"),
- *             ])
- *             ->render();
+ *         return (new Box([
+ *             new Text("Count: {$this->state['count']}"),
+ *         ]))->render();
  *     }
  * }
  */

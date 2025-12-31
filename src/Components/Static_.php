@@ -18,16 +18,16 @@ class Static_ extends AbstractContainerComponent
     private $renderCallback = null;
 
     /**
-     * Create a Static component.
+     * Create a new Static_ instance.
      *
-     * @param array<Component|object|string> $items
+     * @param array<int|string, Component|object|string> $items Initial items
      */
-    public static function create(array $items = []): self
+    public function __construct(array $items = [])
     {
-        $static = new self();
-        $static->children = $items;
-
-        return $static;
+        foreach ($items as $key => $item) {
+            $keyParam = is_string($key) ? $key : null;
+            $this->append($item, $keyParam);
+        }
     }
 
     /**
@@ -37,7 +37,14 @@ class Static_ extends AbstractContainerComponent
      */
     public function items(array $items): self
     {
-        $this->children = $items;
+        // Clear existing and add new items
+        $this->keyedChildren = [];
+        $this->insertOrder = 0;
+
+        foreach ($items as $key => $item) {
+            $keyParam = is_string($key) ? $key : null;
+            $this->append($item, $keyParam);
+        }
 
         return $this;
     }
@@ -49,7 +56,7 @@ class Static_ extends AbstractContainerComponent
      */
     public function getItems(): array
     {
-        return $this->children;
+        return $this->getChildren();
     }
 
     /**
@@ -76,7 +83,7 @@ class Static_ extends AbstractContainerComponent
         // Use native StaticOutput class if available (ext-tui 0.1.3+)
         if (class_exists(\Xocdr\Tui\Ext\StaticOutput::class) && $this->renderCallback !== null) {
             return new \Xocdr\Tui\Ext\StaticOutput([
-                'items' => $this->children,
+                'items' => $this->getChildren(),
                 'render' => $this->renderCallback,
             ]);
         }

@@ -39,23 +39,23 @@ class StreamingTextDemo extends UI
             new Newline(),
 
             (new Text('Active Streaming:'))->dim(),
-            StreamingText::create('The assistant is typing a response...')
+            (new StreamingText('The assistant is typing a response...'))
                 ->streaming(true)
                 ->showCursor(true),
             new Newline(),
 
             (new Text('Completed Text:'))->dim(),
-            StreamingText::create('This response has finished streaming.')
+            (new StreamingText('This response has finished streaming.'))
                 ->streaming(false),
             new Newline(),
 
             (new Text('With Placeholder:'))->dim(),
-            StreamingText::create('')
+            (new StreamingText(''))
                 ->placeholder('Waiting for response...'),
             new Newline(),
 
             (new Text('Colored:'))->dim(),
-            StreamingText::create('Processing your request')
+            (new StreamingText('Processing your request'))
                 ->streaming(true)
                 ->color('cyan'),
             new Newline(),

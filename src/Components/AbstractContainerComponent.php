@@ -70,12 +70,23 @@ abstract class AbstractContainerComponent implements Component
     }
 
     /**
-     * Get children.
+     * Get children in their defined order.
+     *
+     * Returns children from the keyed children storage, sorted by insertion order.
+     * Falls back to legacy $children array if no keyed children exist.
      *
      * @return array<Component|object|string>
      */
     public function getChildren(): array
     {
+        // If keyedChildren is populated, use that (sorted by order)
+        if (!empty($this->keyedChildren)) {
+            $sorted = $this->keyedChildren;
+            uasort($sorted, fn($a, $b) => $a['order'] <=> $b['order']);
+            return array_column($sorted, 'child');
+        }
+
+        // Fallback to legacy children array
         return $this->children;
     }
 

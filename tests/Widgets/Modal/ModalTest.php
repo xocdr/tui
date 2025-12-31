@@ -31,7 +31,7 @@ class TestModal extends Modal
 
     protected function buildContent(): Component
     {
-        return Text::create($this->content);
+        return new Text($this->content);
     }
 }
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Content;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -284,8 +286,8 @@ class Diff extends Widget
 
         // File header
         if ($this->filename !== null) {
-            $elements[] = Text::create($this->filename)->bold();
-            $elements[] = Text::create('');
+            $elements[] = new Text($this->filename)->bold();
+            $elements[] = new Text('');
         }
 
         $oldLineNum = 0;
@@ -297,7 +299,7 @@ class Diff extends Widget
         foreach ($lines as $idx => $line) {
             // File headers
             if (str_starts_with($line, '---') || str_starts_with($line, '+++')) {
-                $elements[] = Text::create($line)->dim();
+                $elements[] = new Text($line)->dim();
                 continue;
             }
 
@@ -305,7 +307,7 @@ class Diff extends Widget
             if (preg_match('/^@@\s*-(\d+)(?:,\d+)?\s*\+(\d+)(?:,\d+)?\s*@@(.*)$/', $line, $matches)) {
                 $oldLineNum = (int) $matches[1];
                 $newLineNum = (int) $matches[2];
-                $elements[] = Text::create($line)->color($this->hunkColor);
+                $elements[] = new Text($line)->color($this->hunkColor);
                 continue;
             }
 
@@ -326,9 +328,9 @@ class Diff extends Widget
                     // Removed line
                     $removedElement = $this->renderWordDiffLineWithPrefix($removedSegments, 'removed');
                     if ($this->lineNumbersEnabled) {
-                        $elements[] = Box::row([
-                            Text::create(str_pad((string) $removedLine['num'], 4))->dim(),
-                            Text::create(str_pad('', 4))->dim(),
+                        $elements[] = new BoxRow([
+                            new Text(str_pad((string) $removedLine['num'], 4))->dim(),
+                            new Text(str_pad('', 4))->dim(),
                             $removedElement,
                         ]);
                     } else {
@@ -338,23 +340,23 @@ class Diff extends Widget
                     // Added line
                     $addedElement = $this->renderWordDiffLineWithPrefix($addedSegments, 'added');
                     if ($this->lineNumbersEnabled) {
-                        $elements[] = Box::row([
-                            Text::create(str_pad('', 4))->dim(),
-                            Text::create(str_pad((string) $newLineNum, 4))->dim(),
+                        $elements[] = new BoxRow([
+                            new Text(str_pad('', 4))->dim(),
+                            new Text(str_pad((string) $newLineNum, 4))->dim(),
                             $addedElement,
                         ]);
                     } else {
                         $elements[] = $addedElement;
                     }
                 } else {
-                    $text = Text::create($this->addedPrefix . $lineContent)->color($this->addedColor);
+                    $text = new Text($this->addedPrefix . $lineContent)->color($this->addedColor);
                     if ($this->addedBgColor !== null) {
                         $text = $text->bgColor($this->addedBgColor);
                     }
                     if ($this->lineNumbersEnabled) {
-                        $elements[] = Box::row([
-                            Text::create(str_pad('', 4))->dim(),
-                            Text::create(str_pad((string) $newLineNum, 4))->dim(),
+                        $elements[] = new BoxRow([
+                            new Text(str_pad('', 4))->dim(),
+                            new Text(str_pad((string) $newLineNum, 4))->dim(),
                             $text,
                         ]);
                     } else {
@@ -381,14 +383,14 @@ class Diff extends Widget
                 // Flush any pending removed lines first
                 foreach ($pendingRemoved as $removed) {
                     $removedContent = substr($removed['line'], 1);
-                    $text = Text::create($this->removedPrefix . $removedContent)->color($this->removedColor);
+                    $text = new Text($this->removedPrefix . $removedContent)->color($this->removedColor);
                     if ($this->removedBgColor !== null) {
                         $text = $text->bgColor($this->removedBgColor);
                     }
                     if ($this->lineNumbersEnabled) {
-                        $elements[] = Box::row([
-                            Text::create(str_pad((string) $removed['num'], 4))->dim(),
-                            Text::create(str_pad('', 4))->dim(),
+                        $elements[] = new BoxRow([
+                            new Text(str_pad((string) $removed['num'], 4))->dim(),
+                            new Text(str_pad('', 4))->dim(),
                             $text,
                         ]);
                     } else {
@@ -398,14 +400,14 @@ class Diff extends Widget
                 $pendingRemoved = [];
 
                 $lineContent = substr($line, 1);
-                $text = Text::create($this->removedPrefix . $lineContent)->color($this->removedColor);
+                $text = new Text($this->removedPrefix . $lineContent)->color($this->removedColor);
                 if ($this->removedBgColor !== null) {
                     $text = $text->bgColor($this->removedBgColor);
                 }
                 if ($this->lineNumbersEnabled) {
-                    $elements[] = Box::row([
-                        Text::create(str_pad((string) $oldLineNum, 4))->dim(),
-                        Text::create(str_pad('', 4))->dim(),
+                    $elements[] = new BoxRow([
+                        new Text(str_pad((string) $oldLineNum, 4))->dim(),
+                        new Text(str_pad('', 4))->dim(),
                         $text,
                     ]);
                 } else {
@@ -418,14 +420,14 @@ class Diff extends Widget
             // Flush any pending removed lines before context
             foreach ($pendingRemoved as $removed) {
                 $removedContent = substr($removed['line'], 1);
-                $text = Text::create($this->removedPrefix . $removedContent)->color($this->removedColor);
+                $text = new Text($this->removedPrefix . $removedContent)->color($this->removedColor);
                 if ($this->removedBgColor !== null) {
                     $text = $text->bgColor($this->removedBgColor);
                 }
                 if ($this->lineNumbersEnabled) {
-                    $elements[] = Box::row([
-                        Text::create(str_pad((string) $removed['num'], 4))->dim(),
-                        Text::create(str_pad('', 4))->dim(),
+                    $elements[] = new BoxRow([
+                        new Text(str_pad((string) $removed['num'], 4))->dim(),
+                        new Text(str_pad('', 4))->dim(),
                         $text,
                     ]);
                 } else {
@@ -437,7 +439,7 @@ class Diff extends Widget
             // Context line
             if (str_starts_with($line, ' ') || $line === '') {
                 $lineContent = $line !== '' ? substr($line, 1) : '';
-                $text = Text::create(' ' . $lineContent);
+                $text = new Text(' ' . $lineContent);
                 if ($this->contextDimEnabled) {
                     $text = $text->dim();
                 }
@@ -445,9 +447,9 @@ class Diff extends Widget
                     $text = $text->color($this->contextColor);
                 }
                 if ($this->lineNumbersEnabled) {
-                    $elements[] = Box::row([
-                        Text::create(str_pad((string) $oldLineNum, 4))->dim(),
-                        Text::create(str_pad((string) $newLineNum, 4))->dim(),
+                    $elements[] = new BoxRow([
+                        new Text(str_pad((string) $oldLineNum, 4))->dim(),
+                        new Text(str_pad((string) $newLineNum, 4))->dim(),
                         $text,
                     ]);
                 } else {
@@ -459,20 +461,20 @@ class Diff extends Widget
             }
 
             // Other lines (no prefix)
-            $elements[] = Text::create($line);
+            $elements[] = new Text($line);
         }
 
         // Flush any remaining pending removed lines
         foreach ($pendingRemoved as $removed) {
             $removedContent = substr($removed['line'], 1);
-            $text = Text::create($this->removedPrefix . $removedContent)->color($this->removedColor);
+            $text = new Text($this->removedPrefix . $removedContent)->color($this->removedColor);
             if ($this->removedBgColor !== null) {
                 $text = $text->bgColor($this->removedBgColor);
             }
             if ($this->lineNumbersEnabled) {
-                $elements[] = Box::row([
-                    Text::create(str_pad((string) $removed['num'], 4))->dim(),
-                    Text::create(str_pad('', 4))->dim(),
+                $elements[] = new BoxRow([
+                    new Text(str_pad((string) $removed['num'], 4))->dim(),
+                    new Text(str_pad('', 4))->dim(),
                     $text,
                 ]);
             } else {
@@ -480,7 +482,7 @@ class Diff extends Widget
             }
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     /**
@@ -494,10 +496,10 @@ class Diff extends Widget
         $baseColor = $lineType === 'added' ? $this->addedColor : $this->removedColor;
         $bgColor = $lineType === 'added' ? $this->addedBgColor : $this->removedBgColor;
 
-        $parts = [Text::create($prefix)->color($baseColor)];
+        $parts = [new Text($prefix)->color($baseColor)];
 
         foreach ($segments as $segment) {
-            $text = Text::create($segment['text']);
+            $text = new Text($segment['text']);
 
             if ($segment['type'] === 'same') {
                 // Unchanged text - show in base color but dimmer
@@ -513,7 +515,7 @@ class Diff extends Widget
             $parts[] = $text;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function getDiffContent(): string

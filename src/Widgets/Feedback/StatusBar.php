@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
@@ -160,7 +161,7 @@ class StatusBar extends Widget
         $elements = [];
 
         if ($this->padding > 0) {
-            $elements[] = Text::create(str_repeat(' ', $this->padding));
+            $elements[] = new Text(str_repeat(' ', $this->padding));
         }
 
         $leftElements = $this->renderSegments($this->leftSegments, $context);
@@ -172,7 +173,7 @@ class StatusBar extends Widget
 
         // Add minimum spacing between left and right sections
         if (!empty($this->leftSegments) && !empty($this->rightSegments)) {
-            $elements[] = Text::create(' ');
+            $elements[] = new Text(' ');
         }
 
         $rightElements = $this->renderSegments($this->rightSegments, $context);
@@ -181,15 +182,15 @@ class StatusBar extends Widget
         }
 
         if ($this->padding > 0) {
-            $elements[] = Text::create(str_repeat(' ', $this->padding));
+            $elements[] = new Text(str_repeat(' ', $this->padding));
         }
 
-        $row = Box::row($elements);
+        $row = new BoxRow($elements);
 
         if ($this->backgroundColor !== null) {
-            return Box::create()
+            return new Box()
                 ->bgColor($this->backgroundColor)
-                ->children([$row]);
+                ->append($row);
         }
 
         return $row;
@@ -210,7 +211,7 @@ class StatusBar extends Widget
             }
 
             if ($visibleCount > 0) {
-                $elements[] = Text::create($this->separator)->dim();
+                $elements[] = new Text($this->separator)->dim();
             }
 
             $elements[] = $segment->render($context);

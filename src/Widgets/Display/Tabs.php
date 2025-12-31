@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Display;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -185,7 +187,7 @@ class Tabs extends Widget
         [$scrollOffset, $setScrollOffset] = $hooks->state(0);
 
         if (empty($this->tabs)) {
-            return Text::create('No tabs')->dim();
+            return new Text('No tabs')->dim();
         }
 
         if ($this->interactive) {
@@ -256,7 +258,7 @@ class Tabs extends Widget
             $elements[] = $this->renderContent($activeTab);
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderTabBar(int $selectedIndex, int $scrollOffset): mixed
@@ -286,13 +288,13 @@ class Tabs extends Widget
             && $scrollOffset + $this->maxVisibleTabs < count($this->tabs);
 
         if ($showScrollLeft) {
-            $parts[] = Text::create('< ')->dim();
+            $parts[] = new Text('< ')->dim();
         }
 
         $index = 0;
         foreach ($tabs as $actualIndex => $tab) {
             if ($index > 0) {
-                $parts[] = Text::create($this->separator)->dim();
+                $parts[] = new Text($this->separator)->dim();
             }
 
             $parts[] = $this->renderTab($tab, $actualIndex, $selectedIndex);
@@ -300,10 +302,10 @@ class Tabs extends Widget
         }
 
         if ($showScrollRight) {
-            $parts[] = Text::create(' >')->dim();
+            $parts[] = new Text(' >')->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     /**
@@ -319,25 +321,25 @@ class Tabs extends Widget
             $tabParts = [];
 
             if ($this->showIcons && $tab->icon !== null) {
-                $tabParts[] = Text::create($tab->icon . ' ');
+                $tabParts[] = new Text($tab->icon . ' ');
             }
 
-            $tabParts[] = Text::create($tab->label);
+            $tabParts[] = new Text($tab->label);
 
             if ($this->showBadges && $tab->badge !== null) {
-                $tabParts[] = Text::create(' (' . $tab->badge . ')')->dim();
+                $tabParts[] = new Text(' (' . $tab->badge . ')')->dim();
             }
 
             if ($this->closable) {
-                $tabParts[] = Text::create(' x')->dim();
+                $tabParts[] = new Text(' x')->dim();
             }
 
-            $tabContent = Box::row($tabParts);
+            $tabContent = new BoxRow($tabParts);
 
-            $tabBox = Box::create()
+            $tabBox = new Box()
                 ->border($isActive ? 'round' : 'single')
                 ->paddingX(1)
-                ->children([$tabContent]);
+                ->append($tabContent);
 
             if ($isActive) {
                 $tabBox = $tabBox->borderColor($this->activeColor);
@@ -346,7 +348,7 @@ class Tabs extends Widget
             $parts[] = $tabBox;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderTab(TabItem $tab, int $index, int $selectedIndex): mixed
@@ -356,10 +358,10 @@ class Tabs extends Widget
         $parts = [];
 
         if ($this->showIcons && $tab->icon !== null) {
-            $parts[] = Text::create($tab->icon . ' ');
+            $parts[] = new Text($tab->icon . ' ');
         }
 
-        $labelText = Text::create($tab->label);
+        $labelText = new Text($tab->label);
 
         if ($isActive) {
             $labelText = $labelText->bold()->color($this->activeColor);
@@ -370,21 +372,21 @@ class Tabs extends Widget
         $parts[] = $labelText;
 
         if ($this->showBadges && $tab->badge !== null) {
-            $badgeText = Text::create(' (' . $tab->badge . ')');
+            $badgeText = new Text(' (' . $tab->badge . ')');
             $parts[] = $isActive ? $badgeText : $badgeText->dim();
         }
 
         if ($this->closable) {
-            $parts[] = Text::create(' x')->dim();
+            $parts[] = new Text(' x')->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderContent(TabItem $tab): mixed
     {
         if (is_string($tab->content)) {
-            return Text::create($tab->content);
+            return new Text($tab->content);
         }
 
         return $tab->content;

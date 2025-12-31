@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Display;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Scroll\SmoothScroller;
@@ -290,14 +292,14 @@ class ItemList extends Widget
         $elements = [];
 
         if ($this->title !== null) {
-            $elements[] = Text::create($this->title)->bold();
+            $elements[] = new Text($this->title)->bold();
         }
 
         $showScrollUp = $range['start'] > 0;
         $showScrollDown = $range['end'] < $itemCount;
 
         if ($showScrollUp) {
-            $elements[] = Text::create('  ↑ ' . $range['start'] . ' more')->dim();
+            $elements[] = new Text('  ↑ ' . $range['start'] . ' more')->dim();
         }
 
         // Only render visible items from VirtualList range
@@ -311,10 +313,10 @@ class ItemList extends Widget
 
         if ($showScrollDown) {
             $hidden = $itemCount - $range['end'];
-            $elements[] = Text::create('  ↓ ' . $hidden . ' more')->dim();
+            $elements[] = new Text('  ↓ ' . $hidden . ' more')->dim();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     /**
@@ -385,26 +387,26 @@ class ItemList extends Widget
 
         $totalIndent = $this->indent + ($depth * $this->nestedIndent);
         if ($totalIndent > 0) {
-            $parts[] = Text::create(str_repeat(' ', $totalIndent));
+            $parts[] = new Text(str_repeat(' ', $totalIndent));
         }
 
         if ($isFocused) {
-            $parts[] = Text::create(': ')->color('cyan');
+            $parts[] = new Text(': ')->color('cyan');
         } else {
-            $parts[] = Text::create('  ');
+            $parts[] = new Text('  ');
         }
 
         if ($this->showNumbers) {
-            $parts[] = Text::create($number . '. ')->dim();
+            $parts[] = new Text($number . '. ')->dim();
         } else {
             $bullet = $this->getBullet($depth);
-            $parts[] = Text::create($bullet . ' ')->dim();
+            $parts[] = new Text($bullet . ' ')->dim();
         }
 
         if ($this->renderItem !== null) {
             $parts[] = ($this->renderItem)($item, $isFocused);
         } else {
-            $contentText = Text::create($item->content);
+            $contentText = new Text($item->content);
             if ($isFocused) {
                 $contentText = $contentText->bold();
             }
@@ -412,11 +414,11 @@ class ItemList extends Widget
         }
 
         if ($item->badge !== null) {
-            $parts[] = Text::create(' ');
-            $parts[] = Text::create('[' . $item->badge . ']')->dim();
+            $parts[] = new Text(' ');
+            $parts[] = new Text('[' . $item->badge . ']')->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function getBullet(int $depth): string

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback\Segments;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Feedback\StatusBarContext;
 use Xocdr\Tui\Widgets\Feedback\StatusBarSegment;
@@ -90,16 +92,16 @@ class GitSegment implements StatusBarSegment
 
         $parts = [];
 
-        $parts[] = Text::create($this->icon . ' ');
-        $parts[] = Text::create($branch)->color($this->branchColor);
+        $parts[] = new Text($this->icon . ' ');
+        $parts[] = new Text($branch)->color($this->branchColor);
 
         if ($isDirty) {
-            $parts[] = Text::create(' ' . $this->dirtyIcon)->color($this->dirtyColor);
+            $parts[] = new Text(' ' . $this->dirtyIcon)->color($this->dirtyColor);
         } else {
-            $parts[] = Text::create(' ' . $this->cleanIcon)->color($this->cleanColor);
+            $parts[] = new Text(' ' . $this->cleanIcon)->color($this->cleanColor);
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     public function isVisible(StatusBarContext $context): bool

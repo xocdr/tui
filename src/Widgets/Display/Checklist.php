@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Display;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -249,7 +251,7 @@ class Checklist extends Widget
         $elements = [];
 
         if ($this->title !== null) {
-            $elements[] = Text::create($this->title)->bold();
+            $elements[] = new Text($this->title)->bold();
         }
 
         foreach ($this->items as $index => $item) {
@@ -261,7 +263,7 @@ class Checklist extends Widget
             $elements[] = $this->renderProgress($checkedItems);
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderItem(ChecklistItem $item, int $index, bool $isChecked, int $selectedIndex): mixed
@@ -271,19 +273,19 @@ class Checklist extends Widget
         $parts = [];
 
         if ($this->indent > 0) {
-            $parts[] = Text::create(str_repeat(' ', $this->indent));
+            $parts[] = new Text(str_repeat(' ', $this->indent));
         }
 
         if ($isFocused) {
-            $parts[] = Text::create(': ')->color('cyan');
+            $parts[] = new Text(': ')->color('cyan');
         } else {
-            $parts[] = Text::create('  ');
+            $parts[] = new Text('  ');
         }
 
         $icon = $isChecked ? $this->checkedIcon : $this->uncheckedIcon;
         $iconColor = $isChecked ? $this->checkedColor : $this->uncheckedColor;
 
-        $iconText = Text::create($icon . ' ');
+        $iconText = new Text($icon . ' ');
         if (!$item->disabled) {
             $iconText = $iconText->color($iconColor);
         } else {
@@ -291,7 +293,7 @@ class Checklist extends Widget
         }
         $parts[] = $iconText;
 
-        $labelText = Text::create($item->label);
+        $labelText = new Text($item->label);
         if ($item->disabled) {
             $labelText = $labelText->dim();
         } elseif ($isFocused) {
@@ -305,10 +307,10 @@ class Checklist extends Widget
         $parts[] = $labelText;
 
         if ($item->description !== null) {
-            $parts[] = Text::create(' - ' . $item->description)->dim();
+            $parts[] = new Text(' - ' . $item->description)->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     /**
@@ -325,7 +327,7 @@ class Checklist extends Widget
             $this->progressFormat,
         );
 
-        return Text::create($text)->dim();
+        return new Text($text)->dim();
     }
 
     /**

@@ -223,7 +223,7 @@ class BusyBar extends Widget
      */
     private function renderText(): Text
     {
-        $text = Text::create($this->toString());
+        $text = new Text($this->toString());
         if ($this->color !== null) {
             $text->color($this->color);
         }
@@ -268,10 +268,10 @@ class BusyBar extends Widget
 
         for ($i = 0; $i < $this->width; $i++) {
             $colorIndex = $i % count($colors);
-            $children[] = Text::create($this->activeChar)->color($colors[$colorIndex]);
+            $children[] = new Text($this->activeChar)->color($colors[$colorIndex]);
         }
 
-        return Fragment::create()->children($children);
+        return new Fragment($children);
     }
 
     private function renderPulse(): string

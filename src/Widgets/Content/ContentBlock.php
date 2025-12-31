@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Content;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -178,14 +180,14 @@ class ContentBlock extends Widget
             $elements[] = $this->renderFooter();
         }
 
-        $container = Box::column($elements);
+        $container = new BoxColumn($elements);
 
         if ($this->border !== false) {
             $borderStyle = is_string($this->border) ? $this->border : 'single';
-            $box = Box::create()
+            $box = new Box()
                 ->border($borderStyle)
                 ->borderColor($this->borderColor)
-                ->children([$container]);
+                ->append($container);
 
             if ($this->title !== null) {
                 $box = $box->borderTitle($this->title);
@@ -202,26 +204,26 @@ class ContentBlock extends Widget
         $parts = [];
 
         if ($this->language !== null) {
-            $langText = Text::create('[' . $this->language . ']');
+            $langText = new Text('[' . $this->language . ']');
             $parts[] = $this->headerColor !== null
                 ? $langText->color($this->headerColor)
                 : $langText->dim();
         }
 
         if ($this->title !== null && $this->border === false) {
-            $titleText = Text::create($this->title);
+            $titleText = new Text($this->title);
             $parts[] = $this->headerColor !== null
                 ? $titleText->color($this->headerColor)->bold()
                 : $titleText->bold();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderContent(): mixed
     {
         if ($this->content === null) {
-            return Text::create('');
+            return new Text('');
         }
 
         if (!is_string($this->content)) {
@@ -251,16 +253,16 @@ class ContentBlock extends Widget
             $lineNumber++;
         }
 
-        $content = Box::column($elements);
+        $content = new BoxColumn($elements);
 
         $px = $this->paddingX > 0 ? $this->paddingX : $this->padding;
         $py = $this->paddingY > 0 ? $this->paddingY : $this->padding;
 
         if ($px > 0 || $py > 0) {
-            return Box::create()
+            return new Box()
                 ->paddingX($px)
                 ->paddingY($py)
-                ->children([$content]);
+                ->append($content);
         }
 
         return $content;
@@ -270,8 +272,8 @@ class ContentBlock extends Widget
     {
         $formattedNumber = str_pad((string) $lineNumber, $maxDigits, ' ', STR_PAD_LEFT);
 
-        return Box::row([
-            Text::create($formattedNumber . ' | ')->dim(),
+        return new BoxRow([
+            new Text($formattedNumber . ' | ')->dim(),
             $this->renderLine($line),
         ]);
     }
@@ -282,7 +284,7 @@ class ContentBlock extends Widget
             return $this->highlightLine($line);
         }
 
-        return Text::create($line);
+        return new Text($line);
     }
 
     private function highlightLine(string $line): mixed
@@ -290,7 +292,7 @@ class ContentBlock extends Widget
         $keywords = $this->getLanguageKeywords($this->language);
 
         if (empty($keywords)) {
-            return Text::create($line);
+            return new Text($line);
         }
 
         $parts = [];
@@ -300,13 +302,13 @@ class ContentBlock extends Widget
             $matched = false;
 
             if (preg_match('/^(\s+)/', $remaining, $matches)) {
-                $parts[] = Text::create($matches[1]);
+                $parts[] = new Text($matches[1]);
                 $remaining = substr($remaining, strlen($matches[1]));
                 continue;
             }
 
             if (preg_match('/^(\/\/.*|#.*)$/', $remaining, $matches)) {
-                $parts[] = Text::create($matches[1])->color('gray');
+                $parts[] = new Text($matches[1])->color('gray');
                 $remaining = '';
                 continue;
             }
@@ -314,21 +316,21 @@ class ContentBlock extends Widget
             if (preg_match('/^(["\'])/', $remaining, $matches)) {
                 $quote = $matches[1];
                 if (preg_match('/^' . $quote . '([^' . $quote . '\\\\]|\\\\.)*' . $quote . '/', $remaining, $strMatch)) {
-                    $parts[] = Text::create($strMatch[0])->color('green');
+                    $parts[] = new Text($strMatch[0])->color('green');
                     $remaining = substr($remaining, strlen($strMatch[0]));
                     continue;
                 }
             }
 
             if (preg_match('/^(\d+\.?\d*)/', $remaining, $matches)) {
-                $parts[] = Text::create($matches[1])->color('yellow');
+                $parts[] = new Text($matches[1])->color('yellow');
                 $remaining = substr($remaining, strlen($matches[1]));
                 continue;
             }
 
             foreach ($keywords as $keyword => $color) {
                 if (preg_match('/^(' . preg_quote($keyword, '/') . ')(?!\w)/', $remaining, $matches)) {
-                    $parts[] = Text::create($matches[1])->color($color);
+                    $parts[] = new Text($matches[1])->color($color);
                     $remaining = substr($remaining, strlen($matches[1]));
                     $matched = true;
                     break;
@@ -337,19 +339,19 @@ class ContentBlock extends Widget
 
             if (!$matched) {
                 if (preg_match('/^(\w+)/', $remaining, $matches)) {
-                    $parts[] = Text::create($matches[1]);
+                    $parts[] = new Text($matches[1]);
                     $remaining = substr($remaining, strlen($matches[1]));
                 } elseif (preg_match('/^([^\w\s]+)/', $remaining, $matches)) {
-                    $parts[] = Text::create($matches[1]);
+                    $parts[] = new Text($matches[1]);
                     $remaining = substr($remaining, strlen($matches[1]));
                 } else {
-                    $parts[] = Text::create($remaining[0]);
+                    $parts[] = new Text($remaining[0]);
                     $remaining = substr($remaining, 1);
                 }
             }
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     /**
@@ -440,6 +442,6 @@ class ContentBlock extends Widget
 
     private function renderFooter(): mixed
     {
-        return Text::create($this->footerText ?? '')->dim();
+        return new Text($this->footerText ?? '')->dim();
     }
 }

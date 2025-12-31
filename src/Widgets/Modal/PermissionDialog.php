@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Modal;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -158,8 +160,8 @@ class PermissionDialog extends Widget
         $elements = [];
 
         if ($this->message !== '') {
-            $elements[] = Text::create($this->message);
-            $elements[] = Text::create('');
+            $elements[] = new Text($this->message);
+            $elements[] = new Text('');
         }
 
         $elements[] = $this->buildButtonRow([
@@ -167,17 +169,17 @@ class PermissionDialog extends Widget
             ['label' => $this->denyLabel, 'selected' => $selectedIndex === 1, 'color' => 'red'],
         ]);
 
-        $content = Box::column($elements);
+        $content = new BoxColumn($elements);
 
         if ($this->border === false) {
             return $content;
         }
 
         $borderStyle = is_string($this->border) ? $this->border : 'double';
-        $container = Box::create()
+        $container = new Box()
             ->border($borderStyle)
             ->padding($this->padding)
-            ->children([$content]);
+            ->append($content);
 
         if ($this->borderColor !== null) {
             $container = $container->borderColor($this->borderColor);
@@ -205,10 +207,10 @@ class PermissionDialog extends Widget
 
         foreach ($buttons as $i => $button) {
             if ($i > 0) {
-                $parts[] = Text::create($separator);
+                $parts[] = new Text($separator);
             }
 
-            $text = Text::create('[' . $button['label'] . ']');
+            $text = new Text('[' . $button['label'] . ']');
             if ($button['selected']) {
                 $color = $button['color'] ?? 'cyan';
                 $text = $text->bold()->color($color);
@@ -216,6 +218,6 @@ class PermissionDialog extends Widget
             $parts[] = $text;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 }

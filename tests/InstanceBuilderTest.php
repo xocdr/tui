@@ -23,7 +23,7 @@ class InstanceBuilderTest extends TestCase
 
     public function testComponentSetsComponent(): void
     {
-        $component = fn () => Box::create();
+        $component = fn () => new Box;
         $builder = InstanceBuilder::create()->component($component);
 
         $this->assertInstanceOf(InstanceBuilder::class, $builder);
@@ -32,7 +32,7 @@ class InstanceBuilderTest extends TestCase
     public function testFullscreenSetsOption(): void
     {
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->fullscreen(true);
 
         $instance = $builder->build();
@@ -44,7 +44,7 @@ class InstanceBuilderTest extends TestCase
     public function testFullscreenDefaultsToTrue(): void
     {
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->fullscreen();
 
         $instance = $builder->build();
@@ -56,7 +56,7 @@ class InstanceBuilderTest extends TestCase
     public function testExitOnCtrlCSetsOption(): void
     {
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->exitOnCtrlC(false);
 
         $instance = $builder->build();
@@ -70,7 +70,7 @@ class InstanceBuilderTest extends TestCase
         $dispatcher = new EventDispatcher();
 
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->eventDispatcher($dispatcher);
 
         $instance = $builder->build();
@@ -83,7 +83,7 @@ class InstanceBuilderTest extends TestCase
         $context = new HookContext();
 
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->hookContext($context);
 
         $instance = $builder->build();
@@ -96,7 +96,7 @@ class InstanceBuilderTest extends TestCase
         $renderer = new ComponentRenderer(new MockRenderTarget());
 
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->renderer($renderer);
 
         // Build should succeed with custom renderer
@@ -107,7 +107,7 @@ class InstanceBuilderTest extends TestCase
     public function testOptionsMergesOptions(): void
     {
         $builder = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->fullscreen(true)
             ->options(['customOption' => 'value']);
 
@@ -129,7 +129,7 @@ class InstanceBuilderTest extends TestCase
     public function testBuildReturnsInstance(): void
     {
         $instance = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->build();
 
         $this->assertInstanceOf(\Xocdr\Tui\Runtime::class, $instance);
@@ -151,7 +151,7 @@ class InstanceBuilderTest extends TestCase
     public function testFluentChaining(): void
     {
         $instance = InstanceBuilder::create()
-            ->component(fn () => Box::create())
+            ->component(fn () => new Box)
             ->fullscreen(true)
             ->exitOnCtrlC(true)
             ->options(['debug' => true])

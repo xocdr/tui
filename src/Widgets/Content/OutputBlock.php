@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Content;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -254,13 +256,13 @@ class OutputBlock extends Widget
             $elements[] = $this->renderFooter();
         }
 
-        $container = Box::column($elements);
+        $container = new BoxColumn($elements);
 
         if ($this->border !== false) {
             $borderStyle = is_string($this->border) ? $this->border : 'single';
-            return Box::create()
+            return new Box()
                 ->border($borderStyle)
-                ->children([$container]);
+                ->append($container);
         }
 
         return $container;
@@ -270,20 +272,20 @@ class OutputBlock extends Widget
     {
         $parts = [];
 
-        $parts[] = Text::create('$ ')->color($this->commandColor)->bold();
-        $parts[] = Text::create($this->command ?? '')->color($this->commandColor);
+        $parts[] = new Text('$ ')->color($this->commandColor)->bold();
+        $parts[] = new Text($this->command ?? '')->color($this->commandColor);
 
         if ($this->showTimestamp && $this->timestamp !== null) {
-            $parts[] = Text::create(' ');
-            $parts[] = Text::create('[' . $this->timestamp . ']')->dim();
+            $parts[] = new Text(' ');
+            $parts[] = new Text('[' . $this->timestamp . ']')->dim();
         }
 
         if ($this->streaming) {
-            $parts[] = Text::create(' ');
-            $parts[] = Text::create('(streaming...)')->dim();
+            $parts[] = new Text(' ');
+            $parts[] = new Text('(streaming...)')->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderContent(int $scrollOffset): mixed
@@ -300,7 +302,7 @@ class OutputBlock extends Widget
 
         $elements = [];
         foreach ($lines as $line) {
-            $lineText = Text::create($line);
+            $lineText = new Text($line);
             if ($this->type === 'stderr') {
                 $lineText = $lineText->color($color);
             }
@@ -311,11 +313,11 @@ class OutputBlock extends Widget
             $totalLines = count(explode("\n", $this->content));
             if ($totalLines > $this->maxLines) {
                 $hidden = $totalLines - $this->maxLines;
-                $elements[] = Text::create("... ({$hidden} more lines)")->dim();
+                $elements[] = new Text("... ({$hidden} more lines)")->dim();
             }
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     private function renderFooter(): mixed
@@ -324,10 +326,10 @@ class OutputBlock extends Widget
         $color = $isSuccess ? $this->successColor : $this->errorColor;
         $icon = $isSuccess ? '✓' : '✗';
 
-        return Box::row([
-            Text::create($icon . ' ')->color($color),
-            Text::create('Exit code: ')->dim(),
-            Text::create((string) $this->exitCode)->color($color),
+        return new BoxRow([
+            new Text($icon . ' ')->color($color),
+            new Text('Exit code: ')->dim(),
+            new Text((string) $this->exitCode)->color($color),
         ]);
     }
 }

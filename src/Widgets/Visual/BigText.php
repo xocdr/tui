@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Visual;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -175,13 +177,13 @@ class BigText extends Widget
 
         $elements = [];
         foreach ($lines as $line) {
-            $text = Text::create(rtrim($line));
+            $text = new Text(rtrim($line));
             if ($this->color !== null) {
                 $text = $text->color($this->color);
             }
             $elements[] = $text;
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Telemetry\Metrics;
@@ -17,7 +19,7 @@ use Xocdr\Tui\Support\Telemetry\Metrics;
  *
  * @example
  * // Wrap your app with DebugPanel
- * Box::column([
+ * new BoxColumn([
  *     new DebugPanel(),
  *     // ... your app content
  * ]);
@@ -87,7 +89,7 @@ class DebugPanel extends Widget
         });
 
         if (!$visible) {
-            return Box::create();
+            return new Box();
         }
 
         return $this->renderPanel($metrics);
@@ -109,26 +111,16 @@ class DebugPanel extends Widget
 
         $positionStyle = $this->getPositionStyle();
 
-        return Box::create()
-            ->border('round')
-            ->borderColor('#666666')
-            ->padding(1)
-            ->width(40)
-            ->flexDirection('column')
-            ->gap(1)
-            ->borderTitle('Debug Panel')
-            ->borderTitleColor('#888888')
-            ->{$positionStyle['method']}($positionStyle['value'])
-            ->children([
+        return (new BoxColumn([
                 // Render timing
-                Box::column([
-                    Text::create('Render')->bold()->dim(),
-                    Text::create(sprintf(
+                new BoxColumn([
+                    new Text('Render')->bold()->dim(),
+                    new Text(sprintf(
                         'Count: %d  Avg: %.2fms',
                         $render['render_count'],
                         $render['avg_render_ms']
                     ))->color($fpsColor),
-                    Text::create(sprintf(
+                    new Text(sprintf(
                         'Min: %.2fms  Max: %.2fms',
                         $render['min_render_ms'],
                         $render['max_render_ms']
@@ -136,9 +128,9 @@ class DebugPanel extends Widget
                 ]),
 
                 // Phase breakdown
-                Box::column([
-                    Text::create('Phases')->bold()->dim(),
-                    Text::create(sprintf(
+                new BoxColumn([
+                    new Text('Phases')->bold()->dim(),
+                    new Text(sprintf(
                         'Layout: %.1f%%  Buffer: %.1f%%  Output: %.1f%%',
                         $breakdown['layout'],
                         $breakdown['buffer'],
@@ -147,15 +139,15 @@ class DebugPanel extends Widget
                 ]),
 
                 // Nodes
-                Box::column([
-                    Text::create('Nodes')->bold()->dim(),
-                    Text::create(sprintf(
+                new BoxColumn([
+                    new Text('Nodes')->bold()->dim(),
+                    new Text(sprintf(
                         'Total: %d  Box: %d  Text: %d',
                         $nodes['node_count'],
                         $nodes['box_count'],
                         $nodes['text_count']
                     )),
-                    Text::create(sprintf(
+                    new Text(sprintf(
                         'Static: %d  Depth: %d',
                         $nodes['static_count'],
                         $nodes['max_depth']
@@ -163,14 +155,14 @@ class DebugPanel extends Widget
                 ]),
 
                 // Reconciler
-                Box::column([
-                    Text::create('Reconciler')->bold()->dim(),
-                    Text::create(sprintf(
+                new BoxColumn([
+                    new Text('Reconciler')->bold()->dim(),
+                    new Text(sprintf(
                         'Diffs: %d  Ops/diff: %.1f',
                         $reconciler['diff_runs'],
                         $reconciler['avg_ops_per_diff']
                     ))->color($reconciler['avg_ops_per_diff'] > 50 ? 'yellow' : 'white'),
-                    Text::create(sprintf(
+                    new Text(sprintf(
                         '+%d  ~%d  -%d  ↔%d',
                         $reconciler['creates'],
                         $reconciler['updates'],
@@ -180,9 +172,9 @@ class DebugPanel extends Widget
                 ]),
 
                 // Event loop
-                Box::column([
-                    Text::create('Events')->bold()->dim(),
-                    Text::create(sprintf(
+                new BoxColumn([
+                    new Text('Events')->bold()->dim(),
+                    new Text(sprintf(
                         'Loop: %d  Input: %d  Resize: %d  Timer: %d',
                         $loop['loop_iterations'],
                         $loop['input_events'],
@@ -192,8 +184,16 @@ class DebugPanel extends Widget
                 ]),
 
                 // Help
-                Text::create('Ctrl+Shift+D to close')->dim()->italic(),
-            ]);
+                new Text('Ctrl+Shift+D to close')->dim()->italic(),
+            ]))
+            ->border('round')
+            ->borderColor('#666666')
+            ->padding(1)
+            ->width(40)
+            ->gap(1)
+            ->borderTitle('Debug Panel')
+            ->borderTitleColor('#888888')
+            ->{$positionStyle['method']}($positionStyle['value']);
     }
 
     /**

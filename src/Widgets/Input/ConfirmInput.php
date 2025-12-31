@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Input;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -162,23 +164,23 @@ class ConfirmInput extends Widget
         $questionParts = [];
 
         if ($this->variant === 'danger') {
-            $questionParts[] = Text::create('⚠️ ')->color('yellow');
+            $questionParts[] = new Text('⚠️ ')->color('yellow');
         }
 
-        $questionParts[] = Text::create($this->question . ' ');
+        $questionParts[] = new Text($this->question . ' ');
 
         $hint = $this->default
             ? '(' . strtoupper($this->yesKey) . '/' . $this->noKey . ')'
             : '(' . $this->yesKey . '/' . strtoupper($this->noKey) . ')';
 
-        $questionParts[] = Text::create($hint)->dim();
+        $questionParts[] = new Text($hint)->dim();
 
-        $elements[] = Box::row($questionParts);
+        $elements[] = new BoxRow($questionParts);
 
         if ($this->description !== null) {
-            $elements[] = Text::create($this->description)->dim();
+            $elements[] = new Text($this->description)->dim();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 }

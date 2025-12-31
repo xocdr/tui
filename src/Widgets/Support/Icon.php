@@ -208,7 +208,7 @@ class Icon
     public function renderFrame(int $frame): mixed
     {
         $char = $this->getFrameAt($frame);
-        $text = Text::create($char);
+        $text = new Text($char);
 
         if ($this->color !== null) {
             $text = $text->color($this->color);

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Layout;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -135,7 +137,7 @@ class Divider extends Widget
         if ($this->title === null) {
             $line = str_repeat($char, $width);
 
-            return $this->applyColor(Text::create($line));
+            return $this->applyColor(new Text($line));
         }
 
         return $this->renderWithTitle($char, $width);
@@ -167,11 +169,11 @@ class Divider extends Widget
                 $g = (int) ($startColor[1] + ($endColor[1] - $startColor[1]) * $ratio);
                 $b = (int) ($startColor[2] + ($endColor[2] - $startColor[2]) * $ratio);
 
-                $segments[] = Text::create($char)->rgb($r, $g, $b);
+                $segments[] = (new Text($char))->rgb($r, $g, $b);
             }
         }
 
-        return Box::row($segments);
+        return new BoxRow($segments);
     }
 
     /**
@@ -220,7 +222,7 @@ class Divider extends Widget
         $availableSpace = $width - $titleLength;
 
         if ($availableSpace < 4) {
-            return $this->applyColor(Text::create(str_repeat($char, $width)));
+            return $this->applyColor(new Text(str_repeat($char, $width)));
         }
 
         switch ($this->titleAlign) {
@@ -243,10 +245,10 @@ class Divider extends Widget
         $leftLine = str_repeat($char, max(0, $leftLength));
         $rightLine = str_repeat($char, max(0, $rightLength));
 
-        return Box::row([
-            $this->applyColor(Text::create($leftLine)),
-            Text::create($title),
-            $this->applyColor(Text::create($rightLine)),
+        return new BoxRow([
+            $this->applyColor(new Text($leftLine)),
+            new Text($title),
+            $this->applyColor(new Text($rightLine)),
         ]);
     }
 
@@ -257,10 +259,10 @@ class Divider extends Widget
 
         $lines = [];
         for ($i = 0; $i < $height; $i++) {
-            $lines[] = $this->applyColor(Text::create($char));
+            $lines[] = $this->applyColor(new Text($char));
         }
 
-        return Box::column($lines);
+        return new BoxColumn($lines);
     }
 
     private function getCharacter(string $direction): string

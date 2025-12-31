@@ -23,8 +23,8 @@ use Xocdr\Tui\Styling\Style\Border;
  *     ->setAlign(1, true); // Right-align Age column
  *
  * // In a Box:
- * Box::create()->children([
- *     Text::create($table->toString()),
+ * new Box()(
+ *     new Text($table->toString()),
  * ]);
  */
 class Table extends Widget implements TableInterface
@@ -247,7 +247,7 @@ class Table extends Widget implements TableInterface
      */
     public function toText(): Text
     {
-        return Text::create($this->toString());
+        return new Text($this->toString());
     }
 
     /**

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
@@ -153,7 +155,7 @@ class Alert extends Widget
         }
 
         if ($isDismissed) {
-            return Fragment::create();
+            return new Fragment();
         }
 
         $borderColor = $this->variant->color();
@@ -161,19 +163,17 @@ class Alert extends Widget
         $contentElements = $this->renderContent();
 
         if ($this->dismissible) {
-            $contentElements[] = Text::create('');
-            $contentElements[] = Box::row([
-                Text::create('[' . $this->dismissLabel . ']')->bold(),
+            $contentElements[] = new Text('');
+            $contentElements[] = new BoxRow([
+                new Text('[' . $this->dismissLabel . ']')->bold(),
             ]);
         }
 
-        $box = Box::create()
+        $box = new Box()
             ->border('round')
             ->borderColor($borderColor)
             ->padding(1)
-            ->children([
-                Box::column($contentElements),
-            ]);
+            ->append(new BoxColumn($contentElements));
 
         if ($this->width !== null) {
             $box = $box->width($this->width);
@@ -198,12 +198,12 @@ class Alert extends Widget
         foreach ($lines as $index => $line) {
             // @phpstan-ignore notIdentical.alwaysTrue ($icon can be null when variant has no icon)
             if ($index === 0 && $icon !== null) {
-                $elements[] = Box::row([
-                    Text::create($icon . ' ')->color($this->variant->color()),
-                    Text::create($line),
+                $elements[] = new BoxRow([
+                    new Text($icon . ' ')->color($this->variant->color()),
+                    new Text($line),
                 ]);
             } else {
-                $elements[] = Text::create($line);
+                $elements[] = new Text($line);
             }
         }
 

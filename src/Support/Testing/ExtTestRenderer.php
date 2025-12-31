@@ -23,7 +23,7 @@ use Xocdr\Tui\Hooks\HookRegistry;
  *
  * @example
  * $renderer = new ExtTestRenderer(80, 24);
- * $renderer->render(fn() => Box::column([Text::create('Hello')]));
+ * $renderer->render(fn() => new BoxColumn([new Text('Hello')]));
  * $this->assertStringContainsString('Hello', $renderer->toString());
  */
 class ExtTestRenderer

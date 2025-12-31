@@ -6,6 +6,7 @@ namespace Xocdr\Tui\Tests\Testing;
 
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Testing\MockInstance;
 use Xocdr\Tui\Support\Testing\TestRenderer;
@@ -26,7 +27,7 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertOutputContains(): void
     {
-        $this->renderer->render(Text::create('Hello World'));
+        $this->renderer->render(new Text('Hello World'));
 
         $this->assertOutputContains($this->renderer, 'Hello');
         $this->assertOutputContains($this->renderer, 'World');
@@ -34,24 +35,24 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertOutputNotContains(): void
     {
-        $this->renderer->render(Text::create('Hello'));
+        $this->renderer->render(new Text('Hello'));
 
         $this->assertOutputNotContains($this->renderer, 'Goodbye');
     }
 
     public function testAssertOutputMatches(): void
     {
-        $this->renderer->render(Text::create('Count: 42'));
+        $this->renderer->render(new Text('Count: 42'));
 
         $this->assertOutputMatches($this->renderer, '/Count: \d+/');
     }
 
     public function testAssertOutputLineCount(): void
     {
-        $this->renderer->render(Box::column([
-            Text::create('Line 1'),
-            Text::create('Line 2'),
-            Text::create('Line 3'),
+        $this->renderer->render(new BoxColumn([
+            new Text('Line 1'),
+            new Text('Line 2'),
+            new Text('Line 3'),
         ]));
 
         $this->assertOutputLineCount($this->renderer, 3);
@@ -59,9 +60,9 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertLineContains(): void
     {
-        $this->renderer->render(Box::column([
-            Text::create('First line'),
-            Text::create('Second line'),
+        $this->renderer->render(new BoxColumn([
+            new Text('First line'),
+            new Text('Second line'),
         ]));
 
         $this->assertLineContains($this->renderer, 0, 'First');
@@ -70,7 +71,7 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertOutputEquals(): void
     {
-        $this->renderer->render(Text::create('Exact match'));
+        $this->renderer->render(new Text('Exact match'));
 
         $this->assertOutputEquals($this->renderer, 'Exact match');
     }
@@ -85,21 +86,21 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertOutputNotEmpty(): void
     {
-        $this->renderer->render(Text::create('Content'));
+        $this->renderer->render(new Text('Content'));
 
         $this->assertOutputNotEmpty($this->renderer);
     }
 
     public function testAssertHasBoldText(): void
     {
-        $this->renderer->render(Text::create('Bold Text')->bold());
+        $this->renderer->render((new Text('Bold Text'))->bold());
 
         $this->assertHasBoldText($this->renderer, 'Bold Text');
     }
 
     public function testAssertHasItalicText(): void
     {
-        $this->renderer->render(Text::create('Italic Text')->italic());
+        $this->renderer->render((new Text('Italic Text'))->italic());
 
         $this->assertHasItalicText($this->renderer, 'Italic Text');
     }
@@ -107,9 +108,9 @@ class TuiAssertionsTest extends TestCase
     public function testAssertHasBorder(): void
     {
         $this->renderer->render(
-            Box::create()
+            (new Box)
                 ->border('single')
-                ->children([Text::create('Bordered')])
+                ->children([new Text('Bordered')])
         );
 
         $this->assertHasBorder($this->renderer, 'single');
@@ -118,9 +119,9 @@ class TuiAssertionsTest extends TestCase
     public function testAssertHasDoubleBorder(): void
     {
         $this->renderer->render(
-            Box::create()
+            (new Box)
                 ->border('double')
-                ->children([Text::create('Double')])
+                ->children([new Text('Double')])
         );
 
         $this->assertHasBorder($this->renderer, 'double');
@@ -128,7 +129,7 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertionsWithMockInstance(): void
     {
-        $instance = new MockInstance(Text::create('From Instance'));
+        $instance = new MockInstance(new Text('From Instance'));
         $instance->start();
 
         $this->assertOutputContains($instance, 'From Instance');
@@ -137,7 +138,7 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertInstanceRunning(): void
     {
-        $instance = new MockInstance(Text::create('Test'));
+        $instance = new MockInstance(new Text('Test'));
         $instance->start();
 
         $this->assertInstanceRunning($instance);
@@ -145,7 +146,7 @@ class TuiAssertionsTest extends TestCase
 
     public function testAssertInstanceNotRunning(): void
     {
-        $instance = new MockInstance(Text::create('Test'));
+        $instance = new MockInstance(new Text('Test'));
 
         $this->assertInstanceNotRunning($instance);
 

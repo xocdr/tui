@@ -85,7 +85,7 @@ class MeterSegment implements StatusBarSegment
             $content = sprintf('%d%%', $percentage);
         }
 
-        $text = Text::create($content);
+        $text = new Text($content);
 
         if ($this->color !== null) {
             $text = $text->color($this->color);

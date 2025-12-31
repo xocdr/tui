@@ -271,7 +271,7 @@ class Line implements Component
         // For labeled lines, we need to handle colors differently
         // For now, use lineColor for the entire line including label
         // Future: could split into separate Text nodes for label vs line
-        $text = Text::create($this->toString());
+        $text = new Text($this->toString());
 
         // Use labelColor for labeled lines, otherwise lineColor
         $effectiveColor = ($this->label !== null && $this->labelColor !== null)

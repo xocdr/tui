@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Streaming;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\IconPresets;
@@ -138,7 +140,7 @@ class StreamingText extends Widget
         }
 
         if ($this->content === '' && $this->placeholder !== null) {
-            return Text::create($this->placeholder)->dim();
+            return new Text($this->placeholder)->dim();
         }
 
         $lines = $this->wrapContent($this->content);
@@ -151,15 +153,15 @@ class StreamingText extends Widget
         foreach ($lines as $i => $line) {
             $isLastLine = $i === count($lines) - 1;
 
-            $text = Text::create($line);
+            $text = new Text($line);
             if ($this->color !== null) {
                 $text = $text->color($this->color);
             }
 
             if ($isLastLine && $this->isStreaming && $this->showCursor) {
-                $elements[] = Box::row([
+                $elements[] = new BoxRow([
                     $text,
-                    Text::create($currentFrame)->color('cyan'),
+                    new Text($currentFrame)->color('cyan'),
                 ]);
             } else {
                 $elements[] = $text;
@@ -168,12 +170,12 @@ class StreamingText extends Widget
 
         if (empty($elements)) {
             if ($this->isStreaming && $this->showCursor) {
-                return Text::create($currentFrame)->color('cyan');
+                return new Text($currentFrame)->color('cyan');
             }
-            return Text::create('');
+            return new Text('');
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 
     /**

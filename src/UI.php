@@ -24,7 +24,7 @@ use Xocdr\Tui\Terminal\TerminalInfo;
  * {
  *     public function build(): Component
  *     {
- *         return Text::create('Hello, World!');
+ *         return new Text('Hello, World!');
  *     }
  * }
  *
@@ -45,9 +45,9 @@ use Xocdr\Tui\Terminal\TerminalInfo;
  *             }
  *         });
  *
- *         return Box::column([
- *             Text::create("Count: {$count}"),
- *             Text::create('Press Up to increment, q to quit'),
+ *         return new BoxColumn([
+ *             new Text("Count: {$count}"),
+ *             new Text('Press Up to increment, q to quit'),
  *         ]);
  *     }
  * }
@@ -67,7 +67,7 @@ use Xocdr\Tui\Terminal\TerminalInfo;
  *             $setSeconds(fn($s) => $s + 1);
  *         });
  *
- *         return Text::create("Elapsed: {$seconds}s");
+ *         return new Text("Elapsed: {$seconds}s");
  *     }
  * }
  * ```

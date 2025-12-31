@@ -11,14 +11,18 @@ use Xocdr\Tui\Styling\Style\Style;
 /**
  * Flexbox container component.
  *
- * @example
- * Box::create()
+ * @example Fluent append with explicit keys:
+ * (new Box)
  *     ->flexDirection('column')
  *     ->padding(1)
- *     ->children([
- *         Text::create('Hello'),
- *         Text::create('World'),
- *     ])
+ *     ->append($widget1, 'my-widget-1')
+ *     ->append($widget2, 'my-widget-2')
+ *
+ * @example Associative array (explicit keys for widget caching):
+ * new Box([
+ *     'my-widget' => $widget,
+ *     'my-list' => $todoList,
+ * ])
  */
 class Box extends AbstractContainerComponent
 {
@@ -44,41 +48,26 @@ class Box extends AbstractContainerComponent
     /**
      * Create a new Box instance.
      *
-     * @param array<Component|string> $children Initial children
+     * Supports both indexed and associative arrays. String keys are used
+     * as widget keys for instance persistence across re-renders.
+     *
+     * @param array<int|string, Component|string> $children Initial children
+     *
+     * @example Indexed array (auto-generated keys):
+     * new Box([$text1, $text2])
+     *
+     * @example Associative array (explicit keys for widget caching):
+     * new Box([
+     *     'my-widget' => $widget,
+     *     'my-list' => $todoList,
+     * ])
      */
     public function __construct(array $children = [])
     {
-        foreach ($children as $child) {
-            $this->append($child);
+        foreach ($children as $key => $child) {
+            $keyParam = is_string($key) ? $key : null;
+            $this->append($child, $keyParam);
         }
-    }
-
-    /**
-     * Create a new Box instance.
-     */
-    public static function create(): self
-    {
-        return new self();
-    }
-
-    /**
-     * Create a column-direction Box (static factory).
-     *
-     * @param array<Component|string> $children
-     */
-    public static function column(array $children = []): self
-    {
-        return self::create()->flexDirection('column')->children($children);
-    }
-
-    /**
-     * Create a row-direction Box (static factory).
-     *
-     * @param array<Component|string> $children
-     */
-    public static function row(array $children = []): self
-    {
-        return self::create()->flexDirection('row')->children($children);
     }
 
     /**

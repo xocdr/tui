@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Display;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -180,7 +181,7 @@ class Breadcrumb extends Widget
 
         foreach ($segments as $i => $segment) {
             if ($i > 0) {
-                $parts[] = Text::create($this->separator)->dim();
+                $parts[] = new Text($this->separator)->dim();
             }
 
             $isLast = $i === count($segments) - 1;
@@ -190,7 +191,7 @@ class Breadcrumb extends Widget
             $parts[] = $text;
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function renderSegment(BreadcrumbSegment $segment, bool $isLast, bool $isSelected): mixed
@@ -198,10 +199,10 @@ class Breadcrumb extends Widget
         $parts = [];
 
         if ($segment->icon !== null) {
-            $parts[] = Text::create($segment->icon . ' ');
+            $parts[] = new Text($segment->icon . ' ');
         }
 
-        $labelText = Text::create($segment->label);
+        $labelText = new Text($segment->label);
 
         if ($isLast || $isSelected) {
             if (isset($this->currentStyle['bold']) && $this->currentStyle['bold']) {
@@ -224,7 +225,7 @@ class Breadcrumb extends Widget
             return $parts[0];
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     /**

@@ -205,11 +205,11 @@ class ProgressBar extends Widget
             // Render with gradient
             for ($i = 0; $i < $filled; $i++) {
                 $color = $this->gradient->getColor($i);
-                $children[] = Text::create($this->fillChar)->color($color);
+                $children[] = new Text($this->fillChar)->color($color);
             }
         } else {
             // Render filled portion
-            $fillText = Text::create(str_repeat($this->fillChar, $filled));
+            $fillText = new Text(str_repeat($this->fillChar, $filled));
             if ($this->fillColor !== null) {
                 $fillText->color($this->fillColor);
             }
@@ -218,7 +218,7 @@ class ProgressBar extends Widget
 
         // Render empty portion
         if ($empty > 0) {
-            $emptyText = Text::create(str_repeat($this->emptyChar, $empty));
+            $emptyText = new Text(str_repeat($this->emptyChar, $empty));
             if ($this->emptyColor !== null) {
                 $emptyText->color($this->emptyColor);
             }
@@ -227,9 +227,9 @@ class ProgressBar extends Widget
 
         // Add percentage if enabled
         if ($this->showPercentage) {
-            $children[] = Text::create(sprintf(' %3d%%', (int) round($this->value * 100)));
+            $children[] = new Text(sprintf(' %3d%%', (int) round($this->value * 100)));
         }
 
-        return Fragment::create()->children($children);
+        return new Fragment($children);
     }
 }

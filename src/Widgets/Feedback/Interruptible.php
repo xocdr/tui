@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -112,20 +114,20 @@ class Interruptible extends Widget
         }
 
         if ($isInterrupted) {
-            return Text::create('Interrupted')->color('yellow');
+            return new Text('Interrupted')->color('yellow');
         }
 
         $elements = [];
 
         if ($this->children !== null) {
-            $elements[] = is_string($this->children) ? Text::create($this->children) : $this->children;
+            $elements[] = is_string($this->children) ? new Text($this->children) : $this->children;
         }
 
         if ($this->showHint && $this->isInterruptible) {
-            $elements[] = Text::create('');
-            $elements[] = Text::create($this->interruptLabel)->dim();
+            $elements[] = new Text('');
+            $elements[] = new Text($this->interruptLabel)->dim();
         }
 
-        return Box::column($elements);
+        return new BoxColumn($elements);
     }
 }

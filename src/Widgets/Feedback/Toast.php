@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
@@ -199,7 +201,7 @@ class Toast extends Widget
         }
 
         if ($isDismissed) {
-            return Fragment::create();
+            return new Fragment();
         }
 
         $color = $this->variant->color();
@@ -207,20 +209,20 @@ class Toast extends Widget
 
         $contentParts = [];
 
-        $contentParts[] = Text::create($icon . ' ')->color($color);
+        $contentParts[] = new Text($icon . ' ')->color($color);
 
         if ($this->title !== null) {
-            $contentParts[] = Text::create($this->title)->bold();
-            $contentParts[] = Text::create(': ');
+            $contentParts[] = new Text($this->title)->bold();
+            $contentParts[] = new Text(': ');
         }
 
-        $contentParts[] = Text::create($this->message);
+        $contentParts[] = new Text($this->message);
 
         if ($this->dismissible) {
-            $contentParts[] = Text::create(' [x]')->dim();
+            $contentParts[] = new Text(' [x]')->dim();
         }
 
-        $content = Box::row($contentParts);
+        $content = new BoxRow($contentParts);
 
         $elements = [$content];
 
@@ -231,14 +233,14 @@ class Toast extends Widget
             $emptyWidth = $barWidth - $filledWidth;
 
             $progressBar = str_repeat("█", $filledWidth) . str_repeat("░", $emptyWidth);
-            $elements[] = Text::create($progressBar)->color($color)->dim();
+            $elements[] = new Text($progressBar)->color($color)->dim();
         }
 
 
-        return Box::create()
+        return new Box()
             ->border('round')
             ->borderColor($color)
             ->padding(1)
-            ->children([Box::column($elements)]);
+            ->append(new BoxColumn($elements));
     }
 }

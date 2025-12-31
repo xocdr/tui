@@ -12,21 +12,21 @@ class TransformTest extends TestCase
 {
     public function testCreateTransform(): void
     {
-        $transform = Transform::create('Hello');
+        $transform = new Transform('Hello');
 
         $this->assertInstanceOf(Transform::class, $transform);
     }
 
     public function testCreateWithTextComponent(): void
     {
-        $transform = Transform::create(Text::create('Hello'));
+        $transform = new Transform(new Text('Hello'));
 
         $this->assertInstanceOf(Transform::class, $transform);
     }
 
     public function testUppercase(): void
     {
-        $transform = Transform::create('hello world')
+        $transform = (new Transform('hello world'))
             ->uppercase();
 
         // The render method will apply the transformation
@@ -35,7 +35,7 @@ class TransformTest extends TestCase
 
     public function testLowercase(): void
     {
-        $transform = Transform::create('HELLO WORLD')
+        $transform = (new Transform('HELLO WORLD'))
             ->lowercase();
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -43,7 +43,7 @@ class TransformTest extends TestCase
 
     public function testLineNumbers(): void
     {
-        $transform = Transform::create("line1\nline2\nline3")
+        $transform = (new Transform("line1\nline2\nline3"))
             ->lineNumbers();
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -51,7 +51,7 @@ class TransformTest extends TestCase
 
     public function testLineNumbersWithCustomStart(): void
     {
-        $transform = Transform::create("line1\nline2")
+        $transform = (new Transform("line1\nline2"))
             ->lineNumbers(10, '%4d: ');
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -59,7 +59,7 @@ class TransformTest extends TestCase
 
     public function testIndent(): void
     {
-        $transform = Transform::create("line1\nline2")
+        $transform = (new Transform("line1\nline2"))
             ->indent(4);
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -67,7 +67,7 @@ class TransformTest extends TestCase
 
     public function testPrefix(): void
     {
-        $transform = Transform::create("line1\nline2")
+        $transform = (new Transform("line1\nline2"))
             ->prefix('> ');
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -75,7 +75,7 @@ class TransformTest extends TestCase
 
     public function testSuffix(): void
     {
-        $transform = Transform::create("line1\nline2")
+        $transform = (new Transform("line1\nline2"))
             ->suffix(' <');
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -83,7 +83,7 @@ class TransformTest extends TestCase
 
     public function testTrim(): void
     {
-        $transform = Transform::create('  spaced  ')
+        $transform = (new Transform('  spaced  '))
             ->trim();
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -91,7 +91,7 @@ class TransformTest extends TestCase
 
     public function testGradient(): void
     {
-        $transform = Transform::create("line1\nline2\nline3")
+        $transform = (new Transform("line1\nline2\nline3"))
             ->gradient('#ff0000', '#0000ff');
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -99,7 +99,7 @@ class TransformTest extends TestCase
 
     public function testGradientHslMode(): void
     {
-        $transform = Transform::create("line1\nline2")
+        $transform = (new Transform("line1\nline2"))
             ->gradient('#ff0000', '#0000ff', 'hsl');
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -107,7 +107,7 @@ class TransformTest extends TestCase
 
     public function testRainbow(): void
     {
-        $transform = Transform::create("line1\nline2\nline3\nline4")
+        $transform = (new Transform("line1\nline2\nline3\nline4"))
             ->rainbow();
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -115,7 +115,7 @@ class TransformTest extends TestCase
 
     public function testRainbowWithCustomValues(): void
     {
-        $transform = Transform::create("line1\nline2")
+        $transform = (new Transform("line1\nline2"))
             ->rainbow(0.9, 0.6);
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -123,7 +123,7 @@ class TransformTest extends TestCase
 
     public function testAlternate(): void
     {
-        $transform = Transform::create("line1\nline2\nline3\nline4")
+        $transform = (new Transform("line1\nline2\nline3\nline4"))
             ->alternate(['#ff0000', '#00ff00', '#0000ff']);
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -131,7 +131,7 @@ class TransformTest extends TestCase
 
     public function testCustomTransform(): void
     {
-        $transform = Transform::create("hello\nworld")
+        $transform = (new Transform("hello\nworld"))
             ->transform(fn (string $line, int $index) => strtoupper($line) . " ({$index})");
 
         $this->assertInstanceOf(Transform::class, $transform);
@@ -140,7 +140,7 @@ class TransformTest extends TestCase
     public function testChainedTransforms(): void
     {
         // Only the last transform should be applied
-        $transform = Transform::create('hello')
+        $transform = (new Transform('hello'))
             ->uppercase()
             ->prefix('> ');
 

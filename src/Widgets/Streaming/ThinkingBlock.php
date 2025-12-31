@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Widgets\Streaming;
 
 use Xocdr\Tui\Components\Box;
+use Xocdr\Tui\Components\BoxColumn;
+use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Support\Constants;
@@ -144,12 +146,12 @@ class ThinkingBlock extends Widget
                 $contentElements = [];
 
                 foreach ($lines as $line) {
-                    $contentElements[] = Text::create('  ' . $line)->dim();
+                    $contentElements[] = new Text('  ' . $line)->dim();
                 }
 
-                return Box::column([
+                return new BoxColumn([
                     $header,
-                    Box::column($contentElements),
+                    new BoxColumn($contentElements),
                 ]);
             }
         }
@@ -164,7 +166,7 @@ class ThinkingBlock extends Widget
         if ($this->isThinking) {
             $frames = IconPresets::getSpinner($this->spinnerType);
             $frame = $frames[$spinnerFrame % count($frames)];
-            $spinnerText = Text::create($frame);
+            $spinnerText = new Text($frame);
 
             if ($this->color !== null) {
                 $spinnerText = $spinnerText->color($this->color);
@@ -174,12 +176,12 @@ class ThinkingBlock extends Widget
 
             $parts[] = $spinnerText;
         } else {
-            $parts[] = Text::create('✓')->color('green');
+            $parts[] = new Text('✓')->color('green');
         }
 
-        $parts[] = Text::create(' ');
+        $parts[] = new Text(' ');
 
-        $labelText = Text::create($this->label);
+        $labelText = new Text($this->label);
         if ($this->color !== null) {
             $labelText = $labelText->color($this->color);
         }
@@ -187,15 +189,15 @@ class ThinkingBlock extends Widget
 
         if ($this->showDuration) {
             $duration = $this->formatDuration($elapsedTime);
-            $parts[] = Text::create(' (' . $duration . ')')->dim();
+            $parts[] = new Text(' (' . $duration . ')')->dim();
         }
 
         if ($this->collapsible && $this->content !== '') {
             $icon = $isExpanded ? '▼' : '▶';
-            $parts[] = Text::create(' ' . $icon)->dim();
+            $parts[] = new Text(' ' . $icon)->dim();
         }
 
-        return Box::row($parts);
+        return new BoxRow($parts);
     }
 
     private function formatDuration(float $seconds): string
