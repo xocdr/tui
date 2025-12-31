@@ -6,6 +6,7 @@ namespace Xocdr\Tui\Components;
 
 use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Color as ColorUtil;
+use Xocdr\Tui\Styling\Style\UiStyles;
 
 /**
  * Styled text component.
@@ -98,216 +99,10 @@ class Text implements Component
      */
     public function styles(string|array|callable ...$classes): self
     {
-        foreach ($classes as $class) {
-            $this->applyStylesArgument($class);
-        }
+        $utilities = UiStyles::parseArguments($classes);
+        $this->style = UiStyles::applyTextUtilities($utilities, $this->style);
 
         return $this;
-    }
-
-    /**
-     * Process a single styles() argument (string, array, or callable).
-     *
-     * @param string|array<mixed>|callable $argument
-     */
-    private function applyStylesArgument(mixed $argument): void
-    {
-        // Handle callable - call it and process the result
-        if (is_callable($argument)) {
-            $result = $argument();
-            if ($result !== null) {
-                $this->applyStylesArgument($result);
-            }
-            return;
-        }
-
-        // Handle array - process each element recursively
-        if (is_array($argument)) {
-            foreach ($argument as $item) {
-                if (is_array($item) || is_callable($item) || is_string($item)) {
-                    $this->applyStylesArgument($item);
-                }
-            }
-            return;
-        }
-
-        // Skip non-string values
-        if (!is_string($argument)) {
-            return;
-        }
-
-        // Handle string - split by whitespace and apply each utility
-        $utilities = preg_split('/\s+/', trim($argument), -1, PREG_SPLIT_NO_EMPTY);
-
-        if ($utilities === false) {
-            return;
-        }
-
-        foreach ($utilities as $utility) {
-            $this->applyUtility($utility);
-        }
-    }
-
-    /**
-     * Apply a single utility class.
-     */
-    private function applyUtility(string $utility): void
-    {
-        // Text style utilities
-        $styleUtilities = [
-            'bold' => 'bold',
-            'italic' => 'italic',
-            'underline' => 'underline',
-            'dim' => 'dim',
-            'strikethrough' => 'strikethrough',
-            'inverse' => 'inverse',
-        ];
-
-        if (isset($styleUtilities[$utility])) {
-            $this->style[$styleUtilities[$utility]] = true;
-            return;
-        }
-
-        // Color utilities: text-{color} or text-{palette}-{shade}
-        if (str_starts_with($utility, 'text-')) {
-            $colorPart = substr($utility, 5);
-            $this->applyColorUtility($colorPart, 'color');
-            return;
-        }
-
-        // Background utilities: bg-{color} or bg-{palette}-{shade}
-        if (str_starts_with($utility, 'bg-')) {
-            $colorPart = substr($utility, 3);
-            $this->applyColorUtility($colorPart, 'bgColor');
-            return;
-        }
-
-        // Border color utilities: border-{color} or border-{palette}-{shade}
-        if (str_starts_with($utility, 'border-')) {
-            $colorPart = substr($utility, 7);
-            $this->applyColorUtility($colorPart, 'borderColor');
-            return;
-        }
-
-        // Bare color alias: treat as text color (e.g., 'red', 'green-500', 'coral')
-        // This allows ->styles('red') as shorthand for ->styles('text-red')
-        if ($this->isValidColor($utility)) {
-            $this->applyColorUtility($utility, 'color');
-        }
-    }
-
-    /**
-     * Check if a string is a valid color (custom color, CSS name, palette name, palette-shade, or hex).
-     */
-    private function isValidColor(string $value): bool
-    {
-        // Hex color
-        if (str_starts_with($value, '#')) {
-            return true;
-        }
-
-        // Custom color alias
-        if (ColorUtil::isCustomColor($value)) {
-            return true;
-        }
-
-        // Palette-shade format: "green-500"
-        if (preg_match('/^([a-z]+)-(\d+)$/i', $value, $matches)) {
-            return in_array(strtolower($matches[1]), ColorUtil::paletteNames());
-        }
-
-        // CSS color name (red, green, blue, coral, etc.)
-        if (ColorUtil::css($value) !== null) {
-            return true;
-        }
-
-        // Palette name without shade (slate, emerald, rose, etc.)
-        return in_array(strtolower($value), ColorUtil::paletteNames());
-    }
-
-    /**
-     * Mapping of basic color names to their closest Tailwind palette equivalents.
-     * These are calculated by finding the palette shade with minimum Euclidean
-     * distance to the CSS color value in RGB space.
-     *
-     * CSS red (#ff0000) -> red-600 (#dc2626) - distance 64.1
-     * CSS green (#008000) -> green-800 (#166534) - distance 62.6
-     * CSS blue (#0000ff) -> blue-700 (#1d4ed8) - distance 91.9
-     * CSS yellow (#ffff00) -> yellow-400 (#facc15) - distance 55.4
-     * CSS cyan (#00ffff) -> cyan-400 (#22d3ee) - distance 58.1
-     * CSS magenta (#ff00ff) -> fuchsia-500 (#d946ef) - distance 81.2
-     * CSS gray (#808080) -> gray-500 (#6b7280) - distance 25.2
-     */
-    private const COLOR_TO_PALETTE = [
-        'red' => ['red', 600],
-        'green' => ['green', 800],
-        'blue' => ['blue', 700],
-        'yellow' => ['yellow', 400],
-        'cyan' => ['cyan', 400],
-        'magenta' => ['fuchsia', 500],
-        'gray' => ['gray', 500],
-        'white' => ['white', null],  // CSS white #ffffff
-        'black' => ['black', null],  // CSS black #000000
-    ];
-
-    /**
-     * Apply a color utility to a specific style property.
-     *
-     * @param string $colorPart The color portion (e.g., "green", "green-500", "coral", "dusty-orange")
-     * @param string $property The style property to set ("color", "bgColor", "borderColor")
-     */
-    private function applyColorUtility(string $colorPart, string $property): void
-    {
-        // Check for custom color alias first
-        $customHex = ColorUtil::custom($colorPart);
-        if ($customHex !== null) {
-            $this->style[$property] = $customHex;
-            return;
-        }
-
-        // Check for palette-shade format: "green-500"
-        if (preg_match('/^([a-z]+)-(\d+)$/i', $colorPart, $matches)) {
-            $palette = strtolower($matches[1]);
-            $shade = (int) $matches[2];
-
-            // Verify it's a valid palette
-            if (in_array($palette, ColorUtil::paletteNames())) {
-                $hex = ColorUtil::palette($palette, $shade);
-                $this->style[$property] = $hex;
-                return;
-            }
-        }
-
-        // Check basic color name mapping (red, green, blue, etc. -> palette shades)
-        $lowerColor = strtolower($colorPart);
-        if (isset(self::COLOR_TO_PALETTE[$lowerColor])) {
-            [$palette, $shade] = self::COLOR_TO_PALETTE[$lowerColor];
-            if ($shade === null) {
-                // Use CSS color directly (white, black)
-                $this->style[$property] = ColorUtil::css($lowerColor);
-            } else {
-                $this->style[$property] = ColorUtil::palette($palette, $shade);
-            }
-            return;
-        }
-
-        // Try as palette name (for non-CSS colors like slate, emerald, rose, etc.)
-        if (in_array($lowerColor, ColorUtil::paletteNames())) {
-            $this->style[$property] = ColorUtil::palette($colorPart);
-            return;
-        }
-
-        // Try as CSS color name (coral, salmon, tomato, etc.)
-        $cssHex = ColorUtil::css($colorPart);
-        if ($cssHex !== null) {
-            $this->style[$property] = $cssHex;
-            return;
-        }
-
-        // If it looks like a hex color, use it directly
-        if (str_starts_with($colorPart, '#')) {
-            $this->style[$property] = $colorPart;
-        }
     }
 
     // Colors
@@ -381,11 +176,12 @@ class Text implements Component
         // Color enum without shade - use mapped palette shade for consistency with styles()
         if ($color instanceof Color) {
             $colorName = strtolower($color->name);
-            if (isset(self::COLOR_TO_PALETTE[$colorName])) {
-                [$palette, $paletteShade] = self::COLOR_TO_PALETTE[$colorName];
+            if (isset(UiStyles::COLOR_TO_PALETTE[$colorName])) {
+                [$palette, $paletteShade] = UiStyles::COLOR_TO_PALETTE[$colorName];
                 if ($paletteShade === null) {
                     return $color->value;  // Use CSS value for white/black
                 }
+
                 return ColorUtil::palette($palette, $paletteShade);
             }
             // For other Color enum values (coral, salmon, etc.), use their CSS hex

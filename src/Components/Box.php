@@ -7,6 +7,7 @@ namespace Xocdr\Tui\Components;
 use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Color as ColorUtil;
 use Xocdr\Tui\Styling\Style\Style;
+use Xocdr\Tui\Styling\Style\UiStyles;
 
 /**
  * Flexbox container component.
@@ -168,54 +169,12 @@ class Box extends AbstractContainerComponent
      */
     public function styles(string|array|callable ...$classes): self
     {
-        foreach ($classes as $class) {
-            $this->applyStylesArgument($class);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Process a single styles() argument (string, array, or callable).
-     *
-     * @param string|array<mixed>|callable $argument
-     */
-    private function applyStylesArgument(mixed $argument): void
-    {
-        // Handle callable - call it and process the result
-        if (is_callable($argument)) {
-            $result = $argument();
-            if ($result !== null) {
-                $this->applyStylesArgument($result);
-            }
-            return;
-        }
-
-        // Handle array - process each element recursively
-        if (is_array($argument)) {
-            foreach ($argument as $item) {
-                if (is_array($item) || is_callable($item) || is_string($item)) {
-                    $this->applyStylesArgument($item);
-                }
-            }
-            return;
-        }
-
-        // Skip non-string values
-        if (!is_string($argument)) {
-            return;
-        }
-
-        // Handle string - split by whitespace and apply each utility
-        $utilities = preg_split('/\s+/', trim($argument), -1, PREG_SPLIT_NO_EMPTY);
-
-        if ($utilities === false) {
-            return;
-        }
-
+        $utilities = UiStyles::parseArguments($classes);
         foreach ($utilities as $utility) {
             $this->applyBoxUtility($utility);
         }
+
+        return $this;
     }
 
     /**
@@ -295,7 +254,7 @@ class Box extends AbstractContainerComponent
         // Background: bg-{color} or bg-{palette}-{shade}
         if (str_starts_with($utility, 'bg-')) {
             $colorPart = substr($utility, 3);
-            $hex = $this->resolveColorUtility($colorPart);
+            $hex = UiStyles::resolveColor($colorPart);
             if ($hex !== null) {
                 $this->style['bgColor'] = $hex;
             }
@@ -306,7 +265,7 @@ class Box extends AbstractContainerComponent
         // (only if not matching a border style above)
         if (str_starts_with($utility, 'border-') && !isset($borderStyles[$utility])) {
             $colorPart = substr($utility, 7);
-            $hex = $this->resolveColorUtility($colorPart);
+            $hex = UiStyles::resolveColor($colorPart);
             if ($hex !== null) {
                 $this->borderColor($hex);
             }
@@ -351,50 +310,6 @@ class Box extends AbstractContainerComponent
         }
 
         return false;
-    }
-
-    /**
-     * Resolve a color utility to a hex string.
-     *
-     * @param string $colorPart The color portion (e.g., "green", "green-500", "coral", "dusty-orange")
-     * @return string|null Hex color or null if not resolved
-     */
-    private function resolveColorUtility(string $colorPart): ?string
-    {
-        // Check for custom color alias first
-        $customHex = ColorUtil::custom($colorPart);
-        if ($customHex !== null) {
-            return $customHex;
-        }
-
-        // Check for palette-shade format: "green-500"
-        if (preg_match('/^([a-z]+)-(\d+)$/i', $colorPart, $matches)) {
-            $palette = strtolower($matches[1]);
-            $shade = (int) $matches[2];
-
-            if (in_array($palette, ColorUtil::paletteNames())) {
-                return ColorUtil::palette($palette, $shade);
-            }
-        }
-
-        // Try as palette name (prioritize over CSS names)
-        // Uses defaultShade() which finds the closest match to CSS color if applicable
-        if (in_array(strtolower($colorPart), ColorUtil::paletteNames())) {
-            return ColorUtil::palette($colorPart);
-        }
-
-        // Try as CSS color name (coral, salmon, etc.)
-        $cssHex = ColorUtil::css($colorPart);
-        if ($cssHex !== null) {
-            return $cssHex;
-        }
-
-        // If it looks like a hex color, use it directly
-        if (str_starts_with($colorPart, '#')) {
-            return $colorPart;
-        }
-
-        return null;
     }
 
     // Layout properties
