@@ -13,6 +13,7 @@ use Xocdr\Tui\Contracts\OutputManagerInterface;
 use Xocdr\Tui\Contracts\TerminalManagerInterface;
 use Xocdr\Tui\Contracts\TimerManagerInterface;
 use Xocdr\Tui\Hooks\HookContext;
+use Xocdr\Tui\Hooks\HookRegistry;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 /**
@@ -29,6 +30,8 @@ class MockInstance implements InstanceInterface
     private EventDispatcherInterface $eventDispatcher;
 
     private HookContextInterface $hookContext;
+
+    private HookRegistry $hookRegistry;
 
     private TestRenderer $renderer;
 
@@ -62,6 +65,7 @@ class MockInstance implements InstanceInterface
         $this->options = $options;
         $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
         $this->hookContext = $hookContext ?? new HookContext();
+        $this->hookRegistry = new HookRegistry();
 
         /** @var int $width */
         $width = $options['width'] ?? 80;
@@ -219,6 +223,11 @@ class MockInstance implements InstanceInterface
     public function getTuiInstance(): ?\Xocdr\Tui\Ext\Instance
     {
         return null;
+    }
+
+    public function getHookRegistry(): HookRegistry
+    {
+        return $this->hookRegistry;
     }
 
     // =========================================================================

@@ -39,6 +39,8 @@ class ExtTestRenderer
 
     private HookContext $hookContext;
 
+    private HookRegistry $hookRegistry;
+
     /**
      * @param int $width Terminal width in columns
      * @param int $height Terminal height in rows
@@ -49,6 +51,7 @@ class ExtTestRenderer
         $this->height = $height;
         $this->extensionAvailable = function_exists('tui_test_create');
         $this->hookContext = new HookContext();
+        $this->hookRegistry = new HookRegistry();
 
         if ($this->extensionAvailable) {
             $this->resource = \tui_test_create($width, $height);
@@ -103,7 +106,7 @@ class ExtTestRenderer
 
         // Callable - execute within hook context and convert result
         if (is_callable($component)) {
-            return HookRegistry::withContext(
+            return $this->hookRegistry->runWithContext(
                 $this->hookContext,
                 fn () => $this->toNative($component())
             );
@@ -111,7 +114,7 @@ class ExtTestRenderer
 
         // HooksAware component - render within hook context
         if ($component instanceof HooksAwareInterface) {
-            return HookRegistry::withContext(
+            return $this->hookRegistry->runWithContext(
                 $this->hookContext,
                 fn () => $this->toNative($component->render())
             );

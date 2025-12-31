@@ -57,17 +57,23 @@ trait HooksAwareTrait
     public function getHooks(): HooksInterface
     {
         if ($this->hooks === null) {
+            // Get runtime (uses deprecated static access for backward compatibility)
             $app = Runtime::current();
 
             // Create component-specific context
             if ($this->componentContext === null) {
                 $this->componentContext = new HookContext();
                 // Share the rerender callback from the app
-                $this->componentContext->setRerenderCallback(fn () => $app->rerender());
+                if ($app !== null) {
+                    $this->componentContext->setRerenderCallback(fn () => $app->rerender());
+                }
             }
 
-            // Create Hooks with this component's own context
-            $this->hooks = new Hooks($app, $this->componentContext);
+            // Get hook registry from runtime if available, otherwise use global
+            $registry = $app?->getHookRegistry();
+
+            // Create Hooks with this component's own context and registry
+            $this->hooks = new Hooks($app, $this->componentContext, $registry);
         }
 
         return $this->hooks;

@@ -7,10 +7,13 @@ namespace Xocdr\Tui\Hooks;
 use Xocdr\Tui\Contracts\HookContextInterface;
 
 /**
- * Global registry for hook contexts.
+ * Registry for hook contexts.
  *
  * Manages the "current" hook context during rendering,
  * allowing hook functions to access the correct context.
+ *
+ * Can be used as an instance (preferred, for dependency injection)
+ * or via static methods (legacy, for backward compatibility).
  */
 class HookRegistry
 {
@@ -20,19 +23,70 @@ class HookRegistry
      */
     private const MAX_CONTEXTS_WARNING = 100;
 
-    private static ?HookContextInterface $currentContext = null;
+    /**
+     * Global instance for static method delegation.
+     * Used for backward compatibility with static API.
+     */
+    private static ?self $globalInstance = null;
 
-    /** @var array<string, HookContextInterface> */
-    private static array $contexts = [];
+    /**
+     * Current context for this registry instance.
+     */
+    private ?HookContextInterface $currentContext = null;
 
-    private static bool $warningIssued = false;
+    /**
+     * Registered contexts by instance ID.
+     * @var array<string, HookContextInterface>
+     */
+    private array $contexts = [];
+
+    /**
+     * Whether a warning has been issued for too many contexts.
+     */
+    private bool $warningIssued = false;
+
+    /**
+     * Get or create the global registry instance.
+     *
+     * Used internally for static method delegation.
+     */
+    private static function global(): self
+    {
+        if (self::$globalInstance === null) {
+            self::$globalInstance = new self();
+        }
+
+        return self::$globalInstance;
+    }
+
+    /**
+     * Set the global registry instance.
+     *
+     * Useful for testing or when a custom registry is needed globally.
+     */
+    public static function setGlobal(?self $registry): void
+    {
+        self::$globalInstance = $registry;
+    }
+
+    /**
+     * Get the global registry instance.
+     */
+    public static function getGlobal(): self
+    {
+        return self::global();
+    }
+
+    // =========================================================================
+    // Instance Methods (preferred API)
+    // =========================================================================
 
     /**
      * Set the current hook context for rendering.
      */
-    public static function setCurrent(?HookContextInterface $context): void
+    public function setCurrentContext(?HookContextInterface $context): void
     {
-        self::$currentContext = $context;
+        $this->currentContext = $context;
     }
 
     /**
@@ -40,13 +94,89 @@ class HookRegistry
      *
      * @throws \RuntimeException If no context is set
      */
-    public static function getCurrent(): HookContextInterface
+    public function getCurrentContext(): HookContextInterface
     {
-        if (self::$currentContext === null) {
+        if ($this->currentContext === null) {
             throw new \RuntimeException(self::buildContextError());
         }
 
-        return self::$currentContext;
+        return $this->currentContext;
+    }
+
+    /**
+     * Check if a context is currently set.
+     */
+    public function hasCurrentContext(): bool
+    {
+        return $this->currentContext !== null;
+    }
+
+    /**
+     * Run a callback with a specific context as current.
+     *
+     * @template T
+     * @param HookContextInterface $context
+     * @param callable(): T $callback
+     * @return T
+     */
+    public function runWithContext(HookContextInterface $context, callable $callback): mixed
+    {
+        $previous = $this->currentContext;
+        $this->currentContext = $context;
+
+        try {
+            $context->resetForRender();
+
+            return $callback();
+        } finally {
+            $this->currentContext = $previous;
+        }
+    }
+
+    /**
+     * Clear all contexts in this registry.
+     */
+    public function clear(): void
+    {
+        foreach ($this->contexts as $context) {
+            $context->cleanup();
+        }
+        $this->contexts = [];
+        $this->currentContext = null;
+        $this->warningIssued = false;
+    }
+
+    /**
+     * Get the number of registered contexts.
+     */
+    public function count(): int
+    {
+        return count($this->contexts);
+    }
+
+    // =========================================================================
+    // Static Methods (legacy API, delegates to global instance)
+    // =========================================================================
+
+    /**
+     * Set the current hook context for rendering.
+     *
+     * @deprecated Use instance method setCurrentContext() instead
+     */
+    public static function setCurrent(?HookContextInterface $context): void
+    {
+        self::global()->setCurrentContext($context);
+    }
+
+    /**
+     * Get the current hook context.
+     *
+     * @throws \RuntimeException If no context is set
+     * @deprecated Use instance method getCurrentContext() instead
+     */
+    public static function getCurrent(): HookContextInterface
+    {
+        return self::global()->getCurrentContext();
     }
 
     /**
@@ -66,7 +196,7 @@ class HookRegistry
             $frame = $backtrace[$i];
             if (isset($frame['file'], $frame['line'])) {
                 $location = sprintf('%s:%d', basename($frame['file']), $frame['line']);
-                $function = $frame['function'] ?? '';
+                $function = $frame['function'];
                 $class = $frame['class'] ?? '';
 
                 if ($class !== '' && $function !== '') {
@@ -97,10 +227,12 @@ class HookRegistry
 
     /**
      * Check if a context is currently set.
+     *
+     * @deprecated Use instance method hasCurrentContext() instead
      */
     public static function hasCurrent(): bool
     {
-        return self::$currentContext !== null;
+        return self::global()->hasCurrentContext();
     }
 
     /**
@@ -110,11 +242,14 @@ class HookRegistry
      * a memory leak from applications not being properly unmounted.
      *
      * @throws \RuntimeException If context limit is exceeded
+     * @deprecated Context creation should be handled by Runtime
      */
     public static function createContext(string $instanceId): HookContextInterface
     {
+        $registry = self::global();
+
         // Check limit BEFORE creating context to avoid cleanup on exception
-        $count = count(self::$contexts) + 1;
+        $count = count($registry->contexts) + 1;
         if ($count > self::MAX_CONTEXTS_WARNING * 2) {
             throw new \RuntimeException(
                 sprintf(
@@ -126,13 +261,13 @@ class HookRegistry
         }
 
         $context = new HookContext();
-        self::$contexts[$instanceId] = $context;
+        $registry->contexts[$instanceId] = $context;
 
         // Issue warning at threshold (but don't throw)
         if ($count > self::MAX_CONTEXTS_WARNING) {
             // Periodic warning every 50 contexts above threshold
-            if (!self::$warningIssued || ($count - self::MAX_CONTEXTS_WARNING) % 50 === 0) {
-                self::$warningIssued = true;
+            if (!$registry->warningIssued || ($count - self::MAX_CONTEXTS_WARNING) % 50 === 0) {
+                $registry->warningIssued = true;
                 trigger_error(
                     sprintf(
                         'HookRegistry has %d contexts registered. This may indicate a memory leak. ' .
@@ -149,20 +284,25 @@ class HookRegistry
 
     /**
      * Get the context for an instance.
+     *
+     * @deprecated Context should be obtained from Runtime
      */
     public static function getContext(string $instanceId): ?HookContextInterface
     {
-        return self::$contexts[$instanceId] ?? null;
+        return self::global()->contexts[$instanceId] ?? null;
     }
 
     /**
      * Remove the context for an instance.
+     *
+     * @deprecated Context cleanup should be handled by Runtime
      */
     public static function removeContext(string $instanceId): void
     {
-        if (isset(self::$contexts[$instanceId])) {
-            self::$contexts[$instanceId]->cleanup();
-            unset(self::$contexts[$instanceId]);
+        $registry = self::global();
+        if (isset($registry->contexts[$instanceId])) {
+            $registry->contexts[$instanceId]->cleanup();
+            unset($registry->contexts[$instanceId]);
         }
     }
 
@@ -173,41 +313,33 @@ class HookRegistry
      * @param HookContextInterface $context
      * @param callable(): T $callback
      * @return T
+     * @deprecated Use instance method runWithContext() instead
      */
     public static function withContext(HookContextInterface $context, callable $callback): mixed
     {
-        $previous = self::$currentContext;
-        self::$currentContext = $context;
-
-        try {
-            $context->resetForRender();
-
-            return $callback();
-        } finally {
-            self::$currentContext = $previous;
-        }
+        return self::global()->runWithContext($context, $callback);
     }
 
     /**
      * Clear all contexts (for testing).
+     *
+     * @deprecated Use instance method clear() instead
      */
     public static function clearAll(): void
     {
-        foreach (self::$contexts as $context) {
-            $context->cleanup();
-        }
-        self::$contexts = [];
-        self::$currentContext = null;
-        self::$warningIssued = false;
+        self::global()->clear();
+        self::$globalInstance = null;
     }
 
     /**
      * Get the number of registered contexts.
      *
      * Useful for debugging and testing memory management.
+     *
+     * @deprecated Use instance method count() instead
      */
     public static function getContextCount(): int
     {
-        return count(self::$contexts);
+        return self::global()->count();
     }
 }

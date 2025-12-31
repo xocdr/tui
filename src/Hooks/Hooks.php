@@ -40,6 +40,7 @@ final readonly class Hooks implements HooksInterface
     public function __construct(
         private ?InstanceInterface $instance = null,
         private ?HookContextInterface $context = null,
+        private ?HookRegistry $registry = null,
     ) {
     }
 
@@ -52,7 +53,10 @@ final readonly class Hooks implements HooksInterface
             return $this->context;
         }
 
-        return HookRegistry::getCurrent();
+        // Use provided registry, or fall back to global (deprecated)
+        $registry = $this->registry ?? HookRegistry::getGlobal();
+
+        return $registry->getCurrentContext();
     }
 
     /**

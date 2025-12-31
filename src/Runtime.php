@@ -52,11 +52,15 @@ class Runtime implements InstanceInterface
 {
     /**
      * Current runtime instance (for hooks access).
+     *
+     * @deprecated Access runtime via dependency injection instead
      */
     private static ?Runtime $current = null;
 
     /**
      * Get the current runtime.
+     *
+     * @deprecated Access runtime via dependency injection instead
      */
     public static function current(): ?self
     {
@@ -65,6 +69,8 @@ class Runtime implements InstanceInterface
 
     /**
      * Set the current runtime.
+     *
+     * @deprecated Runtime management should be handled internally
      */
     public static function setCurrent(?Runtime $runtime): void
     {
@@ -78,6 +84,8 @@ class Runtime implements InstanceInterface
     private EventDispatcherInterface $eventDispatcher;
 
     private HookContextInterface $hookContext;
+
+    private HookRegistry $hookRegistry;
 
     private RendererInterface $renderer;
 
@@ -110,7 +118,8 @@ class Runtime implements InstanceInterface
         array $options = [],
         ?EventDispatcherInterface $eventDispatcher = null,
         ?HookContextInterface $hookContext = null,
-        ?RendererInterface $renderer = null
+        ?RendererInterface $renderer = null,
+        ?HookRegistry $hookRegistry = null
     ) {
         $this->id = uniqid('tui_', true);
         $this->component = $component;
@@ -119,6 +128,7 @@ class Runtime implements InstanceInterface
         // Use provided dependencies or create defaults
         $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
         $this->hookContext = $hookContext ?? new HookContext();
+        $this->hookRegistry = $hookRegistry ?? new HookRegistry();
         $this->renderer = $renderer ?? new ComponentRenderer(new ExtensionRenderTarget());
 
         // Initialize managers
@@ -136,7 +146,8 @@ class Runtime implements InstanceInterface
             $this->component->attachTo($this);
         }
 
-        // Register in hook registry
+        // Register in global hook registry for backward compatibility
+        // TODO: Remove this once all code uses instance-based registry
         HookRegistry::createContext($this->id);
     }
 
@@ -316,6 +327,11 @@ class Runtime implements InstanceInterface
         return $this->lifecycle->getTuiInstance();
     }
 
+    public function getHookRegistry(): HookRegistry
+    {
+        return $this->hookRegistry;
+    }
+
     // =========================================================================
     // Debug Mode
     // =========================================================================
@@ -361,7 +377,7 @@ class Runtime implements InstanceInterface
 
         if (is_callable($comp)) {
             // Invoke callable within hook context
-            return HookRegistry::withContext($this->hookContext, function () use ($comp) {
+            return $this->hookRegistry->runWithContext($this->hookContext, function () use ($comp) {
                 return $comp();
             });
         }
@@ -386,7 +402,7 @@ class Runtime implements InstanceInterface
      */
     private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
     {
-        $node = HookRegistry::withContext($this->hookContext, function () {
+        $node = $this->hookRegistry->runWithContext($this->hookContext, function () {
             return $this->renderer->render($this->component);
         });
 

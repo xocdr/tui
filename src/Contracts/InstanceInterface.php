@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Contracts;
 
+use Xocdr\Tui\Hooks\HookRegistry;
+
 /**
  * Interface for TUI application instances.
  *
@@ -68,4 +70,9 @@ interface InstanceInterface extends
      * Get the terminal manager.
      */
     public function getTerminalManager(): TerminalManagerInterface;
+
+    /**
+     * Get the hook registry.
+     */
+    public function getHookRegistry(): HookRegistry;
 }
