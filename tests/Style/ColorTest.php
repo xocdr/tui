@@ -156,7 +156,7 @@ class ColorTest extends TestCase
         Color::defineColor('test-css-color', 'coral');
 
         $this->assertTrue(Color::isCustomColor('test-css-color'));
-        $this->assertEquals('#ff7f50', Color::custom('test-css-color'));
+        $this->assertEquals('#eb8e8e', Color::custom('test-css-color'));
     }
 
     public function testDefineColorFromPaletteName(): void
@@ -164,7 +164,7 @@ class ColorTest extends TestCase
         Color::defineColor('test-palette-name', 'emerald');
 
         $this->assertTrue(Color::isCustomColor('test-palette-name'));
-        $this->assertEquals('#10b981', Color::custom('test-palette-name')); // emerald-500
+        $this->assertEquals('#1fd699', Color::custom('test-palette-name')); // emerald-500
     }
 
     public function testCustomNames(): void

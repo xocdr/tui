@@ -6,8 +6,9 @@
  *
  * Demonstrates:
  * - Self-animating Spinner widgets (no manual frame management needed!)
- * - Using append() with keys for widget instance persistence
- * - The new instance-based API: (new Box())->asColumn()
+ * - Using keyed arrays for widget instance persistence
+ * - Strings auto-wrapped as Text components
+ * - BoxColumn for vertical layout
  * - Progress bar with manual animation
  *
  * Press 'q' or ESC to exit
@@ -50,49 +51,42 @@ class SpinnerDemo extends UI
         $empty = $barWidth - $filled;
         $bar = str_repeat('█', $filled) . str_repeat('░', $empty);
 
-        // Build the UI using the new append() API with keyed widgets
-        $spinnersBox = new BoxColumn();
-
-        // Each spinner type - they self-animate!
-        // Spinners must be appended with keys for instance persistence
+        // Build spinner rows with keyed arrays for instance persistence
+        $spinnerRows = [];
         foreach (Spinner::getTypes() as $type) {
-            $spinnersBox->append(
-                (new BoxRow())
-                    ->append(new Text(str_pad($type, 10)), 'label-' . $type)
-                    ->append((new Spinner($type))->color(Color::Cyan), 'spinner-' . $type)
-                    ->append(new Text(' Processing...'), 'suffix-' . $type),
-                'row-' . $type
-            );
+            $spinnerRows['row-' . $type] = new BoxRow([
+                'label-' . $type => str_pad($type, 10),
+                'spinner-' . $type => (new Spinner($type))->color(Color::Cyan),
+                'suffix-' . $type => ' Processing...',
+            ]);
         }
-
-        // Spinner with label
-        $labeledBox = new BoxColumn([
-            new Text('Spinner with Label:'),
-            new BoxRow([
-                new Text('  '),
-                (new Spinner())->label('Loading data...')->color(Color::Green),
-            ]),
-        ]);
 
         return new Box([
             new BoxColumn([
-                new Text('Spinner & Progress Demo'),
+                'Spinner & Progress Demo',
                 (new Text('Spinners self-animate! Press q or ESC to quit.'))->dim(),
                 new Newline(),
 
                 (new Text('Self-Animating Spinners:'))->bold(),
-                $spinnersBox,
+                new BoxColumn($spinnerRows),
                 new Newline(),
 
-                $labeledBox,
+                // Spinner with label
+                new BoxColumn([
+                    'Spinner with Label:',
+                    new BoxRow([
+                        '  ',
+                        (new Spinner())->label('Loading data...')->color(Color::Green),
+                    ]),
+                ]),
                 new Newline(),
 
                 (new Text('Progress Bar:'))->bold(),
                 new BoxRow([
-                    new Text('  ['),
+                    '  [',
                     (new Text($bar))->color(Color::Green),
-                    new Text('] '),
-                    new Text(str_pad((string) $progress, 3, ' ', STR_PAD_LEFT) . '%'),
+                    '] ',
+                    str_pad((string) $progress, 3, ' ', STR_PAD_LEFT) . '%',
                 ]),
                 new Newline(),
 

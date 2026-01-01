@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Feedback;
 
-use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
@@ -145,7 +144,6 @@ class LoadingState extends Widget
 
         if ($this->state === 'loading') {
             $hooks->interval(function () use ($setSpinnerFrame) {
-                // @phpstan-ignore argument.type (state setter accepts any int, not just initial value)
                 $setSpinnerFrame(fn ($f) => ($f + 1) % Constants::SPINNER_FRAME_COUNT);
             }, Constants::DEFAULT_SPINNER_INTERVAL_MS);
         }

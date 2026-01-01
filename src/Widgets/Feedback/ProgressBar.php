@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Feedback;
 
-use Xocdr\Tui\Widgets\Widget;
-
 use Xocdr\Tui\Components\Fragment;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Animation\Gradient;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Progress bar widget.

@@ -39,4 +39,14 @@ class TextNode implements NodeInterface
     {
         return $this->native;
     }
+
+    public function getKey(): ?string
+    {
+        return $this->native->getKey();
+    }
+
+    public function getId(): ?string
+    {
+        return $this->native->getId();
+    }
 }

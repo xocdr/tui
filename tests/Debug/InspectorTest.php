@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Debug;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Runtime;
 use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\Text;
+use Xocdr\Tui\Runtime;
 use Xocdr\Tui\Support\Debug\Inspector;
 use Xocdr\Tui\Support\Telemetry\Metrics;
 

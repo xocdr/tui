@@ -108,7 +108,7 @@ class TuiAssertionsTest extends TestCase
     public function testAssertHasBorder(): void
     {
         $this->renderer->render(
-            (new Box)
+            (new Box())
                 ->border('single')
                 ->children([new Text('Bordered')])
         );
@@ -119,7 +119,7 @@ class TuiAssertionsTest extends TestCase
     public function testAssertHasDoubleBorder(): void
     {
         $this->renderer->render(
-            (new Box)
+            (new Box())
                 ->border('double')
                 ->children([new Text('Double')])
         );

@@ -231,7 +231,6 @@ class OptionPrompt extends Widget
                 if (strtoupper($option->key) === $upperKey) {
                     if ($option->key === $this->withInputKey) {
                         $setSelectedIndex($i);
-                        // @phpstan-ignore argument.type (state setter accepts any bool, not just initial value)
                         $setShowInput(true);
                     } else {
                         if ($this->onSelect !== null) {
@@ -255,7 +254,6 @@ class OptionPrompt extends Widget
                 $option = $this->options[$selectedIndex] ?? null;
                 if ($option !== null) {
                     if ($option->key === $this->withInputKey) {
-                        // @phpstan-ignore argument.type (state setter accepts any bool, not just initial value)
                         $setShowInput(true);
                     } elseif ($this->onSelect !== null) {
                         ($this->onSelect)($option, null);

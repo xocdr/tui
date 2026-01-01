@@ -18,6 +18,12 @@ use Xocdr\Tui\Styling\Style\UiStyles;
  */
 class Text implements Component
 {
+    /**
+     * Maximum content length (1MB, ext-tui 0.2.12 limit).
+     * Values exceeding this limit are truncated with a PHP warning by the C extension.
+     */
+    private const MAX_CONTENT_LENGTH = 1048576; // 1MB
+
     private string $content;
 
     /** @var array<string, mixed> */
@@ -31,6 +37,12 @@ class Text implements Component
 
     public function __construct(string $content = '')
     {
+        if (strlen($content) > self::MAX_CONTENT_LENGTH) {
+            trigger_error(
+                sprintf('Text content exceeds maximum length of %d bytes (1MB), will be truncated', self::MAX_CONTENT_LENGTH),
+                E_USER_WARNING
+            );
+        }
         $this->content = $content;
     }
 
@@ -335,7 +347,14 @@ class Text implements Component
      */
     public function append(string $text): self
     {
-        $this->content .= $text;
+        $newContent = $this->content . $text;
+        if (strlen($newContent) > self::MAX_CONTENT_LENGTH) {
+            trigger_error(
+                sprintf('Text content exceeds maximum length of %d bytes (1MB), will be truncated', self::MAX_CONTENT_LENGTH),
+                E_USER_WARNING
+            );
+        }
+        $this->content = $newContent;
         return $this;
     }
 
@@ -344,7 +363,14 @@ class Text implements Component
      */
     public function prepend(string $text): self
     {
-        $this->content = $text . $this->content;
+        $newContent = $text . $this->content;
+        if (strlen($newContent) > self::MAX_CONTENT_LENGTH) {
+            trigger_error(
+                sprintf('Text content exceeds maximum length of %d bytes (1MB), will be truncated', self::MAX_CONTENT_LENGTH),
+                E_USER_WARNING
+            );
+        }
+        $this->content = $newContent;
         return $this;
     }
 

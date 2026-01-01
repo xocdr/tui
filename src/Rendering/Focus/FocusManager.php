@@ -65,7 +65,7 @@ class FocusManager
         }
 
         $extInstance = $this->app->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'focus')) {
+        if ($extInstance !== null) {
             $extInstance->focus($id);
         }
 

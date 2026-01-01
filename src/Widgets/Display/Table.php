@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Display;
 
-use Xocdr\Tui\Widgets\Widget;
-
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Contracts\TableInterface;
 use Xocdr\Tui\Ext\Color;
 use Xocdr\Tui\Styling\Style\Border;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Table widget for displaying tabular data.

@@ -238,7 +238,6 @@ class OutputBlock extends Widget
                 }
 
                 if ($nativeKey->pageDown) {
-                    // @phpstan-ignore argument.type (state setter accepts any int, not just initial value)
                     $setScrollOffset(min($maxOffset, $scrollOffset + $visibleLines));
                 }
             });

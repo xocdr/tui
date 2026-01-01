@@ -14,10 +14,14 @@ use Xocdr\Tui\Contracts\TerminalManagerInterface;
 use Xocdr\Tui\Contracts\TimerManagerInterface;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Hooks\HookRegistry;
+use Xocdr\Tui\InstanceDestroyedException as ExtInstanceDestroyedException;
 use Xocdr\Tui\Terminal\Events\EventDispatcher;
 
 /**
  * Mock instance for testing TUI components without the C extension.
+ *
+ * Supports simulating destroyed instance behavior for testing ext-tui 0.2.13+
+ * exception handling.
  */
 class MockInstance implements InstanceInterface
 {
@@ -26,6 +30,8 @@ class MockInstance implements InstanceInterface
     private bool $running = false;
 
     private bool $unmounted = false;
+
+    private bool $destroyed = false;
 
     private EventDispatcherInterface $eventDispatcher;
 
@@ -148,8 +154,13 @@ class MockInstance implements InstanceInterface
     // Rerender (RerenderableInterface)
     // =========================================================================
 
+    /**
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
     public function rerender(): void
     {
+        $this->assertNotDestroyed();
+
         if ($this->running && !$this->unmounted) {
             $this->hookContext->resetForRender();
             $this->render();
@@ -184,8 +195,13 @@ class MockInstance implements InstanceInterface
     // Size (SizableInterface)
     // =========================================================================
 
+    /**
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
     public function getSize(): array
     {
+        $this->assertNotDestroyed();
+
         $size = $this->terminalManager->getSize();
 
         return [
@@ -319,5 +335,42 @@ class MockInstance implements InstanceInterface
     public function getRenderer(): TestRenderer
     {
         return $this->renderer;
+    }
+
+    // =========================================================================
+    // Destroyed State Simulation (ext-tui 0.2.13+ compatibility testing)
+    // =========================================================================
+
+    /**
+     * Mark the instance as destroyed.
+     *
+     * After calling this method, methods that would throw
+     * ExtInstanceDestroyedException in ext-tui 0.2.13+ will throw.
+     * Use this to test exception handling.
+     */
+    public function markDestroyed(): void
+    {
+        $this->destroyed = true;
+        $this->running = false;
+    }
+
+    /**
+     * Check if the instance has been marked as destroyed.
+     */
+    public function isDestroyed(): bool
+    {
+        return $this->destroyed;
+    }
+
+    /**
+     * Assert the instance is not destroyed.
+     *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
+    private function assertNotDestroyed(): void
+    {
+        if ($this->destroyed) {
+            throw new ExtInstanceDestroyedException('TUI instance has been destroyed and can no longer be used');
+        }
     }
 }

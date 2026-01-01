@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Visual;
 
-use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
-use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;

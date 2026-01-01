@@ -20,13 +20,13 @@ final class TerminalInfo
     public static function getSize(): array
     {
         if (function_exists('tui_get_terminal_size')) {
+            /** @var array{0: int, 1: int} $size */
             $size = tui_get_terminal_size();
-            if (is_array($size) && isset($size[0], $size[1])) {
-                return [
-                    'width' => (int) $size[0],
-                    'height' => (int) $size[1],
-                ];
-            }
+
+            return [
+                'width' => $size[0],
+                'height' => $size[1],
+            ];
         }
 
         return ['width' => 80, 'height' => 24];

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Runtime;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Runtime\TimerManager;
 use Xocdr\Tui\Contracts\TimerManagerInterface;
 use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
+use Xocdr\Tui\Runtime\TimerManager;
 
 class TimerManagerTest extends TestCase
 {

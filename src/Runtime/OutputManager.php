@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Runtime;
 
 use Xocdr\Tui\Contracts\OutputManagerInterface;
+use Xocdr\Tui\InstanceDestroyedException as ExtInstanceDestroyedException;
 use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
 
 /**
@@ -27,12 +28,14 @@ class OutputManager implements OutputManagerInterface
      *
      * Clears the current terminal screen and resets the cursor position.
      *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     *
      * @note This is a no-op if the application is not running.
      */
     public function clear(): void
     {
         $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'clear')) {
+        if ($extInstance !== null) {
             $extInstance->clear();
         }
         $this->lastOutput = '';
@@ -77,7 +80,7 @@ class OutputManager implements OutputManagerInterface
     public function getCapturedOutput(): ?string
     {
         $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'getCapturedOutput')) {
+        if ($extInstance !== null) {
             return $extInstance->getCapturedOutput();
         }
 
@@ -93,12 +96,14 @@ class OutputManager implements OutputManagerInterface
      * @param string $id Element ID to measure
      * @return array{x: int, y: int, width: int, height: int}|null Dimensions or null if not found
      *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     *
      * @note Returns null if the application is not running.
      */
     public function measureElement(string $id): ?array
     {
         $extInstance = $this->lifecycle->getTuiInstance();
-        if ($extInstance !== null && method_exists($extInstance, 'measureElement')) {
+        if ($extInstance !== null) {
             /** @var array{x: int, y: int, width: int, height: int}|null */
             return $extInstance->measureElement($id);
         }

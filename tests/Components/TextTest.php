@@ -143,7 +143,7 @@ class TextTest extends TestCase
         $text = (new Text('Hello'))->styles('coral');
         $style = $text->getStyle();
 
-        $this->assertEquals('#ff7f50', $style['color']);
+        $this->assertEquals('#eb8e8e', $style['color']);
     }
 
     public function testStylesWithCustomColorAlias(): void

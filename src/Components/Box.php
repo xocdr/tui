@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Components;
 
 use Xocdr\Tui\Ext\Color;
-use Xocdr\Tui\Styling\Style\Color as ColorUtil;
 use Xocdr\Tui\Styling\Style\Style;
 use Xocdr\Tui\Styling\Style\UiStyles;
 
@@ -69,26 +68,6 @@ class Box extends AbstractContainerComponent
             $keyParam = is_string($key) ? $key : null;
             $this->append($child, $keyParam);
         }
-    }
-
-    /**
-     * Set this box to column direction (instance method).
-     *
-     * @return $this
-     */
-    public function asColumn(): self
-    {
-        return $this->flexDirection('column');
-    }
-
-    /**
-     * Set this box to row direction (instance method).
-     *
-     * @return $this
-     */
-    public function asRow(): self
-    {
-        return $this->flexDirection('row');
     }
 
     /**
@@ -509,6 +488,12 @@ class Box extends AbstractContainerComponent
     private const MAX_SPACING = 1000;
 
     /**
+     * Maximum length for key and id strings (ext-tui 0.2.12 limit).
+     * Values exceeding this limit are truncated with a PHP warning by the C extension.
+     */
+    private const MAX_KEY_LENGTH = 256;
+
+    /**
      * Validate spacing value is within bounds.
      *
      * @throws \InvalidArgumentException If value is negative or exceeds maximum
@@ -819,9 +804,17 @@ class Box extends AbstractContainerComponent
      *
      * Keys help with list reconciliation and identifying elements
      * when rendering dynamic lists of components.
+     *
+     * @param string|null $key Key string (max 256 chars, truncated if longer)
      */
     public function key(?string $key): self
     {
+        if ($key !== null && strlen($key) > self::MAX_KEY_LENGTH) {
+            trigger_error(
+                sprintf('Box key exceeds maximum length of %d characters, will be truncated', self::MAX_KEY_LENGTH),
+                E_USER_WARNING
+            );
+        }
         $this->key = $key;
 
         return $this;
@@ -840,9 +833,17 @@ class Box extends AbstractContainerComponent
      *
      * IDs are used for focus-by-ID support, allowing programmatic
      * focus control via FocusManager::focus($id).
+     *
+     * @param string|null $id ID string (max 256 chars, truncated if longer)
      */
     public function id(?string $id): self
     {
+        if ($id !== null && strlen($id) > self::MAX_KEY_LENGTH) {
+            trigger_error(
+                sprintf('Box id exceeds maximum length of %d characters, will be truncated', self::MAX_KEY_LENGTH),
+                E_USER_WARNING
+            );
+        }
         $this->id = $id;
         return $this;
     }

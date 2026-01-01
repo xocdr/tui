@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Run Pint to fix code style
+./vendor/bin/pint
+
+# Check if Pint changed any files
+if ! git diff --quiet; then
+    echo ""
+    echo "Pint fixed code style issues. Please review and stage the changes:"
+    echo ""
+    git diff --name-only
+    echo ""
+    echo "Run 'git add -u' to stage the fixes, then commit again."
+    exit 1
+fi
+
+exit 0

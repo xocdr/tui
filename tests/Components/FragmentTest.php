@@ -12,7 +12,7 @@ class FragmentTest extends TestCase
 {
     public function testCreate(): void
     {
-        $fragment = new Fragment;
+        $fragment = new Fragment();
 
         $this->assertInstanceOf(Fragment::class, $fragment);
         $this->assertEmpty($fragment->getChildren());
@@ -30,7 +30,7 @@ class FragmentTest extends TestCase
 
     public function testChildren(): void
     {
-        $fragment = (new Fragment)->children([
+        $fragment = (new Fragment())->children([
             new Text('Test'),
         ]);
 
@@ -39,7 +39,7 @@ class FragmentTest extends TestCase
 
     public function testChild(): void
     {
-        $fragment = (new Fragment)
+        $fragment = (new Fragment())
             ->child(new Text('One'))
             ->child(new Text('Two'));
 

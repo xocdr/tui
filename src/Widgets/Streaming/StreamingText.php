@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Streaming;
 
-use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
@@ -18,7 +17,6 @@ class StreamingText extends Widget
 
     private bool $isStreaming = false;
 
-    /** @phpstan-ignore property.onlyWritten (kept for API backward compatibility) */
     private string $cursorChar = '●';
 
     private string $spinnerType = 'dots';

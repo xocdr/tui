@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Feedback\Segments;
 
-use Xocdr\Tui\Components\Box;
-use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Feedback\StatusBarContext;

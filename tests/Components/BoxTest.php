@@ -14,35 +14,35 @@ class BoxTest extends TestCase
 {
     public function testCreate(): void
     {
-        $box = new Box;
+        $box = new Box();
 
         $this->assertInstanceOf(Box::class, $box);
     }
 
     public function testFlexDirection(): void
     {
-        $box = (new Box)->flexDirection('column');
+        $box = (new Box())->flexDirection('column');
 
         $this->assertEquals(['flexDirection' => 'column'], $box->getStyle());
     }
 
     public function testColumn(): void
     {
-        $box = new BoxColumn;
+        $box = new BoxColumn();
 
         $this->assertEquals(['flexDirection' => 'column'], $box->getStyle());
     }
 
     public function testRow(): void
     {
-        $box = new BoxRow;
+        $box = new BoxRow();
 
         $this->assertEquals(['flexDirection' => 'row'], $box->getStyle());
     }
 
     public function testChildren(): void
     {
-        $box = (new Box)->children([
+        $box = (new Box())->children([
             new Text('Hello'),
             new Text('World'),
         ]);
@@ -52,7 +52,7 @@ class BoxTest extends TestCase
 
     public function testChild(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->child(new Text('Hello'))
             ->child(new Text('World'));
 
@@ -61,14 +61,14 @@ class BoxTest extends TestCase
 
     public function testPadding(): void
     {
-        $box = (new Box)->padding(2);
+        $box = (new Box())->padding(2);
 
         $this->assertEquals(['padding' => 2], $box->getStyle());
     }
 
     public function testBorder(): void
     {
-        $box = (new Box)->border('round');
+        $box = (new Box())->border('round');
 
         $this->assertEquals(['borderStyle' => 'round'], $box->getStyle());
     }
@@ -79,7 +79,7 @@ class BoxTest extends TestCase
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
-        $box = (new Box)
+        $box = (new Box())
             ->flexDirection('column')
             ->children([
                 new Text('Hello'),
@@ -97,7 +97,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithBorder(): void
     {
-        $box = (new Box)->styles('border');
+        $box = (new Box())->styles('border');
         $style = $box->getStyle();
 
         $this->assertEquals('single', $style['borderStyle']);
@@ -105,7 +105,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithBorderStyle(): void
     {
-        $box = (new Box)->styles('border-round');
+        $box = (new Box())->styles('border-round');
         $style = $box->getStyle();
 
         $this->assertEquals('round', $style['borderStyle']);
@@ -113,7 +113,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithBorderColor(): void
     {
-        $box = (new Box)->styles('border border-blue-500');
+        $box = (new Box())->styles('border border-blue-500');
         $style = $box->getStyle();
 
         $this->assertEquals('single', $style['borderStyle']);
@@ -122,7 +122,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithBgColor(): void
     {
-        $box = (new Box)->styles('bg-slate-900');
+        $box = (new Box())->styles('bg-slate-900');
         $style = $box->getStyle();
 
         $this->assertEquals('#0f172a', $style['bgColor']);
@@ -130,7 +130,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithPadding(): void
     {
-        $box = (new Box)->styles('p-2');
+        $box = (new Box())->styles('p-2');
         $style = $box->getStyle();
 
         $this->assertEquals(2, $style['padding']);
@@ -138,7 +138,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithPaddingX(): void
     {
-        $box = (new Box)->styles('px-3');
+        $box = (new Box())->styles('px-3');
         $style = $box->getStyle();
 
         $this->assertEquals(3, $style['paddingLeft']);
@@ -147,7 +147,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithPaddingY(): void
     {
-        $box = (new Box)->styles('py-1');
+        $box = (new Box())->styles('py-1');
         $style = $box->getStyle();
 
         $this->assertEquals(1, $style['paddingTop']);
@@ -156,7 +156,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithFlexCol(): void
     {
-        $box = (new Box)->styles('flex-col');
+        $box = (new Box())->styles('flex-col');
         $style = $box->getStyle();
 
         $this->assertEquals('column', $style['flexDirection']);
@@ -164,7 +164,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithFlexRow(): void
     {
-        $box = (new Box)->styles('flex-row');
+        $box = (new Box())->styles('flex-row');
         $style = $box->getStyle();
 
         $this->assertEquals('row', $style['flexDirection']);
@@ -172,7 +172,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithItemsCenter(): void
     {
-        $box = (new Box)->styles('items-center');
+        $box = (new Box())->styles('items-center');
         $style = $box->getStyle();
 
         $this->assertEquals('center', $style['alignItems']);
@@ -180,7 +180,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithJustifyCenter(): void
     {
-        $box = (new Box)->styles('justify-center');
+        $box = (new Box())->styles('justify-center');
         $style = $box->getStyle();
 
         $this->assertEquals('center', $style['justifyContent']);
@@ -188,7 +188,7 @@ class BoxTest extends TestCase
 
     public function testStylesWithGap(): void
     {
-        $box = (new Box)->styles('gap-2');
+        $box = (new Box())->styles('gap-2');
         $style = $box->getStyle();
 
         $this->assertEquals(2, $style['gap']);
@@ -196,7 +196,7 @@ class BoxTest extends TestCase
 
     public function testStylesCombined(): void
     {
-        $box = (new Box)->styles('border border-round border-cyan-500 bg-slate-900 p-1');
+        $box = (new Box())->styles('border border-round border-cyan-500 bg-slate-900 p-1');
         $style = $box->getStyle();
 
         $this->assertEquals('round', $style['borderStyle']);
@@ -208,7 +208,7 @@ class BoxTest extends TestCase
     public function testStylesWithCallable(): void
     {
         $hasBorder = true;
-        $box = (new Box)->styles(fn () => $hasBorder ? 'border border-round' : '');
+        $box = (new Box())->styles(fn () => $hasBorder ? 'border border-round' : '');
         $style = $box->getStyle();
 
         $this->assertEquals('round', $style['borderStyle']);
@@ -218,7 +218,7 @@ class BoxTest extends TestCase
     {
         \Xocdr\Tui\Styling\Style\Color::defineColor('box-test-accent', 'emerald', 500);
 
-        $box = (new Box)->styles('border border-box-test-accent');
+        $box = (new Box())->styles('border border-box-test-accent');
         $style = $box->getStyle();
 
         $this->assertEquals('#10b981', $style['borderColor']);

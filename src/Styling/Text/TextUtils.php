@@ -43,8 +43,10 @@ class TextUtils
             return [$text];
         }
 
+        /** @var array<string> $result */
         $result = \tui_wrap_text($text, $width);
-        return is_array($result) && count($result) > 0 ? $result : [$text];
+
+        return count($result) > 0 ? $result : [$text];
     }
 
     /**

@@ -7,9 +7,9 @@ namespace Xocdr\Tui\Tests\Rendering;
 use PHPUnit\Framework\TestCase;
 use Xocdr\Tui\Contracts\ExtNodeFactoryInterface;
 use Xocdr\Tui\Tests\Mocks\MockExtBox;
+use Xocdr\Tui\Tests\Mocks\MockExtNewline;
 use Xocdr\Tui\Tests\Mocks\MockExtNodeFactory;
 use Xocdr\Tui\Tests\Mocks\MockExtText;
-use Xocdr\Tui\Tests\Mocks\MockExtNewline;
 
 class ExtNodeFactoryTest extends TestCase
 {

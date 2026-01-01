@@ -1,9 +1,16 @@
+includes:
+    - phpstan-baseline.neon
+
 parameters:
     level: 9
+    phpVersion: 80400
     paths:
         - src
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false
+    excludePaths:
+        analyseAndScan:
+            - src/Widgets/*
     ignoreErrors:
         # C extension classes and functions - patterns may not match if extension is loaded
         - message: '#TuiBox#'
@@ -17,6 +24,19 @@ parameters:
         - message: '#Xocdr\\Tui\\Ext\\Instance::getFocusedNode\(\)#'
         - message: '#Xocdr\\Tui\\Ext\\Instance::getSize\(\)#'
         - message: '#Xocdr\\Tui\\Ext\\Instance::getRootNode\(\)#'
+        # ext-tui 0.2.12+ TuiNode interface methods (getKey/getId on Box/Text)
+        - message: '#Xocdr\\Tui\\Ext\\Box::getKey\(\)#'
+        - message: '#Xocdr\\Tui\\Ext\\Box::getId\(\)#'
+        - message: '#Xocdr\\Tui\\Ext\\Text::getKey\(\)#'
+        - message: '#Xocdr\\Tui\\Ext\\Text::getId\(\)#'
+        # ext-tui 0.3.0 typed exceptions
+        - message: '#Xocdr\\Tui\\TuiException#'
+        - message: '#Xocdr\\Tui\\InstanceDestroyedException#'
+        - message: '#Xocdr\\Tui\\ValidationException#'
+        - message: '#Xocdr\\Tui\\InvalidDimensionException#'
+        - message: '#Xocdr\\Tui\\ResourceException#'
+        - message: '#Xocdr\\Tui\\StateLimitException#'
+        - message: '#Xocdr\\Tui\\TimerLimitException#'
         # class_alias for StaticOutput
         - message: '#StaticOutput not found#'
         # Intentional for inheritance pattern

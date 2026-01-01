@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Rendering\Lifecycle;
 
 use Xocdr\Tui\Ext\Instance as ExtInstance;
+use Xocdr\Tui\InstanceDestroyedException as ExtInstanceDestroyedException;
 
 /**
  * Manages the lifecycle of a TUI application.
@@ -133,6 +134,8 @@ class RuntimeLifecycle
 
     /**
      * Request a re-render.
+     *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
      */
     public function rerender(): void
     {
@@ -140,11 +143,19 @@ class RuntimeLifecycle
             return;
         }
 
-        $this->extInstance->rerender();
+        try {
+            $this->extInstance->rerender();
+        } catch (ExtInstanceDestroyedException $e) {
+            $this->state = LifecycleState::Stopped;
+            $this->extInstance = null;
+            throw $e;
+        }
     }
 
     /**
      * Block until exit is requested.
+     *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
      */
     public function waitUntilExit(): void
     {
@@ -152,13 +163,21 @@ class RuntimeLifecycle
             return;
         }
 
-        $this->extInstance->waitUntilExit();
+        try {
+            $this->extInstance->waitUntilExit();
+        } catch (ExtInstanceDestroyedException $e) {
+            $this->state = LifecycleState::Stopped;
+            $this->extInstance = null;
+            throw $e;
+        }
     }
 
     /**
      * Get current terminal size.
      *
      * @return array{width: int, height: int, columns: int, rows: int}|null
+     *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
      */
     public function getSize(): ?array
     {
@@ -166,7 +185,13 @@ class RuntimeLifecycle
             return null;
         }
 
-        /** @var array{width: int, height: int, columns: int, rows: int} */
-        return $this->extInstance->getSize();
+        try {
+            /** @var array{width: int, height: int, columns: int, rows: int} */
+            return $this->extInstance->getSize();
+        } catch (ExtInstanceDestroyedException $e) {
+            $this->state = LifecycleState::Stopped;
+            $this->extInstance = null;
+            throw $e;
+        }
     }
 }

@@ -180,7 +180,6 @@ class Toast extends Widget
                     return;
                 }
 
-                // @phpstan-ignore argument.type (state setter accepts any numeric, not just initial value)
                 $setProgress(fn ($p) => max(0, $p - $decrement));
             }, $tickMs);
         }
@@ -190,7 +189,6 @@ class Toast extends Widget
 
             $hooks->onInput(function ($key, $nativeKey) use ($setIsDismissed, $onDismiss) {
                 if ($nativeKey->escape || $key === 'q' || $nativeKey->return) {
-                    // @phpstan-ignore argument.type (state setter accepts any bool, not just initial value)
                     $setIsDismissed(true);
 
                     if ($onDismiss !== null) {
@@ -232,7 +230,7 @@ class Toast extends Widget
             $filledWidth = (int) round((int) $progress / 100 * $barWidth);
             $emptyWidth = $barWidth - $filledWidth;
 
-            $progressBar = str_repeat("█", $filledWidth) . str_repeat("░", $emptyWidth);
+            $progressBar = str_repeat('█', $filledWidth) . str_repeat('░', $emptyWidth);
             $elements[] = new Text($progressBar)->color($color)->dim();
         }
 

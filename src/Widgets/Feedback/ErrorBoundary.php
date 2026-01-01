@@ -6,7 +6,6 @@ namespace Xocdr\Tui\Widgets\Feedback;
 
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
-use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;

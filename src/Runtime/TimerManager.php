@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Runtime;
 
 use Xocdr\Tui\Contracts\TimerManagerInterface;
+use Xocdr\Tui\InstanceDestroyedException as ExtInstanceDestroyedException;
 use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
 
 /**
@@ -39,6 +40,7 @@ class TimerManager implements TimerManagerInterface
      * @return int Timer ID for later removal
      *
      * @throws \InvalidArgumentException If interval is invalid
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
      *
      * @example
      * // Update every 100ms
@@ -86,6 +88,8 @@ class TimerManager implements TimerManagerInterface
      *
      * @param int $timerId Timer ID returned from addTimer()
      *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     *
      * @note This is a no-op if the application is not running.
      */
     public function removeTimer(int $timerId): void
@@ -128,6 +132,8 @@ class TimerManager implements TimerManagerInterface
      * or integrating with other event systems.
      *
      * @param callable(): void $handler Handler called each tick
+     *
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
      *
      * @note This is a no-op if the application is not running.
      *

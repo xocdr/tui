@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Input;
 
-use Xocdr\Tui\Components\Box;
-use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Spacer;
@@ -297,7 +295,6 @@ class Input extends Widget implements FocusableWidget, InteractiveWidget
 
         if ($this->isFocused && $this->cursorBlink) {
             $hooks->interval(function () use ($setCursorVisible) {
-                // @phpstan-ignore booleanNot.alwaysFalse, argument.type (state changes at runtime)
                 $setCursorVisible(fn ($v) => !$v);
             }, $this->blinkRate);
         }

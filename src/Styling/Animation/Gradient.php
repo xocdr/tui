@@ -423,7 +423,8 @@ class Gradient
         // Try native function if available and not using HSL
         if (!$this->useHsl && !$this->isCircular && function_exists('tui_gradient')) {
             $result = tui_gradient($this->stops, $this->steps);
-            if (is_array($result) && count($result) > 0) {
+            if (count($result) > 0) {
+                /** @var array<string> $result */
                 return $result;
             }
         }

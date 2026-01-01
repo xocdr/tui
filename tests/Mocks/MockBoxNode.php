@@ -40,4 +40,14 @@ class MockBoxNode implements NodeInterface
         // Return a mock object for testing
         return (object) ['type' => 'box', 'style' => $this->style, 'children' => $this->children];
     }
+
+    public function getKey(): ?string
+    {
+        return $this->style['key'] ?? null;
+    }
+
+    public function getId(): ?string
+    {
+        return $this->style['id'] ?? null;
+    }
 }

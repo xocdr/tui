@@ -8,7 +8,7 @@
  * - Animated spinner for active task in title
  * - Tree-style indentation with hook connector
  * - Strikethrough for completed items
- * - Exact color matching
+ * - Strings auto-wrapped as Text components
  *
  * Controls:
  *   Up/Down   - Navigate
@@ -107,18 +107,8 @@ class ClaudeCodeTodosDemo extends UI
         // Current spinner frame
         $spinner = $spinnerFrames[$spinnerFrame % count($spinnerFrames)];
 
-        // Build the UI
-        $column = new BoxColumn();
-
-        // Title line: [spinner] Active task text... (dimmed info)
-        $column->append(
-            (new BoxRow())
-                ->append((new Text($spinner . ' '))->rgb(227, 133, 90))  // Orange spinner
-                ->append((new Text($inProgressText . '...'))->rgb(227, 133, 90))  // Orange text
-                ->append((new Text(' (esc to interrupt · ctrl+t to hide todos · 5m 38s · ↓ 1.7k tokens)'))->dim())
-        );
-
-        // Todo items with tree connector
+        // Build todo items
+        $todoRows = [];
         foreach ($todos as $index => $todo) {
             $isFirst = $index === 0;
             $isSelected = $index === $selectedIndex;
@@ -141,15 +131,25 @@ class ClaudeCodeTodosDemo extends UI
                 $contentText->bold();
             }
 
-            $column->append(
-                (new BoxRow())
-                    ->append($connectorText)
-                    ->append($iconText)
-                    ->append($contentText)
-            );
+            $todoRows[] = new BoxRow([
+                $connectorText,
+                $iconText,
+                $contentText,
+            ]);
         }
 
-        return (new Box())->append($column);
+        return new Box([
+            new BoxColumn([
+                // Title line: [spinner] Active task text... (dimmed info)
+                new BoxRow([
+                    (new Text($spinner . ' '))->rgb(227, 133, 90),  // Orange spinner
+                    (new Text($inProgressText . '...'))->rgb(227, 133, 90),  // Orange text
+                    (new Text(' (esc to interrupt · ctrl+t to hide todos · 5m 38s · ↓ 1.7k tokens)'))->dim(),
+                ]),
+                // Todo items
+                ...$todoRows,
+            ]),
+        ]);
     }
 }
 

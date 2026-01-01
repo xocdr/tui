@@ -39,4 +39,14 @@ class MockTextNode implements NodeInterface
     {
         return (object) ['type' => 'text', 'content' => $this->content, 'style' => $this->style];
     }
+
+    public function getKey(): ?string
+    {
+        return $this->style['key'] ?? null;
+    }
+
+    public function getId(): ?string
+    {
+        return $this->style['id'] ?? null;
+    }
 }

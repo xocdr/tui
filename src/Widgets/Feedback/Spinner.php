@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Feedback;
 
-use Xocdr\Tui\Widgets\Widget;
-
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Ext\Color;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Self-animating spinner widget.
@@ -18,15 +17,17 @@ use Xocdr\Tui\Ext\Color;
  *
  * @example
  * // Simple usage - spinner auto-animates
- * (new Box())->asColumn()
- *     ->append(new Spinner(), 'my-spinner')
- *     ->append(new Spinner('line'), 'line-spinner');
+ * new Box([
+ *     new BoxColumn([
+ *         'my-spinner' => new Spinner(),
+ *         'line-spinner' => new Spinner('line'),
+ *     ]),
+ * ]);
  *
  * // With label and color
- * (new Box())->append(
- *     (new Spinner())->label('Loading...')->color(Color::Cyan),
- *     'loader'
- * );
+ * new Box([
+ *     'loader' => (new Spinner())->label('Loading...')->color(Color::Cyan),
+ * ]);
  */
 class Spinner extends Widget
 {

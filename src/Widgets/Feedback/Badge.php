@@ -140,7 +140,6 @@ class Badge extends Widget
 
         if ($isAnimated) {
             $hooks->interval(function () use ($setSpinnerFrame) {
-                // @phpstan-ignore argument.type (state setter accepts any int, not just initial value)
                 $setSpinnerFrame(fn ($i) => ($i + 1) % Constants::SPINNER_FRAME_COUNT);
             }, Constants::DEFAULT_SPINNER_INTERVAL_MS);
         }

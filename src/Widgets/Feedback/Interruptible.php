@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Feedback;
 
-use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
-use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Widgets\Widget;
@@ -103,7 +101,6 @@ class Interruptible extends Widget
                 };
 
                 if ($shouldInterrupt) {
-                    // @phpstan-ignore argument.type (state setter accepts any bool, not just initial value)
                     $setIsInterrupted(true);
 
                     if ($this->onInterrupt !== null) {

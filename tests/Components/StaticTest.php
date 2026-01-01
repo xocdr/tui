@@ -12,7 +12,7 @@ class StaticTest extends TestCase
 {
     public function testCreate(): void
     {
-        $static = new Static_;
+        $static = new Static_();
 
         $this->assertInstanceOf(Static_::class, $static);
         $this->assertEmpty($static->getItems());
@@ -30,7 +30,7 @@ class StaticTest extends TestCase
 
     public function testItems(): void
     {
-        $static = (new Static_)->items([
+        $static = (new Static_())->items([
             new Text('Item 1'),
             new Text('Item 2'),
         ]);
@@ -48,7 +48,7 @@ class StaticTest extends TestCase
 
     public function testChildrenAliasForItems(): void
     {
-        $static = (new Static_)
+        $static = (new Static_())
             ->children([new Text('Child')]);
 
         $this->assertCount(1, $static->getChildren());

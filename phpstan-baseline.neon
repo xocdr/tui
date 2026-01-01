@@ -1,0 +1,139 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Binary operation "\+" between mixed and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Components/Examples/Counter.php
+
+		-
+			message: '#^Binary operation "\-" between mixed and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Components/Examples/Counter.php
+
+		-
+			message: '#^Binary operation "\-" between mixed and 2 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Components/Examples/StreamViewer.php
+
+		-
+			message: '#^Binary operation "\-" between mixed and int results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Components/Examples/StreamViewer.php
+
+		-
+			message: '#^Binary operation "\-" between mixed and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Components/Examples/TodoList.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between non\-falsy\-string and false will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Components/Image.php
+
+		-
+			message: '#^Call to an undefined method Xocdr\\Tui\\Runtime\:\:addTimer\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Components/StatefulComponent.php
+
+		-
+			message: '#^Call to an undefined method Xocdr\\Tui\\Runtime\:\:removeTimer\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Components/StatefulComponent.php
+
+		-
+			message: '#^PHPDoc tag @var with type Xocdr\\Tui\\Styling\\Drawing\\Canvas is not subtype of native type null\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Hooks/Hooks.php
+
+		-
+			message: '#^PHPDoc tag @var with type Xocdr\\Tui\\Terminal\\Input\\InputHistory is not subtype of native type null\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Hooks/Hooks.php
+
+		-
+			message: '#^Parameter \#1 of callable callable\(callable\(false\)\: false\|false\)\: void expects \(callable\(false\)\: false\)\|false, true given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Hooks/Hooks.php
+
+		-
+			message: '#^Method Xocdr\\Tui\\Rendering\\Lifecycle\\RuntimeLifecycle\:\:start\(\) should return Xocdr\\Tui\\Ext\\Instance but returns Xocdr\\Tui\\Ext\\Instance\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Rendering/Lifecycle/RuntimeLifecycle.php
+
+		-
+			message: '#^Parameter \#1 \$data of method Xocdr\\Tui\\Rendering\\Render\\ComponentRenderer\:\:arrayToNode\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Rendering/Render/ComponentRenderer.php
+
+		-
+			message: '#^Parameter \#1 \$style of method Xocdr\\Tui\\Contracts\\RenderTargetInterface\:\:createBox\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Rendering/Render/ComponentRenderer.php
+
+		-
+			message: '#^Parameter \#2 \$style of method Xocdr\\Tui\\Contracts\\RenderTargetInterface\:\:createText\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Rendering/Render/ComponentRenderer.php
+
+		-
+			message: '#^Method Xocdr\\Tui\\Runtime\:\:getRootNode\(\) should return Xocdr\\Tui\\Components\\Component\|null but returns Xocdr\\Tui\\Ext\\Box\|Xocdr\\Tui\\Ext\\Text\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Runtime.php
+
+		-
+			message: '#^PHPDoc tag @var with type array\<string\> is not subtype of native type string\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Styling/Drawing/Buffer.php
+
+		-
+			message: '#^Property Xocdr\\Tui\\Styling\\Drawing\\Buffer\:\:\$native \(resource\|null\) is never assigned resource so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Styling/Drawing/Buffer.php
+
+		-
+			message: '#^Parameter \#1 of callable callable\(callable\(false\)\: false\|false\)\: void expects \(callable\(false\)\: false\)\|false, true given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Support/Testing/MockHooks.php
+
+		-
+			message: '#^Call to function is_string\(\) with object will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: src/Support/Testing/TestRenderer.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: src/Terminal/Events/EventDispatcher.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between '''' and '''' will always evaluate to false\.$#'
+			identifier: notIdentical.alwaysFalse
+			count: 1
+			path: src/Terminal/Events/EventDispatcher.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$callback with type \(callable\)\|void is not subtype of native type callable\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: src/UI.php

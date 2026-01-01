@@ -52,15 +52,10 @@ class Color
 
         $result = \tui_color_from_hex($hex);
 
-        // Validate result structure
-        if (!is_array($result)) {
-            throw new \RuntimeException('tui_color_from_hex returned invalid type');
-        }
-
         return [
-            'r' => $result['r'] ?? $result[0] ?? 0,
-            'g' => $result['g'] ?? $result[1] ?? 0,
-            'b' => $result['b'] ?? $result[2] ?? 0,
+            'r' => (int) ($result['r'] ?? $result[0] ?? 0),
+            'g' => (int) ($result['g'] ?? $result[1] ?? 0),
+            'b' => (int) ($result['b'] ?? $result[2] ?? 0),
         ];
     }
 

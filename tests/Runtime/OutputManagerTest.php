@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Xocdr\Tui\Tests\Runtime;
 
 use PHPUnit\Framework\TestCase;
-use Xocdr\Tui\Runtime\OutputManager;
 use Xocdr\Tui\Contracts\OutputManagerInterface;
 use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
+use Xocdr\Tui\Runtime\OutputManager;
 
 class OutputManagerTest extends TestCase
 {

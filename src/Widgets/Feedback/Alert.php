@@ -144,7 +144,6 @@ class Alert extends Widget
         if ($this->dismissible) {
             $hooks->onInput(function ($key, $nativeKey) use ($setIsDismissed) {
                 if ($nativeKey->return || $key === ' ') {
-                    // @phpstan-ignore argument.type (state setter accepts any bool, not just initial value)
                     $setIsDismissed(true);
 
                     if ($this->onDismiss !== null) {
@@ -196,7 +195,6 @@ class Alert extends Widget
         $icon = $this->icon ?? $this->variant->icon();
 
         foreach ($lines as $index => $line) {
-            // @phpstan-ignore notIdentical.alwaysTrue ($icon can be null when variant has no icon)
             if ($index === 0 && $icon !== null) {
                 $elements[] = new BoxRow([
                     new Text($icon . ' ')->color($this->variant->color()),

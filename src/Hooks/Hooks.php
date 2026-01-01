@@ -11,11 +11,11 @@ use Xocdr\Tui\Styling\Animation\Tween;
 use Xocdr\Tui\Styling\Drawing\Canvas;
 use Xocdr\Tui\Terminal\Clipboard;
 use Xocdr\Tui\Terminal\Events\InputEvent;
-use Xocdr\Tui\Terminal\TerminalInfo;
 use Xocdr\Tui\Terminal\Events\MouseEvent;
 use Xocdr\Tui\Terminal\Events\PasteEvent;
 use Xocdr\Tui\Terminal\Input\InputHistory;
 use Xocdr\Tui\Terminal\Mouse\MouseMode;
+use Xocdr\Tui\Terminal\TerminalInfo;
 
 /**
  * Service class for component state and lifecycle management.
@@ -349,7 +349,7 @@ final readonly class Hooks implements HooksInterface
         // Use native Focus class if available (ext-tui 0.1.3+)
         if (class_exists(\Xocdr\Tui\Ext\Focus::class) && $app !== null) {
             $tuiInstance = $app->getTuiInstance();
-            if ($tuiInstance !== null && method_exists($tuiInstance, 'focus')) {
+            if ($tuiInstance !== null) {
                 $focus = $tuiInstance->focus();
 
                 return [
@@ -394,7 +394,7 @@ final readonly class Hooks implements HooksInterface
         // Use native FocusManager class if available (ext-tui 0.1.3+)
         if (class_exists(\Xocdr\Tui\Ext\FocusManager::class) && $app !== null) {
             $tuiInstance = $app->getTuiInstance();
-            if ($tuiInstance !== null && method_exists($tuiInstance, 'focusManager')) {
+            if ($tuiInstance !== null) {
                 $manager = $tuiInstance->focusManager();
 
                 return [

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Display;
 
-use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
@@ -364,7 +363,6 @@ class Tree extends Widget
                 if ($this->searchable && !$nativeKey->upArrow && !$nativeKey->downArrow
                     && !$nativeKey->leftArrow && !$nativeKey->rightArrow
                     && !$nativeKey->return && !$nativeKey->escape
-                    // @phpstan-ignore notIdentical.alwaysTrue ($key can be null at runtime from input handler)
                     && $key !== null && strlen($key) === 1 && ctype_print($key)) {
                     $setFilterText(fn ($ft) => $ft . $key);
                     $setSelectedIndex(0);

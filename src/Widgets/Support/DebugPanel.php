@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Support;
 
-use Xocdr\Tui\Widgets\Widget;
-
 use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
-use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Text;
 use Xocdr\Tui\Support\Telemetry\Metrics;
+use Xocdr\Tui\Widgets\Widget;
 
 /**
  * Debug panel widget showing live performance metrics.
@@ -114,80 +112,80 @@ class DebugPanel extends Widget
         $positionStyle = $this->getPositionStyle();
 
         return (new BoxColumn([
-                // Render timing
-                new BoxColumn([
-                    new Text('Render')->bold()->dim(),
-                    new Text(sprintf(
-                        'Count: %d  Avg: %.2fms',
-                        $render['render_count'],
-                        $render['avg_render_ms']
-                    ))->color($fpsColor),
-                    new Text(sprintf(
-                        'Min: %.2fms  Max: %.2fms',
-                        $render['min_render_ms'],
-                        $render['max_render_ms']
-                    ))->dim(),
-                ]),
+            // Render timing
+            new BoxColumn([
+                new Text('Render')->bold()->dim(),
+                new Text(sprintf(
+                    'Count: %d  Avg: %.2fms',
+                    $render['render_count'],
+                    $render['avg_render_ms']
+                ))->color($fpsColor),
+                new Text(sprintf(
+                    'Min: %.2fms  Max: %.2fms',
+                    $render['min_render_ms'],
+                    $render['max_render_ms']
+                ))->dim(),
+            ]),
 
-                // Phase breakdown
-                new BoxColumn([
-                    new Text('Phases')->bold()->dim(),
-                    new Text(sprintf(
-                        'Layout: %.1f%%  Buffer: %.1f%%  Output: %.1f%%',
-                        $breakdown['layout'],
-                        $breakdown['buffer'],
-                        $breakdown['output']
-                    )),
-                ]),
+            // Phase breakdown
+            new BoxColumn([
+                new Text('Phases')->bold()->dim(),
+                new Text(sprintf(
+                    'Layout: %.1f%%  Buffer: %.1f%%  Output: %.1f%%',
+                    $breakdown['layout'],
+                    $breakdown['buffer'],
+                    $breakdown['output']
+                )),
+            ]),
 
-                // Nodes
-                new BoxColumn([
-                    new Text('Nodes')->bold()->dim(),
-                    new Text(sprintf(
-                        'Total: %d  Box: %d  Text: %d',
-                        $nodes['node_count'],
-                        $nodes['box_count'],
-                        $nodes['text_count']
-                    )),
-                    new Text(sprintf(
-                        'Static: %d  Depth: %d',
-                        $nodes['static_count'],
-                        $nodes['max_depth']
-                    ))->dim(),
-                ]),
+            // Nodes
+            new BoxColumn([
+                new Text('Nodes')->bold()->dim(),
+                new Text(sprintf(
+                    'Total: %d  Box: %d  Text: %d',
+                    $nodes['node_count'],
+                    $nodes['box_count'],
+                    $nodes['text_count']
+                )),
+                new Text(sprintf(
+                    'Static: %d  Depth: %d',
+                    $nodes['static_count'],
+                    $nodes['max_depth']
+                ))->dim(),
+            ]),
 
-                // Reconciler
-                new BoxColumn([
-                    new Text('Reconciler')->bold()->dim(),
-                    new Text(sprintf(
-                        'Diffs: %d  Ops/diff: %.1f',
-                        $reconciler['diff_runs'],
-                        $reconciler['avg_ops_per_diff']
-                    ))->color($reconciler['avg_ops_per_diff'] > 50 ? 'yellow' : 'white'),
-                    new Text(sprintf(
-                        '+%d  ~%d  -%d  ↔%d',
-                        $reconciler['creates'],
-                        $reconciler['updates'],
-                        $reconciler['deletes'],
-                        $reconciler['reorders']
-                    ))->dim(),
-                ]),
+            // Reconciler
+            new BoxColumn([
+                new Text('Reconciler')->bold()->dim(),
+                new Text(sprintf(
+                    'Diffs: %d  Ops/diff: %.1f',
+                    $reconciler['diff_runs'],
+                    $reconciler['avg_ops_per_diff']
+                ))->color($reconciler['avg_ops_per_diff'] > 50 ? 'yellow' : 'white'),
+                new Text(sprintf(
+                    '+%d  ~%d  -%d  ↔%d',
+                    $reconciler['creates'],
+                    $reconciler['updates'],
+                    $reconciler['deletes'],
+                    $reconciler['reorders']
+                ))->dim(),
+            ]),
 
-                // Event loop
-                new BoxColumn([
-                    new Text('Events')->bold()->dim(),
-                    new Text(sprintf(
-                        'Loop: %d  Input: %d  Resize: %d  Timer: %d',
-                        $loop['loop_iterations'],
-                        $loop['input_events'],
-                        $loop['resize_events'],
-                        $loop['timer_fires']
-                    ))->dim(),
-                ]),
+            // Event loop
+            new BoxColumn([
+                new Text('Events')->bold()->dim(),
+                new Text(sprintf(
+                    'Loop: %d  Input: %d  Resize: %d  Timer: %d',
+                    $loop['loop_iterations'],
+                    $loop['input_events'],
+                    $loop['resize_events'],
+                    $loop['timer_fires']
+                ))->dim(),
+            ]),
 
-                // Help
-                new Text('Ctrl+Shift+D to close')->dim()->italic(),
-            ]))
+            // Help
+            new Text('Ctrl+Shift+D to close')->dim()->italic(),
+        ]))
             ->border('round')
             ->borderColor('#666666')
             ->padding(1)

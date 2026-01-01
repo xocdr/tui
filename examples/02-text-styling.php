@@ -62,18 +62,17 @@ class TextStylingDemo extends UI
 
         $sectionNames = ['Decorations', 'Colors', 'Styles API', 'Text Utils'];
 
-        $tabs = new BoxRow();
+        // Build tabs with keyed array
+        $tabItems = [];
         foreach ($sectionNames as $i => $name) {
-            $tabs->append(
-                (new Text(" [{$name}] "))->styles($i === $section ? 'bold text-cyan-400 bg-slate-800' : 'dim'),
-                'tab-' . $i
-            );
+            $tabItems['tab-' . $i] = (new Text(" [{$name}] "))
+                ->styles($i === $section ? 'bold text-cyan-400 bg-slate-800' : 'dim');
         }
 
         return new Box([
             new BoxColumn([
                 (new Text('Text & Styling Demo'))->styles('cyan bold'),
-                $tabs,
+                new BoxRow($tabItems),
                 (new Text('Use N/P or arrows to navigate sections. ESC to exit.'))->dim(),
                 new Newline(),
                 $sections[$section],

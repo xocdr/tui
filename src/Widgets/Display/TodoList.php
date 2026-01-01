@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Xocdr\Tui\Widgets\Display;
 
-use Xocdr\Tui\Components\Box;
 use Xocdr\Tui\Components\BoxColumn;
 use Xocdr\Tui\Components\BoxRow;
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Components\Spacer;
 use Xocdr\Tui\Components\Text;
-use Xocdr\Tui\Widgets\Support\Constants;
 use Xocdr\Tui\Widgets\Support\IconPresets;
 use Xocdr\Tui\Widgets\Widget;
 
@@ -360,7 +358,6 @@ class TodoList extends Widget
         if ($this->showSpinner && $hasInProgressItem) {
             $frameCount = count(IconPresets::getSpinner($this->spinnerType));
             $hooks->interval(function () use ($setSpinnerFrame, $frameCount) {
-                // @phpstan-ignore argument.type (state setter accepts any int, not just initial value)
                 $setSpinnerFrame(fn ($i) => ($i + 1) % $frameCount);
             }, $this->spinnerInterval);
         }
@@ -368,7 +365,6 @@ class TodoList extends Widget
         if ($this->canHideTodos) {
             $hooks->onInput(function ($key, $nativeKey) use ($setIsHidden) {
                 if ($this->matchesKey($key, $nativeKey, $this->keyToHideTodos)) {
-                    // @phpstan-ignore booleanNot.alwaysTrue, argument.type (state changes at runtime)
                     $setIsHidden(fn ($h) => !$h);
                 }
             });

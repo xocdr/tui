@@ -19,8 +19,8 @@
     },
     "require-dev": {
         "laravel/pint": "^1.26",
-        "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^10.0"
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.0"
     },
     "autoload": {
         "psr-4": {
@@ -34,9 +34,15 @@
     },
     "scripts": {
         "test": "phpunit",
-        "analyse": "phpstan analyse --memory-limit=8G",
-        "format": "pint",
-        "format:check": "pint --test"
+        "analyse": "phpstan analyse --memory-limit=2G",
+        "analyze": "@analyse",
+        "cs": "pint",
+        "cs:check": "pint --test",
+        "qa": [
+            "@analyse",
+            "@cs",
+            "@test"
+        ]
     },
     "config": {
         "sort-packages": true

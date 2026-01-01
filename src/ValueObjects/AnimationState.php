@@ -31,7 +31,8 @@ final readonly class AnimationState
         private \Closure $start,
         private \Closure $reset,
         private ?\Closure $stop = null,
-    ) {}
+    ) {
+    }
 
     /**
      * Create from array (for backward compatibility).

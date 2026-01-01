@@ -82,7 +82,7 @@ abstract class AbstractContainerComponent implements Component
         // If keyedChildren is populated, use that (sorted by order)
         if (!empty($this->keyedChildren)) {
             $sorted = $this->keyedChildren;
-            uasort($sorted, fn($a, $b) => $a['order'] <=> $b['order']);
+            uasort($sorted, fn ($a, $b) => $a['order'] <=> $b['order']);
             return array_column($sorted, 'child');
         }
 
@@ -230,7 +230,7 @@ abstract class AbstractContainerComponent implements Component
     private function generateKey(object $widget): string
     {
         $className = (new \ReflectionClass($widget))->getShortName();
-        $prefix = strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $className));
+        $prefix = strtolower((string) preg_replace('/([a-z])([A-Z])/', '$1-$2', $className));
 
         return $prefix . '-' . bin2hex(random_bytes(3));
     }
@@ -307,7 +307,7 @@ abstract class AbstractContainerComponent implements Component
         if (!empty($this->keyedChildren)) {
             // Sort by order
             $sorted = $this->keyedChildren;
-            uasort($sorted, fn($a, $b) => $a['order'] <=> $b['order']);
+            uasort($sorted, fn ($a, $b) => $a['order'] <=> $b['order']);
 
             foreach ($sorted as $key => $entry) {
                 $child = $entry['child'];

@@ -9,6 +9,7 @@
  * - Shade ranges from 50 (lightest) to 950 (darkest)
  * - Defining custom color palettes
  * - Auto-generating shades from a base color
+ * - Strings auto-wrapped as Text components
  *
  * Press q to quit, arrow keys to navigate palettes
  */
@@ -69,61 +70,62 @@ class ColorPaletteDemo extends UI
 
         $currentPalette = $palettes[$paletteIndex];
 
-        $column = new BoxColumn();
-
-        // Title
-        $column->append((new Text('Tailwind-style Color Palette'))->bold()->color('sky', 400));
-        $column->append((new Text('← → to change palette, q to quit'))->dim());
-        $column->append(new Newline());
-
-        // Current palette name
-        $column->append(
-            (new BoxRow())
-                ->append((new Text('Palette: '))->dim())
-                ->append((new Text($currentPalette))->bold()->color($currentPalette, 500))
-                ->append((new Text(' (' . ($paletteIndex + 1) . '/' . count($palettes) . ')'))->dim())
-        );
-        $column->append(new Newline());
-
-        // Shade swatches
-        $column->append((new Text('Shades:'))->bold());
-
-        $swatchRow = new BoxRow();
+        // Build shade swatches
+        $swatches = [];
         foreach ($shades as $shade) {
-            $swatchRow->append(
-                (new Text(' ' . str_pad((string) $shade, 4) . ' '))
-                    ->bgColor($currentPalette, $shade)
-                    ->color($shade < 500 ? '#000000' : '#ffffff')
-            );
+            $swatches[] = (new Text(' ' . str_pad((string) $shade, 4) . ' '))
+                ->bgColor($currentPalette, $shade)
+                ->color($shade < 500 ? '#000000' : '#ffffff');
         }
-        $column->append($swatchRow);
-        $column->append(new Newline());
 
-        // Example text in different shades
-        $column->append((new Text('Text examples:'))->bold());
+        // Build text examples
+        $textExamples = [];
         foreach ([300, 400, 500, 600, 700] as $shade) {
-            $column->append(
-                (new BoxRow())
-                    ->append((new Text(str_pad((string) $shade, 4)))->dim())
-                    ->append((new Text(' The quick brown fox jumps over the lazy dog'))->color($currentPalette, $shade))
-            );
+            $textExamples[] = new BoxRow([
+                (new Text(str_pad((string) $shade, 4)))->dim(),
+                (new Text(' The quick brown fox jumps over the lazy dog'))->color($currentPalette, $shade),
+            ]);
         }
-        $column->append(new Newline());
 
-        // Usage examples
-        $column->append((new Text('Usage:'))->bold());
-        $column->append((new Text("  (new Text('Hello'))->color('$currentPalette', 500)"))->color('zinc', 400));
-        $column->append((new Text("  (new Text('Hello'))->bgColor('$currentPalette', 100)"))->color('zinc', 400));
-        $column->append((new Text("  Color::palette('$currentPalette', 500)  // Returns hex"))->color('zinc', 400));
-        $column->append((new Text("  Color::$currentPalette(500)             // Shorthand"))->color('zinc', 400));
-        $column->append(new Newline());
+        return new Box([
+            new BoxColumn([
+                // Title
+                (new Text('Tailwind-style Color Palette'))->bold()->color('sky', 400),
+                (new Text('← → to change palette, q to quit'))->dim(),
+                new Newline(),
 
-        // Custom palette definition
-        $column->append((new Text('Define custom palettes:'))->bold());
-        $column->append((new Text("  Color::define('brand', '#e3855a');  // Auto-generate shades"))->color('zinc', 400));
-        $column->append((new Text("  Color::define('custom', '#ff6b6b', [50 => '...', ...]);")->color('zinc', 400)));
+                // Current palette name
+                new BoxRow([
+                    (new Text('Palette: '))->dim(),
+                    (new Text($currentPalette))->bold()->color($currentPalette, 500),
+                    (new Text(' (' . ($paletteIndex + 1) . '/' . count($palettes) . ')'))->dim(),
+                ]),
+                new Newline(),
 
-        return (new Box())->append($column);
+                // Shade swatches
+                (new Text('Shades:'))->bold(),
+                new BoxRow($swatches),
+                new Newline(),
+
+                // Text examples
+                (new Text('Text examples:'))->bold(),
+                ...$textExamples,
+                new Newline(),
+
+                // Usage examples
+                (new Text('Usage:'))->bold(),
+                (new Text("  (new Text('Hello'))->color('$currentPalette', 500)"))->color('zinc', 400),
+                (new Text("  (new Text('Hello'))->bgColor('$currentPalette', 100)"))->color('zinc', 400),
+                (new Text("  Color::palette('$currentPalette', 500)  // Returns hex"))->color('zinc', 400),
+                (new Text("  Color::$currentPalette(500)             // Shorthand"))->color('zinc', 400),
+                new Newline(),
+
+                // Custom palette definition
+                (new Text('Define custom palettes:'))->bold(),
+                (new Text("  Color::define('brand', '#e3855a');  // Auto-generate shades"))->color('zinc', 400),
+                (new Text("  Color::define('custom', '#ff6b6b', [50 => '...', ...]);"))->color('zinc', 400),
+            ]),
+        ]);
     }
 }
 

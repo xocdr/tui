@@ -238,7 +238,6 @@ class EventDispatcher implements EventDispatcherInterface
                 // $handlerId is assigned by reference after this closure is created,
                 // so it will have a valid value by the time this is called
                 $dispatcher = $dispatcherRef->get();
-                // @phpstan-ignore-next-line - handlerId is assigned by reference before this closure executes
                 if ($dispatcher !== null && $handlerId !== '') {
                     $dispatcher->off($handlerId);
                 }

@@ -70,7 +70,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithColumnDirection(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->flexDirection('column')
             ->children([
                 new Text('Line 1'),
@@ -87,7 +87,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithRowDirection(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->flexDirection('row')
             ->children([
                 new Text('A'),
@@ -102,7 +102,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithPadding(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->padding(1)
             ->children([new Text('Content')]);
 
@@ -115,7 +115,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithBorder(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->border('single')
             ->children([new Text('Bordered')]);
 
@@ -130,7 +130,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithDoubleBorder(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->border('double')
             ->children([new Text('Double')]);
 
@@ -142,7 +142,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderBoxWithRoundBorder(): void
     {
-        $box = (new Box)
+        $box = (new Box())
             ->border('round')
             ->children([new Text('Round')]);
 
@@ -192,7 +192,7 @@ class TestRendererTest extends TestCase
 
     public function testRenderSpacer(): void
     {
-        $spacer = new Spacer;
+        $spacer = new Spacer();
 
         $output = $this->renderer->render($spacer);
         $lines = $this->renderer->getOutputLines();
@@ -261,11 +261,11 @@ class TestRendererTest extends TestCase
 
     public function testRenderNestedBoxes(): void
     {
-        $outer = (new Box)
+        $outer = (new Box())
             ->flexDirection('column')
             ->children([
-                (new Box)->children([new Text('Inner 1')]),
-                (new Box)->children([new Text('Inner 2')]),
+                (new Box())->children([new Text('Inner 1')]),
+                (new Box())->children([new Text('Inner 2')]),
             ]);
 
         $output = $this->renderer->render($outer);

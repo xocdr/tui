@@ -16,6 +16,7 @@ use Xocdr\Tui\Contracts\TerminalManagerInterface;
 use Xocdr\Tui\Contracts\TimerManagerInterface;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Hooks\HookRegistry;
+use Xocdr\Tui\InstanceDestroyedException as ExtInstanceDestroyedException;
 use Xocdr\Tui\Rendering\Focus\FocusManager;
 use Xocdr\Tui\Rendering\Lifecycle\RuntimeLifecycle;
 use Xocdr\Tui\Rendering\Render\ComponentRenderer;
@@ -246,6 +247,9 @@ class Runtime implements InstanceInterface
     // Focus (FocusableInterface)
     // =========================================================================
 
+    /**
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
     public function focusNext(): void
     {
         $extInstance = $this->lifecycle->getTuiInstance();
@@ -254,6 +258,9 @@ class Runtime implements InstanceInterface
         }
     }
 
+    /**
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
     public function focusPrevious(): void
     {
         $extInstance = $this->lifecycle->getTuiInstance();
@@ -262,6 +269,9 @@ class Runtime implements InstanceInterface
         }
     }
 
+    /**
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
     public function focus(string $id): void
     {
         $extInstance = $this->lifecycle->getTuiInstance();
@@ -270,6 +280,9 @@ class Runtime implements InstanceInterface
         }
     }
 
+    /**
+     * @throws ExtInstanceDestroyedException If the instance has been destroyed
+     */
     public function getFocusedNode(): ?array
     {
         $extInstance = $this->lifecycle->getTuiInstance();

@@ -30,7 +30,8 @@ final readonly class CounterState
         private \Closure $decrement,
         private \Closure $reset,
         private \Closure $set,
-    ) {}
+    ) {
+    }
 
     /**
      * Create from array (for backward compatibility).
