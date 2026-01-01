@@ -46,7 +46,7 @@ class FragmentTest extends TestCase
         $this->assertCount(2, $fragment->getChildren());
     }
 
-    public function testRender(): void
+    public function testToNode(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui extension is required for this test');
@@ -56,9 +56,9 @@ class FragmentTest extends TestCase
             new Text('Hello'),
         ]);
 
-        $rendered = $fragment->render();
+        $node = $fragment->toNode();
 
-        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
-        $this->assertCount(1, $rendered->children);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\ContainerNode::class, $node);
+        $this->assertCount(1, $node->children);
     }
 }

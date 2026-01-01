@@ -7,11 +7,11 @@ namespace Xocdr\Tui\Rendering\Render;
 use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
- * Wrapper for TuiBox that implements NodeInterface.
+ * Wrapper for ContainerNode that implements NodeInterface.
  */
 class BoxNode implements NodeInterface
 {
-    private \Xocdr\Tui\Ext\Box $native;
+    private \Xocdr\Tui\Ext\ContainerNode $native;
 
     /** @var array<NodeInterface> */
     private array $children = [];
@@ -21,7 +21,7 @@ class BoxNode implements NodeInterface
      */
     public function __construct(array $style = [])
     {
-        $this->native = new \Xocdr\Tui\Ext\Box($style);
+        $this->native = new \Xocdr\Tui\Ext\ContainerNode($style);
     }
 
     public function addChild(NodeInterface $child): void
@@ -38,7 +38,7 @@ class BoxNode implements NodeInterface
         return $this->children;
     }
 
-    public function getNative(): \Xocdr\Tui\Ext\Box
+    public function getNative(): \Xocdr\Tui\Ext\ContainerNode
     {
         return $this->native;
     }

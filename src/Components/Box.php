@@ -867,13 +867,13 @@ class Box extends AbstractContainerComponent
     }
 
     /**
-     * Render the component to a TuiBox.
+     * Compile the component to a ContainerNode.
      */
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\ContainerNode
     {
         $style = $this->style;
 
-        // Add key and id to style array for the native Box
+        // Add key and id to style array for the native node
         if ($this->key !== null) {
             $style['key'] = $this->key;
         }
@@ -893,19 +893,19 @@ class Box extends AbstractContainerComponent
             }
         }
 
-        // Remove bgColor - Box doesn't support background colors in the C extension
-        // Background colors are only supported on Text components
+        // Remove bgColor - ContainerNode doesn't support background colors in the C extension
+        // Background colors are only supported on ContentNode
         unset($style['bgColor']);
 
-        $box = new \Xocdr\Tui\Ext\Box($style);
+        $node = new \Xocdr\Tui\Ext\ContainerNode($style);
 
-        // Set showCursor on the native box
+        // Set showCursor on the native node
         if ($this->showCursor) {
-            $box->showCursor = true;
+            $node->showCursor = true;
         }
 
-        $this->renderChildrenInto($box);
+        $this->renderChildrenInto($node);
 
-        return $box;
+        return $node;
     }
 }

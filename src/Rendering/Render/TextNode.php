@@ -7,24 +7,24 @@ namespace Xocdr\Tui\Rendering\Render;
 use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
- * Wrapper for TuiText that implements NodeInterface.
+ * Wrapper for ContentNode that implements NodeInterface.
  */
 class TextNode implements NodeInterface
 {
-    private \Xocdr\Tui\Ext\Text $native;
+    private \Xocdr\Tui\Ext\ContentNode $native;
 
     /**
      * @param array<string, mixed> $style
      */
     public function __construct(string $content, array $style = [])
     {
-        $this->native = new \Xocdr\Tui\Ext\Text($content, $style);
+        $this->native = new \Xocdr\Tui\Ext\ContentNode($content, $style);
     }
 
     public function addChild(NodeInterface $child): void
     {
-        // Text nodes cannot have children
-        throw new \RuntimeException('Text nodes cannot have children');
+        // Content nodes cannot have children
+        throw new \RuntimeException('Content nodes cannot have children');
     }
 
     /**
@@ -35,7 +35,7 @@ class TextNode implements NodeInterface
         return [];
     }
 
-    public function getNative(): \Xocdr\Tui\Ext\Text
+    public function getNative(): \Xocdr\Tui\Ext\ContentNode
     {
         return $this->native;
     }

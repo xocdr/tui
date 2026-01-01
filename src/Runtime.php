@@ -384,8 +384,8 @@ class Runtime implements InstanceInterface
         $comp = $this->component;
 
         if ($comp instanceof StatefulComponent) {
-            // StatefulComponent wraps a callable - let it render
-            return $comp->render();
+            // StatefulComponent wraps a callable - let it compile
+            return $comp;
         }
 
         if (is_callable($comp)) {
@@ -407,13 +407,13 @@ class Runtime implements InstanceInterface
     // =========================================================================
 
     /**
-     * Render the component tree.
+     * Compile the component tree.
      *
-     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
+     * @return \Xocdr\Tui\Ext\TuiNode
      *
      * @throws \RuntimeException If renderer returns null node
      */
-    private function renderComponent(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
+    private function renderComponent(): \Xocdr\Tui\Ext\TuiNode
     {
         $node = $this->hookRegistry->runWithContext($this->hookContext, function () {
             return $this->renderer->render($this->component);

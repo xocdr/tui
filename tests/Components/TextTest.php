@@ -59,19 +59,19 @@ class TextTest extends TestCase
         $this->assertEquals('#00ffff', $style['color']);
     }
 
-    public function testRender(): void
+    public function testToNode(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
         $text = (new Text('Hello'))->bold();
-        $rendered = $text->render();
+        $node = $text->toNode();
 
-        // render() now returns a TuiText object
-        $this->assertInstanceOf(\Xocdr\Tui\Ext\Text::class, $rendered);
-        $this->assertEquals('Hello', $rendered->content);
-        $this->assertTrue($rendered->bold);
+        // toNode() returns a ContentNode object
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\ContentNode::class, $node);
+        $this->assertEquals('Hello', $node->content);
+        $this->assertTrue($node->bold);
     }
 
     // Tests for ->styles() method

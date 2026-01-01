@@ -6,8 +6,9 @@ namespace Xocdr\Tui\Support\Testing;
 
 use Xocdr\Tui\Components\Component;
 use Xocdr\Tui\Contracts\HooksAwareInterface;
-use Xocdr\Tui\Ext\Box as ExtBox;
-use Xocdr\Tui\Ext\Text as ExtText;
+use Xocdr\Tui\Ext\ContainerNode;
+use Xocdr\Tui\Ext\ContentNode;
+use Xocdr\Tui\Ext\TuiNode;
 use Xocdr\Tui\Hooks\HookContext;
 use Xocdr\Tui\Hooks\HookRegistry;
 
@@ -19,7 +20,7 @@ use Xocdr\Tui\Hooks\HookRegistry;
  * testing support (tui_test_* functions).
  *
  * Supports both simple components and HooksAware components by
- * providing a mock hook context during rendering.
+ * providing a mock hook context during compiling.
  *
  * @example
  * $renderer = new ExtTestRenderer(80, 24);
@@ -76,9 +77,9 @@ class ExtTestRenderer
     /**
      * Render a component.
      *
-     * @param callable|Component|ExtBox|ExtText $component The component to render
+     * @param callable|Component|TuiNode $component The component to render
      */
-    public function render(callable|Component|ExtBox|ExtText $component): self
+    public function render(callable|Component|TuiNode $component): self
     {
         if ($this->resource !== null) {
             $native = $this->toNative($component);
@@ -92,15 +93,15 @@ class ExtTestRenderer
      * Convert a component to a native ext-tui object.
      *
      * Recursively resolves callables and nested components until
-     * reaching a native ExtBox or ExtText.
+     * reaching a native ContainerNode or ContentNode.
      *
-     * HooksAware components are rendered within a hook context to
+     * HooksAware components are compiled within a hook context to
      * allow hooks like useState, useEffect, etc. to function properly.
      */
-    private function toNative(mixed $component): ExtBox|ExtText
+    private function toNative(mixed $component): TuiNode
     {
         // Already a native object
-        if ($component instanceof ExtBox || $component instanceof ExtText) {
+        if ($component instanceof TuiNode) {
             return $component;
         }
 
@@ -112,17 +113,17 @@ class ExtTestRenderer
             );
         }
 
-        // HooksAware component - render within hook context
+        // HooksAware component - compile within hook context
         if ($component instanceof HooksAwareInterface) {
             return $this->hookRegistry->runWithContext(
                 $this->hookContext,
-                fn () => $this->toNative($component->render())
+                fn () => $this->toNative($component->toNode())
             );
         }
 
-        // Regular component - render and recursively convert
+        // Regular component - compile and recursively convert
         if ($component instanceof Component) {
-            return $this->toNative($component->render());
+            return $this->toNative($component->toNode());
         }
 
         throw new \RuntimeException(

@@ -72,7 +72,7 @@ class Counter extends StatefulComponent
         return $this->state['count'];
     }
 
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\TuiNode
     {
         /** @var string $label */
         $label = $this->prop('label', 'Count');
@@ -87,6 +87,6 @@ class Counter extends StatefulComponent
             ->flexDirection('column')
             ->padding(1)
             ->border('round')
-            ->render();
+            ->toNode();
     }
 }

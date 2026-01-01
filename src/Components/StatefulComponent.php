@@ -27,11 +27,11 @@ use Xocdr\Tui\Runtime;
  *         $this->setState(['count' => $this->state['count'] + 1]);
  *     }
  *
- *     public function render(): \Xocdr\Tui\Ext\Box
+ *     public function toNode(): \Xocdr\Tui\Ext\TuiNode
  *     {
  *         return (new Box([
  *             new Text("Count: {$this->state['count']}"),
- *         ]))->render();
+ *         ]))->toNode();
  *     }
  * }
  */
@@ -276,9 +276,9 @@ abstract class StatefulComponent implements Component
     }
 
     /**
-     * Render the component.
+     * Compile the component to a native node.
      *
-     * Must return a TuiBox or TuiText.
+     * Must return a TuiNode (ContainerNode or ContentNode).
      */
-    abstract public function render(): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text;
+    abstract public function toNode(): \Xocdr\Tui\Ext\TuiNode;
 }

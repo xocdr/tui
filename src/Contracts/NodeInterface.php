@@ -8,9 +8,9 @@ namespace Xocdr\Tui\Contracts;
  * Interface for renderable nodes in the TUI tree.
  *
  * This abstraction allows decoupling from the C extension's
- * TuiBox and TuiText classes for better testability.
+ * ContainerNode and ContentNode classes for better testability.
  *
- * Aligns with ext-tui 0.2.12's TuiNode interface which provides
+ * Aligns with ext-tui's TuiNode interface which provides
  * getKey() and getId() methods for programmatic node access.
  */
 interface NodeInterface
@@ -28,11 +28,11 @@ interface NodeInterface
     public function getChildren(): array;
 
     /**
-     * Get the underlying native node (Box or Text).
+     * Get the underlying native node (ContainerNode or ContentNode).
      *
-     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text
+     * @return \Xocdr\Tui\Ext\TuiNode
      */
-    public function getNative(): object;
+    public function getNative(): \Xocdr\Tui\Ext\TuiNode;
 
     /**
      * Get the node's key for reconciliation.

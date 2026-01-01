@@ -28,10 +28,11 @@ use Xocdr\Tui\Terminal\TerminalInfo;
  * {
  *     use HooksAwareTrait;
  *
- *     public function render(): object
+ *     public function toNode(): TuiNode
  *     {
  *         [$count, $setCount] = $this->hooks()->state(0);
  *         $this->hooks()->onRender(fn() => echo "Mounted", []);
+ *         return Box::create()->children([...])->toNode();
  *     }
  * }
  */

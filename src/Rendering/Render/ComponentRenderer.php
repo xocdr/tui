@@ -69,42 +69,43 @@ class ComponentRenderer implements RendererInterface
         }
 
         // Native extension objects - wrap them
-        if ($value instanceof \Xocdr\Tui\Ext\Box) {
+        if ($value instanceof \Xocdr\Tui\Ext\ContainerNode) {
             return $this->wrapNativeBox($value);
         }
 
-        if ($value instanceof \Xocdr\Tui\Ext\Text) {
+        if ($value instanceof \Xocdr\Tui\Ext\ContentNode) {
             return $this->wrapNativeText($value);
         }
 
-        // StatefulComponent - render directly (already returns TuiBox/TuiText)
+        // StatefulComponent - compile directly (already returns TuiNode)
         if ($value instanceof StatefulComponent) {
-            // Prepare hook context for HooksAware components before rendering
+            // Prepare hook context for HooksAware components before compiling
             if ($value instanceof HooksAwareInterface) {
                 $value->prepareRender();
                 // Track this component as rendered in current cycle
                 RenderCycleTracker::trackComponent($value);
             }
-            $rendered = $value->render();
+            $compiled = $value->toNode();
 
-            return $this->toNode($rendered);
+            return $this->toNode($compiled);
         }
 
-        // Component - render it
+        // Component - compile it
         if ($value instanceof Component) {
-            // Prepare hook context for HooksAware components before rendering
+            // Prepare hook context for HooksAware components before compiling
             if ($value instanceof HooksAwareInterface) {
                 $value->prepareRender();
                 // Track this component as rendered in current cycle
                 RenderCycleTracker::trackComponent($value);
             }
-            $rendered = $value->render();
+            $compiled = $value->toNode();
 
-            return $this->toNode($rendered);
+            return $this->toNode($compiled);
         }
 
         // Array format (legacy support)
         if (is_array($value)) {
+            /** @var array<string, mixed> $value */
             return $this->arrayToNode($value);
         }
 
@@ -152,6 +153,7 @@ class ComponentRenderer implements RendererInterface
                 );
             }
 
+            /** @var array<string, mixed> $textStyle */
             return $this->target->createText($content, $textStyle);
         }
 
@@ -163,6 +165,7 @@ class ComponentRenderer implements RendererInterface
             );
         }
 
+        /** @var array<string, mixed> $boxStyle */
         $box = $this->target->createBox($boxStyle);
 
         if (isset($data['children'])) {
@@ -182,17 +185,17 @@ class ComponentRenderer implements RendererInterface
     }
 
     /**
-     * Wrap a native TuiBox in a NodeInterface.
+     * Wrap a native ContainerNode in a NodeInterface.
      */
-    private function wrapNativeBox(\Xocdr\Tui\Ext\Box $native): NodeInterface
+    private function wrapNativeBox(\Xocdr\Tui\Ext\ContainerNode $native): NodeInterface
     {
         return new NativeBoxWrapper($native);
     }
 
     /**
-     * Wrap a native TuiText in a NodeInterface.
+     * Wrap a native ContentNode in a NodeInterface.
      */
-    private function wrapNativeText(\Xocdr\Tui\Ext\Text $native): NodeInterface
+    private function wrapNativeText(\Xocdr\Tui\Ext\ContentNode $native): NodeInterface
     {
         return new NativeTextWrapper($native);
     }

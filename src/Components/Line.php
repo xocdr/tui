@@ -264,15 +264,13 @@ class Line implements Component
     }
 
     /**
-     * Render the component.
-     *
-     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|\Xocdr\Tui\Ext\Newline|object
+     * Compile the component to a native node.
      */
-    public function render(): object
+    public function toNode(): \Xocdr\Tui\Ext\ContentNode
     {
         // For labeled lines, we need to handle colors differently
         // For now, use lineColor for the entire line including label
-        // Future: could split into separate Text nodes for label vs line
+        // Future: could split into separate ContentNode for label vs line
         $text = new Text($this->toString());
 
         // Use labelColor for labeled lines, otherwise lineColor
@@ -288,6 +286,6 @@ class Line implements Component
             $text->dim();
         }
 
-        return $text->render();
+        return $text->toNode();
     }
 }

@@ -35,9 +35,11 @@ class MockTextNode implements NodeInterface
         return [];
     }
 
-    public function getNative(): object
+    public function getNative(): \Xocdr\Tui\Ext\TuiNode
     {
-        return (object) ['type' => 'text', 'content' => $this->content, 'style' => $this->style];
+        // Return a mock ContentNode for testing
+        // This will only work with ext-tui loaded; tests mock at a higher level
+        return new \Xocdr\Tui\Ext\ContentNode($this->content, $this->style);
     }
 
     public function getKey(): ?string

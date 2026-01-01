@@ -343,11 +343,11 @@ class Transform implements Component
     }
 
     /**
-     * Render the transformed content.
+     * Compile the transformed content.
      *
      * Uses native \Xocdr\Tui\Ext\Transform if available (ext-tui 0.1.3+).
      */
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\ContainerNode
     {
         $content = $this->getChildContent();
 
@@ -355,7 +355,7 @@ class Transform implements Component
         if (class_exists(\Xocdr\Tui\Ext\Transform::class) && count($this->transformers) === 1 && $this->gradientConfig === null) {
             return new \Xocdr\Tui\Ext\Transform([
                 'transform' => $this->transformers[0],
-                'children' => [new \Xocdr\Tui\Ext\Text($content)],
+                'children' => [new \Xocdr\Tui\Ext\ContentNode($content)],
             ]);
         }
 
@@ -398,14 +398,14 @@ class Transform implements Component
             }
         }
 
-        // Create a box with transformed text children
-        $box = new \Xocdr\Tui\Ext\Box(['flexDirection' => 'column']);
+        // Create a container with transformed content children
+        $node = new \Xocdr\Tui\Ext\ContainerNode(['flexDirection' => 'column']);
 
         foreach ($finalLines as $line) {
-            $box->addChild(new \Xocdr\Tui\Ext\Text($line));
+            $node->addChild(new \Xocdr\Tui\Ext\ContentNode($line));
         }
 
-        return $box;
+        return $node;
     }
 
     /**

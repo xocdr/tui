@@ -393,9 +393,9 @@ class Text implements Component
     }
 
     /**
-     * Render the component to a TuiText.
+     * Compile the component to a ContentNode.
      */
-    public function render(): \Xocdr\Tui\Ext\Text
+    public function toNode(): \Xocdr\Tui\Ext\ContentNode
     {
         // Map bgColor to backgroundColor for the C extension
         $style = $this->style;
@@ -422,6 +422,6 @@ class Text implements Component
             }
         }
 
-        return new \Xocdr\Tui\Ext\Text($content, $style);
+        return new \Xocdr\Tui\Ext\ContentNode($content, $style);
     }
 }

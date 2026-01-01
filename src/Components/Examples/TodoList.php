@@ -134,7 +134,7 @@ class TodoList extends StatefulComponent
         return count(array_filter($items, fn (array $item): bool => $item['completed']));
     }
 
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\TuiNode
     {
         /** @var string $title */
         $title = $this->prop('title', 'Todo List');
@@ -174,6 +174,6 @@ class TodoList extends StatefulComponent
             ->flexDirection('column')
             ->padding(1)
             ->border('single')
-            ->render();
+            ->toNode();
     }
 }

@@ -280,18 +280,16 @@ class Image implements Component
     }
 
     /**
-     * Render the image component.
+     * Compile the image component.
      *
-     * Returns a Box with the image displayed using Kitty graphics,
+     * Returns a ContainerNode with the image displayed using Kitty graphics,
      * or a placeholder if graphics are not supported.
-     *
-     * @return \Xocdr\Tui\Ext\Box
      */
-    public function render(): object
+    public function toNode(): \Xocdr\Tui\Ext\ContainerNode
     {
-        // If graphics not supported, render fallback
+        // If graphics not supported, compile fallback
         if (!self::isSupported()) {
-            return $this->renderFallback();
+            return $this->compileFallback();
         }
 
         // Load the image resource if not already loaded
@@ -299,9 +297,9 @@ class Image implements Component
             $this->loadResource();
         }
 
-        // If resource still null (failed to load), render fallback
+        // If resource still null (failed to load), compile fallback
         if ($this->resource === null) {
-            return $this->renderFallback();
+            return $this->compileFallback();
         }
 
         // Transmit image to terminal memory if not already done
@@ -314,7 +312,7 @@ class Image implements Component
             tui_image_display($this->resource, 0, 0, $this->columns, $this->rows);
         }
 
-        // Return a placeholder box that reserves the space
+        // Return a placeholder container that reserves the space
         $style = [];
         if ($this->columns > 0) {
             $style['width'] = $this->columns;
@@ -323,13 +321,13 @@ class Image implements Component
             $style['height'] = $this->rows;
         }
 
-        return new \Xocdr\Tui\Ext\Box($style);
+        return new \Xocdr\Tui\Ext\ContainerNode($style);
     }
 
     /**
-     * Render a fallback placeholder when graphics are not supported.
+     * Compile a fallback placeholder when graphics are not supported.
      */
-    private function renderFallback(): \Xocdr\Tui\Ext\Box
+    private function compileFallback(): \Xocdr\Tui\Ext\ContainerNode
     {
         $altText = $this->alt;
 
@@ -349,7 +347,7 @@ class Image implements Component
             $altText .= " ({$info['width']}x{$info['height']})";
         }
 
-        $text = new \Xocdr\Tui\Ext\Text($altText, ['dim' => true]);
+        $text = new \Xocdr\Tui\Ext\ContentNode($altText, ['dim' => true]);
 
         $style = [
             'borderStyle' => 'single',
@@ -369,10 +367,10 @@ class Image implements Component
             $style['height'] = 5;
         }
 
-        $box = new \Xocdr\Tui\Ext\Box($style);
-        $box->addChild($text);
+        $node = new \Xocdr\Tui\Ext\ContainerNode($style);
+        $node->addChild($text);
 
-        return $box;
+        return $node;
     }
 
     /**

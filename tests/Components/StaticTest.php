@@ -55,16 +55,20 @@ class StaticTest extends TestCase
         $this->assertSame($static->getChildren(), $static->getItems());
     }
 
-    public function testRender(): void
+    public function testToNode(): void
     {
+        if (!extension_loaded('tui')) {
+            $this->markTestSkipped('ext-tui extension is required for this test');
+        }
+
         $static = new Static_([
             new Text('Log entry'),
         ]);
 
-        $rendered = $static->render();
+        $node = $static->toNode();
 
-        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
-        $this->assertEquals('column', $rendered->flexDirection);
-        $this->assertCount(1, $rendered->children);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\ContainerNode::class, $node);
+        $this->assertEquals('column', $node->flexDirection);
+        $this->assertCount(1, $node->children);
     }
 }

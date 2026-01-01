@@ -7,21 +7,21 @@ namespace Xocdr\Tui\Rendering\Render;
 use Xocdr\Tui\Contracts\NodeInterface;
 
 /**
- * Wrapper for pre-existing TuiText instances.
+ * Wrapper for pre-existing ContentNode instances.
  *
- * Used when components directly create TuiText objects
+ * Used when components directly create ContentNode objects
  * (for backwards compatibility).
  */
 class NativeTextWrapper implements NodeInterface
 {
     public function __construct(
-        private \Xocdr\Tui\Ext\Text $native
+        private \Xocdr\Tui\Ext\ContentNode $native
     ) {
     }
 
     public function addChild(NodeInterface $child): void
     {
-        throw new \RuntimeException('Text nodes cannot have children');
+        throw new \RuntimeException('Content nodes cannot have children');
     }
 
     /**
@@ -32,7 +32,7 @@ class NativeTextWrapper implements NodeInterface
         return [];
     }
 
-    public function getNative(): \Xocdr\Tui\Ext\Text
+    public function getNative(): \Xocdr\Tui\Ext\ContentNode
     {
         return $this->native;
     }

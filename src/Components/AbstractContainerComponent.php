@@ -40,8 +40,8 @@ abstract class AbstractContainerComponent implements Component
     /**
      * Set child components.
      *
-     * Accepts Component instances, objects with render() method (widgets),
-     * strings (wrapped as Text), or native Ext\Box/Text instances.
+     * Accepts Component instances, objects with toNode() method (widgets),
+     * strings (wrapped as Text), or native ContainerNode/ContentNode instances.
      *
      * @param array<Component|object|string> $children
      * @return static
@@ -56,8 +56,8 @@ abstract class AbstractContainerComponent implements Component
     /**
      * Add a child component.
      *
-     * Accepts Component instances, objects with render() method (widgets),
-     * strings (wrapped as Text), or native Ext\Box/Text instances.
+     * Accepts Component instances, objects with toNode() method (widgets),
+     * strings (wrapped as Text), or native ContainerNode/ContentNode instances.
      *
      * @param Component|object|string $child
      * @return static
@@ -282,28 +282,28 @@ abstract class AbstractContainerComponent implements Component
     }
 
     /**
-     * Render children into a TuiBox.
+     * Compile children into a ContainerNode.
      *
      * Accepts:
-     * - Component instances (calls render() automatically)
-     * - Objects with a render() method (duck typing for widgets)
-     * - Strings (wrapped in Text)
-     * - Native Ext\Box or Ext\Text instances
+     * - Component instances (calls toNode() automatically)
+     * - Objects with a toNode() method (duck typing for widgets)
+     * - Strings (wrapped in ContentNode)
+     * - Native ContainerNode or ContentNode instances
      */
-    protected function renderChildrenInto(\Xocdr\Tui\Ext\Box $box): void
+    protected function renderChildrenInto(\Xocdr\Tui\Ext\ContainerNode $node): void
     {
-        // Render legacy children array first
+        // Compile legacy children array first
         foreach ($this->children as $child) {
             if ($child === null) {
                 continue;
             }
-            $rendered = $this->renderToNative($child);
-            if ($rendered !== null) {
-                $box->addChild($rendered);
+            $compiled = $this->compileToNative($child);
+            if ($compiled !== null) {
+                $node->addChild($compiled);
             }
         }
 
-        // Render keyed children in order
+        // Compile keyed children in order
         if (!empty($this->keyedChildren)) {
             // Sort by order
             $sorted = $this->keyedChildren;
@@ -314,32 +314,32 @@ abstract class AbstractContainerComponent implements Component
                 if ($child === null) {
                     continue;
                 }
-                $rendered = $this->renderToNative($child);
-                if ($rendered !== null) {
+                $compiled = $this->compileToNative($child);
+                if ($compiled !== null) {
                     // Set the key on the native node for reconciler
-                    $rendered->key = $key;
-                    $box->addChild($rendered);
+                    $compiled->key = $key;
+                    $node->addChild($compiled);
                 }
             }
         }
     }
 
     /**
-     * Recursively render a child to a native Ext\Box or Ext\Text.
+     * Recursively compile a child to a native ContainerNode or ContentNode.
      *
      * @param mixed $child
-     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|null
+     * @return \Xocdr\Tui\Ext\TuiNode|null
      */
-    protected function renderToNative(mixed $child): \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|null
+    protected function compileToNative(mixed $child): ?\Xocdr\Tui\Ext\TuiNode
     {
         // Already native - return as-is
-        if ($child instanceof \Xocdr\Tui\Ext\Box || $child instanceof \Xocdr\Tui\Ext\Text) {
+        if ($child instanceof \Xocdr\Tui\Ext\TuiNode) {
             return $child;
         }
 
-        // String - wrap in Text
+        // String - wrap in ContentNode
         if (is_string($child)) {
-            return new \Xocdr\Tui\Ext\Text($child);
+            return new \Xocdr\Tui\Ext\ContentNode($child);
         }
 
         // Null - skip
@@ -347,17 +347,17 @@ abstract class AbstractContainerComponent implements Component
             return null;
         }
 
-        // Component or object with render() method - call render() recursively
-        if ($child instanceof Component || (is_object($child) && method_exists($child, 'render'))) {
-            // Prepare hook context for HooksAware components before rendering
+        // Component or object with toNode() method - call toNode() recursively
+        if ($child instanceof Component || (is_object($child) && method_exists($child, 'toNode'))) {
+            // Prepare hook context for HooksAware components before compiling
             if ($child instanceof HooksAwareInterface) {
                 $child->prepareRender();
                 // Track this component as rendered in the current cycle
                 RenderCycleTracker::trackComponent($child);
             }
-            $rendered = $child->render();
-            // Recursively render until we get native
-            return $this->renderToNative($rendered);
+            $compiled = $child->toNode();
+            // Recursively compile until we get native
+            return $this->compileToNative($compiled);
         }
 
         return null;

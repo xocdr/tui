@@ -181,7 +181,7 @@ class StreamViewer extends StatefulComponent
         return false;
     }
 
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\TuiNode
     {
         /** @var string $title */
         $title = $this->prop('title', 'Stream');
@@ -225,6 +225,6 @@ class StreamViewer extends StatefulComponent
             ->flexDirection('column')
             ->height($height)
             ->border('single')
-            ->render();
+            ->toNode();
     }
 }

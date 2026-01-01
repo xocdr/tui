@@ -20,13 +20,11 @@ class Spacer implements Component
     }
 
     /**
-     * Render the spacer.
+     * Compile the spacer.
      *
-     * Uses native \Xocdr\Tui\Ext\Spacer if available, falls back to TuiBox.
-     *
-     * @return \Xocdr\Tui\Ext\Spacer|\Xocdr\Tui\Ext\Box
+     * Uses native \Xocdr\Tui\Ext\Spacer if available, falls back to ContainerNode.
      */
-    public function render(): object
+    public function toNode(): \Xocdr\Tui\Ext\TuiNode
     {
         // Use native Spacer class if available (ext-tui 0.1.3+)
         if (class_exists(\Xocdr\Tui\Ext\Spacer::class)) {
@@ -34,6 +32,6 @@ class Spacer implements Component
         }
 
         // Fallback for older ext-tui versions
-        return new \Xocdr\Tui\Ext\Box(['flexGrow' => 1]);
+        return new \Xocdr\Tui\Ext\ContainerNode(['flexGrow' => 1]);
     }
 }

@@ -74,11 +74,11 @@ class Static_ extends AbstractContainerComponent
     }
 
     /**
-     * Render the static content.
+     * Compile the static content.
      *
      * Uses native \Xocdr\Tui\Ext\StaticOutput if available (ext-tui 0.1.3+).
      */
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\ContainerNode
     {
         // Use native StaticOutput class if available (ext-tui 0.1.3+)
         if (class_exists(\Xocdr\Tui\Ext\StaticOutput::class) && $this->renderCallback !== null) {
@@ -89,9 +89,9 @@ class Static_ extends AbstractContainerComponent
         }
 
         // Fallback implementation
-        $box = new \Xocdr\Tui\Ext\Box(['flexDirection' => 'column']);
-        $this->renderChildrenInto($box);
+        $node = new \Xocdr\Tui\Ext\ContainerNode(['flexDirection' => 'column']);
+        $this->renderChildrenInto($node);
 
-        return $box;
+        return $node;
     }
 }

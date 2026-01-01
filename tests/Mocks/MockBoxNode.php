@@ -35,10 +35,11 @@ class MockBoxNode implements NodeInterface
         return $this->children;
     }
 
-    public function getNative(): object
+    public function getNative(): \Xocdr\Tui\Ext\TuiNode
     {
-        // Return a mock object for testing
-        return (object) ['type' => 'box', 'style' => $this->style, 'children' => $this->children];
+        // Return a mock ContainerNode for testing
+        // This will only work with ext-tui loaded; tests mock at a higher level
+        return new \Xocdr\Tui\Ext\ContainerNode($this->style);
     }
 
     public function getKey(): ?string

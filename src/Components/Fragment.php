@@ -7,8 +7,8 @@ namespace Xocdr\Tui\Components;
 /**
  * Fragment component for grouping children.
  *
- * Since ext-tui doesn't have a true fragment concept, this renders
- * as a transparent box container that doesn't affect layout.
+ * Since ext-tui doesn't have a true fragment concept, this compiles
+ * to a transparent container node that doesn't affect layout.
  */
 class Fragment extends AbstractContainerComponent
 {
@@ -23,13 +23,13 @@ class Fragment extends AbstractContainerComponent
     }
 
     /**
-     * Render the fragment as a minimal TuiBox wrapper.
+     * Compile the fragment to a minimal ContainerNode wrapper.
      */
-    public function render(): \Xocdr\Tui\Ext\Box
+    public function toNode(): \Xocdr\Tui\Ext\ContainerNode
     {
-        $box = new \Xocdr\Tui\Ext\Box([]);
-        $this->renderChildrenInto($box);
+        $node = new \Xocdr\Tui\Ext\ContainerNode([]);
+        $this->renderChildrenInto($node);
 
-        return $box;
+        return $node;
     }
 }

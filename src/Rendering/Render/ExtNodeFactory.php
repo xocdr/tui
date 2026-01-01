@@ -19,17 +19,17 @@ class ExtNodeFactory implements ExtNodeFactoryInterface
     /**
      * @param array<string, mixed> $style
      */
-    public function createBox(array $style = []): \Xocdr\Tui\Ext\Box
+    public function createBox(array $style = []): \Xocdr\Tui\Ext\ContainerNode
     {
-        return new \Xocdr\Tui\Ext\Box($style);
+        return new \Xocdr\Tui\Ext\ContainerNode($style);
     }
 
     /**
      * @param array<string, mixed> $style
      */
-    public function createText(string $content, array $style = []): \Xocdr\Tui\Ext\Text
+    public function createText(string $content, array $style = []): \Xocdr\Tui\Ext\ContentNode
     {
-        return new \Xocdr\Tui\Ext\Text($content, $style);
+        return new \Xocdr\Tui\Ext\ContentNode($content, $style);
     }
 
     public function createNewline(int $count = 1): \Xocdr\Tui\Ext\Newline
@@ -45,6 +45,6 @@ class ExtNodeFactory implements ExtNodeFactoryInterface
         }
 
         // Fallback for older ext-tui versions
-        return new \Xocdr\Tui\Ext\Box(['flexGrow' => 1]);
+        return new \Xocdr\Tui\Ext\ContainerNode(['flexGrow' => 1]);
     }
 }

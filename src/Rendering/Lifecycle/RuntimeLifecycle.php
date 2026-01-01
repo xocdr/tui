@@ -46,6 +46,8 @@ class RuntimeLifecycle
      *
      * The render callback receives the ext-tui Instance which has
      * hook methods like state(), onInput(), etc.
+     *
+     * @throws \RuntimeException If the runtime is already started or tui_render fails
      */
     public function start(callable $renderCallback): ExtInstance
     {
@@ -55,10 +57,17 @@ class RuntimeLifecycle
 
         $this->state = LifecycleState::Running;
 
-        $this->extInstance = tui_render($renderCallback, [
+        $instance = tui_render($renderCallback, [
             'fullscreen' => $this->options['fullscreen'],
             'exitOnCtrlC' => $this->options['exitOnCtrlC'],
         ]);
+
+        if ($instance === null) {
+            $this->state = LifecycleState::Stopped;
+            throw new \RuntimeException('Failed to initialize TUI instance');
+        }
+
+        $this->extInstance = $instance;
 
         return $this->extInstance;
     }

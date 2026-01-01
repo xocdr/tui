@@ -92,15 +92,13 @@ abstract class UI implements Component, HooksAwareInterface
     abstract public function build(): Component;
 
     /**
-     * Render the UI to its final form.
+     * Compile the UI to its final form.
      *
      * This is called by the framework. You typically don't override this.
-     *
-     * @return \Xocdr\Tui\Ext\Box|\Xocdr\Tui\Ext\Text|\Xocdr\Tui\Ext\Newline|object
      */
-    public function render(): object
+    public function toNode(): \Xocdr\Tui\Ext\TuiNode
     {
-        return $this->build()->render();
+        return $this->build()->toNode();
     }
 
     // =========================================================================

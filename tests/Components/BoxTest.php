@@ -73,7 +73,7 @@ class BoxTest extends TestCase
         $this->assertEquals(['borderStyle' => 'round'], $box->getStyle());
     }
 
-    public function testRender(): void
+    public function testToNode(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui extension is required for this test');
@@ -85,12 +85,12 @@ class BoxTest extends TestCase
                 new Text('Hello'),
             ]);
 
-        $rendered = $box->render();
+        $node = $box->toNode();
 
-        // render() now returns a TuiBox object
-        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
-        $this->assertEquals('column', $rendered->flexDirection);
-        $this->assertCount(1, $rendered->children);
+        // toNode() returns a ContainerNode object
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\ContainerNode::class, $node);
+        $this->assertEquals('column', $node->flexDirection);
+        $this->assertCount(1, $node->children);
     }
 
     // Tests for ->styles() method

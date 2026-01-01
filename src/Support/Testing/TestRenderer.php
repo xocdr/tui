@@ -133,16 +133,9 @@ class TestRenderer
         }
 
         if ($component instanceof Component) {
-            // Generic component - try to render it
-            $rendered = $component->render();
-            if (is_string($rendered)) {
-                return [$rendered];
-            }
-            // If render() returns another Component, recurse into it
-            if ($rendered instanceof Component) {
-                return $this->renderComponent($rendered);
-            }
-
+            // Generic component - compile it and we're done
+            // The toNode() returns a native TuiNode which we can't render here
+            // For testing, we need to inspect the component directly
             return [];
         }
 
