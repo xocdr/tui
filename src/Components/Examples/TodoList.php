@@ -89,6 +89,7 @@ class TodoList extends StatefulComponent
      */
     public function moveUp(): void
     {
+        /** @var int $index */
         $index = $this->state['selectedIndex'];
         if ($index > 0) {
             $this->setState(['selectedIndex' => $index - 1]);

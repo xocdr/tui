@@ -20,7 +20,6 @@ use Xocdr\Tui\Contracts\BufferInterface;
  */
 class Buffer implements BufferInterface
 {
-    /** @var resource|null */
     private mixed $native = null;
 
     private int $width;
@@ -287,8 +286,10 @@ class Buffer implements BufferInterface
     public function render(): array
     {
         if ($this->useNative && $this->native !== null) {
-            /** @var array<string> */
-            return tui_buffer_render($this->native);
+            /** @var array<string> $result */
+            $result = tui_buffer_render($this->native);
+
+            return $result;
         }
 
         $lines = [];
@@ -304,6 +305,11 @@ class Buffer implements BufferInterface
         return $lines;
     }
 
+    /**
+     * Get the native buffer resource.
+     *
+     * @return mixed The native buffer resource or null
+     */
     public function getNative(): mixed
     {
         return $this->native;

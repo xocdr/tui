@@ -393,8 +393,9 @@ class Image implements Component
         if ($this->url !== null && function_exists('tui_image_load')) {
             $data = $this->downloadUrl($this->url);
             if ($data !== null) {
-                $this->tempFile = tempnam(sys_get_temp_dir(), 'tui_image_');
-                if ($this->tempFile !== false) {
+                $tempFile = tempnam(sys_get_temp_dir(), 'tui_image_');
+                if ($tempFile !== false) {
+                    $this->tempFile = $tempFile;
                     $written = file_put_contents($this->tempFile, $data);
                     if ($written === false) {
                         // Clean up failed temp file

@@ -39,15 +39,23 @@ class Counter extends StatefulComponent
 
     public function increment(): void
     {
+        /** @var int $count */
+        $count = $this->state['count'];
+        /** @var int $step */
+        $step = $this->prop('step', 1);
         $this->setState([
-            'count' => $this->state['count'] + $this->prop('step', 1),
+            'count' => $count + $step,
         ]);
     }
 
     public function decrement(): void
     {
+        /** @var int $count */
+        $count = $this->state['count'];
+        /** @var int $step */
+        $step = $this->prop('step', 1);
         $this->setState([
-            'count' => $this->state['count'] - $this->prop('step', 1),
+            'count' => $count - $step,
         ]);
     }
 

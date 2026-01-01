@@ -192,7 +192,7 @@ abstract class UI implements Component, HooksAwareInterface
      * The callback runs after render. Return a cleanup function to run
      * before the next effect or on unmount.
      *
-     * @param callable(): (callable(): void)|void $callback
+     * @param callable $callback Effect function, optionally returns cleanup callable
      * @param array<mixed> $dependencies Re-run when these change (empty = run once)
      *
      * @example

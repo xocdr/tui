@@ -100,7 +100,9 @@ class StreamViewer extends StatefulComponent
      */
     public function scrollUp(int $amount = 1): void
     {
-        $offset = max(0, $this->state['scrollOffset'] - $amount);
+        /** @var int $currentOffset */
+        $currentOffset = $this->state['scrollOffset'];
+        $offset = max(0, $currentOffset - $amount);
         $this->setState([
             'scrollOffset' => $offset,
             'autoScroll' => false,
@@ -158,7 +160,10 @@ class StreamViewer extends StatefulComponent
      */
     private function getVisibleLines(): int
     {
-        return $this->prop('height', 10) - 2; // Account for border
+        /** @var int $height */
+        $height = $this->prop('height', 10);
+
+        return $height - 2; // Account for border
     }
 
     protected function shouldUpdate(array $prevState, array $nextState): bool

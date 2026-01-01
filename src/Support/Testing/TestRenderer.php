@@ -44,11 +44,13 @@ class TestRenderer
             return '';
         }
 
-        if (is_callable($component) && !is_string($component)) {
-            $component = $component();
+        if (is_string($component)) {
+            $lines = [$component];
+        } elseif (is_callable($component)) {
+            $lines = $this->renderComponent($component());
+        } else {
+            $lines = $this->renderComponent($component);
         }
-
-        $lines = $this->renderComponent($component);
         $this->outputLines = $lines;
 
         return implode("\n", $lines);

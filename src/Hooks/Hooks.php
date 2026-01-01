@@ -263,11 +263,11 @@ final readonly class Hooks implements HooksInterface
     {
         $historyRef = $this->ref(null);
 
-        if ($historyRef->current === null) {
+        if (!$historyRef->current instanceof InputHistory) {
             $historyRef->current = new InputHistory($maxSize);
         }
 
-        /** @var InputHistory $history */
+        assert($historyRef->current instanceof InputHistory);
         $history = $historyRef->current;
 
         return [
@@ -585,11 +585,11 @@ final readonly class Hooks implements HooksInterface
     {
         $canvasRef = $this->ref(null);
 
-        if ($canvasRef->current === null) {
+        if (!$canvasRef->current instanceof Canvas) {
             $canvasRef->current = new Canvas($width, $height, $mode);
         }
 
-        /** @var Canvas $canvas */
+        assert($canvasRef->current instanceof Canvas);
         $canvas = $canvasRef->current;
 
         return [

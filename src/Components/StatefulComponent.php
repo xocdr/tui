@@ -183,7 +183,7 @@ abstract class StatefulComponent implements Component
 
         // Clean up any timers
         foreach ($this->timerIds as $timerId) {
-            $this->runtime?->removeTimer($timerId);
+            $this->runtime?->getTimerManager()->removeTimer($timerId);
         }
         $this->timerIds = [];
 
@@ -219,7 +219,7 @@ abstract class StatefulComponent implements Component
             return -1;
         }
 
-        $timerId = $this->runtime->addTimer($intervalMs, $callback);
+        $timerId = $this->runtime->getTimerManager()->addTimer($intervalMs, $callback);
         $this->timerIds[] = $timerId;
 
         return $timerId;
@@ -230,7 +230,7 @@ abstract class StatefulComponent implements Component
      */
     protected function removeTimer(int $timerId): void
     {
-        $this->runtime?->removeTimer($timerId);
+        $this->runtime?->getTimerManager()->removeTimer($timerId);
         $this->timerIds = array_filter($this->timerIds, fn ($id) => $id !== $timerId);
     }
 

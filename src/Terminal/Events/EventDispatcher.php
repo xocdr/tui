@@ -223,35 +223,35 @@ class EventDispatcher implements EventDispatcherInterface
     public function once(string $event, callable $handler, int $priority = 0): string
     {
         $removed = false;
-        $handlerId = '';
 
         // Use WeakReference to avoid circular reference memory leak
         // Without this, $wrapper -> $this -> $handlers -> $wrapper creates a cycle
         $dispatcherRef = \WeakReference::create($this);
 
-        $wrapper = function (object $payload) use ($handler, &$removed, &$handlerId, $dispatcherRef): void {
+        // Use object to pass handlerId by reference into closure
+        $handlerIdRef = (object) ['id' => ''];
+
+        $wrapper = function (object $payload) use ($handler, &$removed, $handlerIdRef, $dispatcherRef): void {
             $removed = true;
             try {
                 $handler($payload);
             } finally {
                 // Remove handler after callback completes
-                // $handlerId is assigned by reference after this closure is created,
-                // so it will have a valid value by the time this is called
                 $dispatcher = $dispatcherRef->get();
-                if ($dispatcher !== null && $handlerId !== '') {
-                    $dispatcher->off($handlerId);
+                if ($dispatcher !== null && $handlerIdRef->id !== '') {
+                    $dispatcher->off($handlerIdRef->id);
                 }
             }
         };
 
-        $handlerId = $this->on($event, $wrapper, $priority);
+        $handlerIdRef->id = $this->on($event, $wrapper, $priority);
 
         // Handle edge case where event fired synchronously during on()
         if ($removed) {
-            $this->off($handlerId);
+            $this->off($handlerIdRef->id);
         }
 
-        return $handlerId;
+        return $handlerIdRef->id;
     }
 
     private function generateHandlerId(): string

@@ -36,8 +36,6 @@ interface BufferInterface
 
     /**
      * Get the underlying native resource.
-     *
-     * @return resource|null
      */
     public function getNative(): mixed;
 }
