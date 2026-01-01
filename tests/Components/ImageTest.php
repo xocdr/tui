@@ -93,7 +93,7 @@ class ImageTest extends TestCase
         }
     }
 
-    public function testRenderFallbackWithoutSupport(): void
+    public function testToNodeFallbackWithoutSupport(): void
     {
         // When graphics are not supported, should render a placeholder
         if (Image::isSupported()) {
@@ -108,12 +108,12 @@ class ImageTest extends TestCase
             ->size(30, 10)
             ->alt('Fallback Test');
 
-        $rendered = $image->render();
+        $node = $image->toNode();
 
-        $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\ContainerNode::class, $node);
     }
 
-    public function testRenderWithSupport(): void
+    public function testToNodeWithSupport(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui is required for this test');
@@ -137,9 +137,9 @@ class ImageTest extends TestCase
             $image = Image::fromPath($testImage)
                 ->size(10, 5);
 
-            $rendered = $image->render();
+            $node = $image->toNode();
 
-            $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
+            $this->assertInstanceOf(\Xocdr\Tui\Ext\ContainerNode::class, $node);
         } finally {
             @unlink($testImage);
         }

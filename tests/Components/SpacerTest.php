@@ -16,21 +16,21 @@ class SpacerTest extends TestCase
         $this->assertInstanceOf(Spacer::class, $spacer);
     }
 
-    public function testRender(): void
+    public function testToNode(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
         $spacer = Spacer::create();
-        $rendered = $spacer->render();
+        $node = $spacer->toNode();
 
-        // Native Spacer or fallback TuiBox
+        // Native Spacer or fallback ContainerNode
         if (class_exists(\Xocdr\Tui\Ext\Spacer::class)) {
-            $this->assertInstanceOf(\Xocdr\Tui\Ext\Spacer::class, $rendered);
+            $this->assertInstanceOf(\Xocdr\Tui\Ext\Spacer::class, $node);
         } else {
-            $this->assertInstanceOf(\Xocdr\Tui\Ext\Box::class, $rendered);
-            $this->assertEquals(1, $rendered->flexGrow);
+            $this->assertInstanceOf(\Xocdr\Tui\Ext\ContainerNode::class, $node);
+            $this->assertEquals(1, $node->flexGrow);
         }
     }
 }

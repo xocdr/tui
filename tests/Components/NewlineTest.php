@@ -24,38 +24,27 @@ class NewlineTest extends TestCase
         $this->assertEquals(3, $newline->getCount());
     }
 
-    public function testRender(): void
+    public function testToNode(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
         $newline = Newline::create();
-        $rendered = $newline->render();
+        $node = $newline->toNode();
 
-        // Native Newline or fallback TuiText
-        if (class_exists(\Xocdr\Tui\Ext\Newline::class)) {
-            $this->assertInstanceOf(\Xocdr\Tui\Ext\Newline::class, $rendered);
-        } else {
-            $this->assertInstanceOf(\Xocdr\Tui\Ext\Text::class, $rendered);
-            $this->assertEquals("\n", $rendered->content);
-        }
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\Newline::class, $node);
     }
 
-    public function testRenderMultiple(): void
+    public function testToNodeMultiple(): void
     {
         if (!extension_loaded('tui')) {
             $this->markTestSkipped('ext-tui extension is required for this test');
         }
 
         $newline = Newline::create(3);
-        $rendered = $newline->render();
+        $node = $newline->toNode();
 
-        // Native Newline or fallback TuiText
-        if (class_exists(\Xocdr\Tui\Ext\Newline::class)) {
-            $this->assertInstanceOf(\Xocdr\Tui\Ext\Newline::class, $rendered);
-        } else {
-            $this->assertEquals("\n\n\n", $rendered->content);
-        }
+        $this->assertInstanceOf(\Xocdr\Tui\Ext\Newline::class, $node);
     }
 }

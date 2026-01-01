@@ -53,9 +53,9 @@ class Newline implements Component
     }
 
     /**
-     * Render the newline.
+     * Compile the newline.
      */
-    public function render(): \Xocdr\Tui\Ext\Newline
+    public function toNode(): \Xocdr\Tui\Ext\TuiNode
     {
         return new \Xocdr\Tui\Ext\Newline(['count' => $this->lines]);
     }
